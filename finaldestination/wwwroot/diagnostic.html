@@ -70,8 +70,8 @@
         <div class="info status">
             <strong>If you see 404 errors:</strong><br>
             1. Make sure the API is running: <code>dotnet run</code><br>
-            2. Verify it's on port 7000: <code>https://localhost:7000</code><br>
-            3. Check Swagger UI loads: <a href="https://localhost:7000" target="_blank">Open Swagger</a>
+            2. Verify it's on port 5001: <code>https://localhost:5001</code><br>
+            3. Check Swagger UI loads: <a href="https://localhost:5001" target="_blank">Open Swagger</a>
         </div>
         <div class="info status">
             <strong>If you see CORS errors:</strong><br>
@@ -87,7 +87,7 @@
         // Display current configuration
         const port = window.location.port;
         const apiUrl = port === '5500' || port === '5501' || port === '3000'
-            ? 'https://localhost:7000/api'
+            ? 'https://localhost:5001/api'
             : '/api';
 
         document.getElementById('config-info').innerHTML = `
@@ -126,7 +126,7 @@
                         • CORS issue<br><br>
                         <strong>Solution:</strong><br>
                         1. Start the API: <code>cd finaldestination && dotnet run</code><br>
-                        2. Verify it's running: <a href="https://localhost:7000" target="_blank">https://localhost:7000</a>
+                        2. Verify it's running: <a href="https://localhost:5001" target="_blank">https://localhost:5001</a>
                     </div>
                 `;
             }

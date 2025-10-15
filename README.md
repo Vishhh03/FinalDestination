@@ -56,25 +56,26 @@ dotnet restore
 dotnet run
 ```
 
-### Access the API
+### Access the Application
 
-- **Swagger UI**: https://localhost:7000
-- **API Base**: https://localhost:7000/api
+After running `dotnet run`, open your browser to:
+- **Frontend**: https://localhost:5001 (default page)
+- **Swagger UI**: https://localhost:5001/swagger
+- **API Base**: https://localhost:5001/api
 
-### First API Call
+### First Steps
 
-1. Open Swagger UI at https://localhost:7000
-2. Expand **POST /api/auth/login**
-3. Click **Try it out** and use:
-   ```json
-   {
-     "email": "admin@hotel.com",
-     "password": "Admin123!"
-   }
-   ```
-4. Copy the token from response
-5. Click **Authorize** button, enter: `Bearer <your-token>`
-6. Now test any protected endpoint!
+1. **Open** https://localhost:5001 in your browser
+2. **Login** with: `admin@hotel.com` / `Admin123!`
+3. **Explore** hotels, make bookings, submit reviews!
+
+**Or use Swagger UI** for API testing at https://localhost:5001/swagger:
+1. Expand **POST /api/auth/login**
+2. Click **Try it out**, use credentials above
+3. Copy token, click **Authorize**, enter: `Bearer <token>`
+4. Test any endpoint!
+
+**⚠️ Important**: Don't open `index.html` directly - always run `dotnet run` first!
 
 **Tip**: Set `"UseLocalDb": false` in `appsettings.Development.json` to use in-memory database (no SQL Server needed)
 
@@ -146,7 +147,7 @@ Smart-Hotel-Booking-System/
 - **Loyalty** (2): View account, transaction history
 - **Payments** (2): View details, process refunds
 
-See **[API_REFERENCE.md](API_REFERENCE.md)** for complete documentation or use **Swagger UI** at https://localhost:7000
+See **[API_REFERENCE.md](API_REFERENCE.md)** for complete documentation or use **Swagger UI** at https://localhost:5001/swagger
 
 ## 🤝 Contributing
 

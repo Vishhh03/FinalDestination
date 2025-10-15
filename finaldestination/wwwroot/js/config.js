@@ -2,12 +2,21 @@
 const API_CONFIG = {
   // Detect if running on different port (Live Server) and use full URL
   baseURL: (() => {
+    const protocol = window.location.protocol;
     const port = window.location.port;
+    
+    // If opened directly from file system (file://)
+    if (protocol === "file:") {
+      console.warn("⚠️ Opening from file:// protocol. Use a web server instead!");
+      console.info("✅ Recommended: Run 'dotnet run' and open https://localhost:5001");
+      return "https://localhost:5001/api";
+    }
+    
     // If running on Live Server or different port, use full API URL
     if (port === "5500" || port === "5501" || port === "3000") {
-      // Try HTTPS first, fallback to HTTP
-      return "https://localhost:7000/api";
+      return "https://localhost:5001/api";
     }
+    
     // If served from API itself, use relative URL
     return "/api";
   })(),

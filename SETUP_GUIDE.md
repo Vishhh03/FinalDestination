@@ -410,7 +410,7 @@ Default ports are configured in `Properties/launchSettings.json`:
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      "applicationUrl": "https://localhost:7000;http://localhost:5000",
+      "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
@@ -450,16 +450,16 @@ dotnet run --environment Production
 
 After starting, the application is available at:
 
-- **HTTPS**: https://localhost:7000
+- **HTTPS**: https://localhost:5001 (Frontend)
 - **HTTP**: http://localhost:5000
-- **Swagger UI**: https://localhost:7000 (default page)
+- **Swagger UI**: https://localhost:5001/swagger
 
 ### Console Output
 
 Successful startup shows:
 ```
 info: Microsoft.Hosting.Lifetime[14]
-      Now listening on: https://localhost:7000
+      Now listening on: https://localhost:5001
 info: Microsoft.Hosting.Lifetime[14]
       Now listening on: http://localhost:5000
 info: Microsoft.Hosting.Lifetime[0]
@@ -470,11 +470,11 @@ info: Microsoft.Hosting.Lifetime[0]
 
 ## Verification
 
-### Step 1: Check Swagger UI
+### Step 1: Check Application
 
-1. Open browser to https://localhost:7000
-2. Should see Swagger UI interface
-3. Verify all endpoints are listed
+1. Open browser to https://localhost:5001 (Frontend)
+2. Or visit https://localhost:5001/swagger (Swagger UI)
+3. Verify application loads correctly
 
 ### Step 2: Test Authentication
 
@@ -533,15 +533,15 @@ SELECT COUNT(*) FROM Reviews;    -- Should be 10
 
 ```bash
 # Get all hotels
-curl https://localhost:7000/api/hotels
+curl https://localhost:5001/api/hotels
 
 # Login
-curl -X POST "https://localhost:7000/api/auth/login" \
+curl -X POST "https://localhost:5001/api/auth/login" \
   -H "Content-Type: application/json" \
   -d '{"email": "admin@hotel.com", "password": "Admin123!"}'
 
 # Get my bookings (replace <token> with actual token)
-curl -X GET "https://localhost:7000/api/bookings/my" \
+curl -X GET "https://localhost:5001/api/bookings/my" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -551,12 +551,12 @@ curl -X GET "https://localhost:7000/api/bookings/my" \
 
 #### Port Already in Use
 
-**Error**: "Failed to bind to address https://localhost:7000"
+**Error**: "Failed to bind to address https://localhost:5001"
 
 **Solution**:
 ```bash
 # Windows - Find process using port
-netstat -ano | findstr :7000
+netstat -ano | findstr :5001
 
 # Kill process
 taskkill /PID <process-id> /F

@@ -529,7 +529,7 @@ sqllocaldb start mssqllocaldb
 
 ```bash
 # Check what's using the port
-netstat -ano | findstr :7000
+netstat -ano | findstr :5001
 
 # Update launchSettings.json or kill conflicting process
 ```

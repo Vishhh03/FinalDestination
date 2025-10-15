@@ -4,7 +4,7 @@
 
 ## Base URL
 
-- **Development**: `https://localhost:7000/api`
+- **Development**: `https://localhost:5001/api`
 - **Production**: `https://your-domain.com/api`
 
 ## Authentication
@@ -991,6 +991,6 @@ Future versions will use URL versioning:
 
 ---
 
-**For more information**, visit the Swagger UI at `https://localhost:7000` or refer to the [Setup Guide](SETUP_GUIDE.md).
+**For more information**, visit the Swagger UI at `https://localhost:5001/swagger` or refer to the [Setup Guide](SETUP_GUIDE.md).
 
 **Last Updated**: October 2025

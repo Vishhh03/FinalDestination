@@ -147,7 +147,7 @@
 
 4. **Get Fresh Token**:
    ```bash
-   curl -X POST "https://localhost:7000/api/auth/login" \
+   curl -X POST "https://localhost:5001/api/auth/login" \
      -H "Content-Type: application/json" \
      -d '{"email": "admin@hotel.com", "password": "Admin123!"}'
    ```
@@ -190,7 +190,7 @@
 
 1. **Check User Role**:
    ```bash
-   curl -X GET "https://localhost:7000/api/auth/me" \
+   curl -X GET "https://localhost:5001/api/auth/me" \
      -H "Authorization: Bearer YOUR_TOKEN"
    ```
 
@@ -271,7 +271,7 @@
    - Check for typos in ID
 
 3. **Use Swagger UI**:
-   - Navigate to https://localhost:7000
+   - Navigate to https://localhost:5001/swagger
    - Browse available endpoints
    - Test with provided examples
 
@@ -320,10 +320,10 @@
 1. **Check Caching**:
    ```bash
    # First request (slower - database)
-   curl -w "Time: %{time_total}s\n" "https://localhost:7000/api/hotels"
+   curl -w "Time: %{time_total}s\n" "https://localhost:5001/api/hotels"
    
    # Second request (faster - cache)
-   curl -w "Time: %{time_total}s\n" "https://localhost:7000/api/hotels"
+   curl -w "Time: %{time_total}s\n" "https://localhost:5001/api/hotels"
    ```
 
 2. **Enable Query Logging**:
@@ -386,7 +386,7 @@
 1. **Find Process Using Port**:
    ```bash
    # Windows
-   netstat -ano | findstr :7000
+   netstat -ano | findstr :5001
    
    # Kill process
    taskkill /PID <process_id> /F
@@ -502,7 +502,7 @@ builder.Services.AddScoped<IServiceInterface, ServiceImplementation>();
 
 ### Use Swagger UI for Testing
 
-1. Navigate to https://localhost:7000
+1. Navigate to https://localhost:5001/swagger
 2. Click "Authorize" button
 3. Enter JWT token: `Bearer <your-token>`
 4. Test endpoints with examples
@@ -517,7 +517,7 @@ builder.Services.AddScoped<IServiceInterface, ServiceImplementation>();
 
 ```bash
 # Check if sample data loaded
-curl "https://localhost:7000/api/hotels"
+curl "https://localhost:5001/api/hotels"
 
 # Should return 6 hotels
 # If empty, check DataSeeder logs
@@ -527,17 +527,17 @@ curl "https://localhost:7000/api/hotels"
 
 ```bash
 # 1. Register
-curl -X POST "https://localhost:7000/api/auth/register" \
+curl -X POST "https://localhost:5001/api/auth/register" \
   -H "Content-Type: application/json" \
   -d '{"name": "Test", "email": "test@example.com", "password": "Test123!", "role": "Guest"}'
 
 # 2. Login
-curl -X POST "https://localhost:7000/api/auth/login" \
+curl -X POST "https://localhost:5001/api/auth/login" \
   -H "Content-Type: application/json" \
   -d '{"email": "test@example.com", "password": "Test123!"}'
 
 # 3. Use token
-curl -X GET "https://localhost:7000/api/auth/me" \
+curl -X GET "https://localhost:5001/api/auth/me" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -557,7 +557,7 @@ sqlcmd -S "(localdb)\mssqllocaldb" -d FinalDestinationDB -E
 
 ```bash
 # Monitor response times
-curl -w "Time: %{time_total}s\n" "https://localhost:7000/api/hotels"
+curl -w "Time: %{time_total}s\n" "https://localhost:5001/api/hotels"
 
 # Check memory in Task Manager
 # Monitor CPU usage
@@ -609,3 +609,28 @@ If issues persist:
 **Still having issues?** Check the [Setup Guide](SETUP_GUIDE.md) or open an issue on GitHub.
 
 **Last Updated**: October 2025
+
+
+## Common Frontend Issues
+
+### Problem: "Cannot connect to API" or CORS errors
+
+**Symptoms:**
+- Error: "Access to fetch at 'file:///C:/api/hotels' has been blocked by CORS"
+- Error: "Cannot connect to API"  
+- Opening `index.html` directly shows errors
+
+**Cause:** Opening `index.html` directly from file system (`file://` protocol)
+
+**Solution:**
+```bash
+# Always run the API first
+cd finaldestination
+dotnet run
+
+# Then open in browser: https://localhost:5001
+```
+
+**⚠️ Never** double-click `index.html` - always access through the running API server at https://localhost:5001!
+
+The frontend is served automatically by the API and will work correctly when accessed through the web server.

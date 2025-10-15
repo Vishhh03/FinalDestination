@@ -138,13 +138,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "FinalDestination API v1");
-        c.RoutePrefix = string.Empty; // Makes Swagger UI the default page
+        c.RoutePrefix = "swagger"; // Swagger UI available at /swagger
         c.DocumentTitle = "FinalDestination API";
         c.DefaultModelsExpandDepth(-1); // Hide schemas section by default
     });
 }
 
 app.UseHttpsRedirection();
+
+// Serve static files from wwwroot (frontend)
+app.UseDefaultFiles(); // Serves index.html by default
+app.UseStaticFiles();  // Serves CSS, JS, images, etc.
 
 // Global error handling middleware (must be early in pipeline)
 app.UseMiddleware<ErrorHandlingMiddleware>();

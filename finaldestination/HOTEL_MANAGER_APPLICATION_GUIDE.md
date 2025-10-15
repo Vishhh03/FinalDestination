@@ -162,7 +162,7 @@ Valid statuses:
 
 ```bash
 # Step 1: Register
-curl -X POST "https://localhost:7000/api/auth/register" \
+curl -X POST "https://localhost:5001/api/auth/register" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Jane Manager",
@@ -175,7 +175,7 @@ curl -X POST "https://localhost:7000/api/auth/register" \
 # Save the token from response
 
 # Step 2: Apply for Hotel Manager
-curl -X POST "https://localhost:7000/api/auth/apply-hotel-manager" \
+curl -X POST "https://localhost:5001/api/auth/apply-hotel-manager" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -H "Content-Type: application/json" \
   -d '{
@@ -189,11 +189,11 @@ curl -X POST "https://localhost:7000/api/auth/apply-hotel-manager" \
   }'
 
 # Step 3: Check application status
-curl -X GET "https://localhost:7000/api/auth/my-application" \
+curl -X GET "https://localhost:5001/api/auth/my-application" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 
 # Admin: Approve application (requires admin token)
-curl -X POST "https://localhost:7000/api/auth/admin/applications/1/process" \
+curl -X POST "https://localhost:5001/api/auth/admin/applications/1/process" \
   -H "Authorization: Bearer ADMIN_TOKEN_HERE" \
   -H "Content-Type: application/json" \
   -d '{
