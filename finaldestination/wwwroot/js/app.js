@@ -26,6 +26,8 @@ const App = {
         Router.add('/bookings/:id', this.pages.bookingDetail);
         Router.add('/loyalty', this.pages.loyalty);
         Router.add('/admin', this.pages.admin);
+        Router.add('/admin/bookings', this.pages.allBookings);
+        Router.add('/manage-hotels', this.pages.manageHotels);
         Router.add('/apply-manager', this.pages.applyManager);
         Router.add('/my-application', this.pages.myApplication);
     },
@@ -464,8 +466,13 @@ App.pages.admin = async function() {
             <div class="container">
                 <div class="section-title">
                     <h2>Admin Dashboard</h2>
-                    <p class="section-subtitle">Manage hotel manager applications</p>
+                    <p class="section-subtitle">Manage hotel manager applications and bookings</p>
                 </div>
+                <div class="admin-actions">
+                    <a href="#/admin/bookings" class="btn btn-primary">View All Bookings</a>
+                    <a href="#/manage-hotels" class="btn btn-secondary">Manage Hotels</a>
+                </div>
+                <h3>Hotel Manager Applications</h3>
                 <div id="applications-list">${Components.loadingSkeleton(3)}</div>
             </div>
         </section>
@@ -887,3 +894,570 @@ App.submitReview = async function(hotelId) {
 document.addEventListener('DOMContentLoaded', () => {
     App.init();
 });
+
+
+// ============================================
+// HOTEL MANAGER FEATURES
+// ============================================
+
+// Manage Hotels Page (Hotel Manager)
+App.pages.manageHotels = async function() {
+    if (!Auth.isAuthenticated() || !Auth.hasRole(['HotelManager', 'Admin'])) {
+        Router.navigate('/login');
+        return;
+    }
+
+    Utils.$('#app').innerHTML = `
+        <div class="container">
+            <div class="page-header">
+                <h1>Manage Hotels</h1>
+                <button class="btn btn-primary" onclick="App.showCreateHotelModal()">
+                    + Create New Hotel
+                </button>
+            </div>
+            <div id="hotels-manager-list" class="loading">Loading hotels...</div>
+        </div>
+    `;
+
+    try {
+        const hotels = await API.hotels.getAll();
+        const list = Utils.$('#hotels-manager-list');
+        
+        if (hotels.length === 0) {
+            list.innerHTML = '<div class="empty-state">No hotels yet. Create your first hotel!</div>';
+            return;
+        }
+
+        list.innerHTML = hotels.map(hotel => `
+            <div class="hotel-manager-card">
+                <div class="hotel-manager-info">
+                    <h3>${hotel.name}</h3>
+                    <p><strong>City:</strong> ${hotel.city}</p>
+                    <p><strong>Address:</strong> ${hotel.address}</p>
+                    <p><strong>Price:</strong> $${hotel.pricePerNight}/night</p>
+                    <p><strong>Available Rooms:</strong> ${hotel.availableRooms}</p>
+                    <p><strong>Rating:</strong> ${hotel.rating.toFixed(1)} ⭐</p>
+                </div>
+                <div class="hotel-manager-actions">
+                    <button class="btn btn-secondary" onclick="App.showEditHotelModal(${hotel.id})">
+                        Edit
+                    </button>
+                    ${Auth.hasRole('Admin') ? `
+                        <button class="btn btn-danger" onclick="App.deleteHotel(${hotel.id}, '${hotel.name}')">
+                            Delete
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        Utils.showToast('Failed to load hotels: ' + error.message, 'error');
+    }
+};
+
+// Show Create Hotel Modal
+App.showCreateHotelModal = function() {
+    const modal = Components.modal('Create New Hotel', `
+        <form id="create-hotel-form" class="form">
+            <div class="form-group">
+                <label>Hotel Name *</label>
+                <input type="text" id="hotelName" required>
+            </div>
+            <div class="form-group">
+                <label>City *</label>
+                <input type="text" id="hotelCity" required>
+            </div>
+            <div class="form-group">
+                <label>Address *</label>
+                <input type="text" id="hotelAddress" required>
+            </div>
+            <div class="form-group">
+                <label>Price Per Night ($) *</label>
+                <input type="number" id="hotelPrice" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>Available Rooms *</label>
+                <input type="number" id="hotelRooms" min="1" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Hotel</button>
+        </form>
+    `);
+
+    document.body.insertAdjacentHTML('beforeend', modal);
+
+    Utils.$('#create-hotel-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const data = {
+            name: Utils.$('#hotelName').value,
+            city: Utils.$('#hotelCity').value,
+            address: Utils.$('#hotelAddress').value,
+            pricePerNight: parseFloat(Utils.$('#hotelPrice').value),
+            availableRooms: parseInt(Utils.$('#hotelRooms').value)
+        };
+
+        try {
+            await API.hotels.create(data);
+            Utils.showToast('Hotel created successfully!', 'success');
+            Utils.$('.modal-overlay').remove();
+            Router.handleRoute();
+        } catch (error) {
+            Utils.showToast('Failed to create hotel: ' + error.message, 'error');
+        }
+    });
+};
+
+// Show Edit Hotel Modal
+App.showEditHotelModal = async function(hotelId) {
+    try {
+        const hotel = await API.hotels.getById(hotelId);
+        
+        const modal = Components.modal('Edit Hotel', `
+            <form id="edit-hotel-form" class="form">
+                <div class="form-group">
+                    <label>Hotel Name *</label>
+                    <input type="text" id="editHotelName" value="${hotel.name}" required>
+                </div>
+                <div class="form-group">
+                    <label>City *</label>
+                    <input type="text" id="editHotelCity" value="${hotel.city}" required>
+                </div>
+                <div class="form-group">
+                    <label>Address *</label>
+                    <input type="text" id="editHotelAddress" value="${hotel.address}" required>
+                </div>
+                <div class="form-group">
+                    <label>Price Per Night ($) *</label>
+                    <input type="number" id="editHotelPrice" value="${hotel.pricePerNight}" min="0" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Available Rooms *</label>
+                    <input type="number" id="editHotelRooms" value="${hotel.availableRooms}" min="0" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Hotel</button>
+            </form>
+        `);
+
+        document.body.insertAdjacentHTML('beforeend', modal);
+
+        Utils.$('#edit-hotel-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                name: Utils.$('#editHotelName').value,
+                city: Utils.$('#editHotelCity').value,
+                address: Utils.$('#editHotelAddress').value,
+                pricePerNight: parseFloat(Utils.$('#editHotelPrice').value),
+                availableRooms: parseInt(Utils.$('#editHotelRooms').value)
+            };
+
+            try {
+                await API.hotels.update(hotelId, data);
+                Utils.showToast('Hotel updated successfully!', 'success');
+                Utils.$('.modal-overlay').remove();
+                Router.handleRoute();
+            } catch (error) {
+                Utils.showToast('Failed to update hotel: ' + error.message, 'error');
+            }
+        });
+    } catch (error) {
+        Utils.showToast('Failed to load hotel: ' + error.message, 'error');
+    }
+};
+
+// Delete Hotel
+App.deleteHotel = async function(hotelId, hotelName) {
+    if (!confirm(`Are you sure you want to delete "${hotelName}"? This action cannot be undone.`)) {
+        return;
+    }
+
+    try {
+        await API.hotels.delete(hotelId);
+        Utils.showToast('Hotel deleted successfully', 'success');
+        Router.handleRoute();
+    } catch (error) {
+        Utils.showToast('Failed to delete hotel: ' + error.message, 'error');
+    }
+};
+
+// ============================================
+// ADMIN FEATURES - ALL BOOKINGS
+// ============================================
+
+// All Bookings Page (Admin)
+App.pages.allBookings = async function() {
+    if (!Auth.isAuthenticated() || !Auth.hasRole('Admin')) {
+        Router.navigate('/login');
+        return;
+    }
+
+    Utils.$('#app').innerHTML = `
+        <div class="container">
+            <div class="page-header">
+                <h1>All Bookings</h1>
+                <div class="search-box">
+                    <input type="email" id="searchEmail" placeholder="Search by email...">
+                    <button class="btn btn-secondary" onclick="App.searchBookings()">Search</button>
+                    <button class="btn btn-secondary" onclick="Router.handleRoute()">Clear</button>
+                </div>
+            </div>
+            <div id="all-bookings-list" class="loading">Loading bookings...</div>
+        </div>
+    `;
+
+    try {
+        const bookings = await API.bookings.getAll();
+        App.displayAllBookings(bookings);
+    } catch (error) {
+        Utils.showToast('Failed to load bookings: ' + error.message, 'error');
+    }
+};
+
+// Search Bookings by Email
+App.searchBookings = async function() {
+    const email = Utils.$('#searchEmail').value.trim();
+    if (!email) {
+        Utils.showToast('Please enter an email address', 'warning');
+        return;
+    }
+
+    Utils.$('#all-bookings-list').innerHTML = '<div class="loading">Searching...</div>';
+
+    try {
+        const bookings = await API.bookings.search(email);
+        App.displayAllBookings(bookings);
+    } catch (error) {
+        Utils.showToast('Search failed: ' + error.message, 'error');
+    }
+};
+
+// Display All Bookings
+App.displayAllBookings = function(bookings) {
+    const list = Utils.$('#all-bookings-list');
+    
+    if (bookings.length === 0) {
+        list.innerHTML = '<div class="empty-state">No bookings found</div>';
+        return;
+    }
+
+    list.innerHTML = bookings.map(booking => `
+        <div class="booking-card">
+            <div class="booking-header">
+                <h3>${booking.hotelName}</h3>
+                <span class="badge badge-${booking.status.toLowerCase()}">${booking.status}</span>
+            </div>
+            <div class="booking-details">
+                <p><strong>Guest:</strong> ${booking.guestName} (${booking.guestEmail})</p>
+                <p><strong>Check-in:</strong> ${new Date(booking.checkInDate).toLocaleDateString()}</p>
+                <p><strong>Check-out:</strong> ${new Date(booking.checkOutDate).toLocaleDateString()}</p>
+                <p><strong>Guests:</strong> ${booking.numberOfGuests}</p>
+                <p><strong>Total:</strong> $${booking.totalAmount.toFixed(2)}</p>
+                <p><strong>Booked:</strong> ${new Date(booking.createdAt).toLocaleString()}</p>
+            </div>
+            <div class="booking-actions">
+                <button class="btn btn-secondary" onclick="App.viewBookingDetails(${booking.id})">
+                    View Details
+                </button>
+            </div>
+        </div>
+    `).join('');
+};
+
+// View Booking Details
+App.viewBookingDetails = async function(bookingId) {
+    try {
+        const booking = await API.bookings.getById(bookingId);
+        
+        const modal = Components.modal('Booking Details', `
+            <div class="booking-detail-modal">
+                <h3>${booking.hotelName}</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <strong>Booking ID:</strong>
+                        <span>${booking.id}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Status:</strong>
+                        <span class="badge badge-${booking.status.toLowerCase()}">${booking.status}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Guest Name:</strong>
+                        <span>${booking.guestName}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Guest Email:</strong>
+                        <span>${booking.guestEmail}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Check-in:</strong>
+                        <span>${new Date(booking.checkInDate).toLocaleDateString()}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Check-out:</strong>
+                        <span>${new Date(booking.checkOutDate).toLocaleDateString()}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Number of Guests:</strong>
+                        <span>${booking.numberOfGuests}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Total Amount:</strong>
+                        <span>$${booking.totalAmount.toFixed(2)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Booked On:</strong>
+                        <span>${new Date(booking.createdAt).toLocaleString()}</span>
+                    </div>
+                </div>
+            </div>
+        `);
+
+        document.body.insertAdjacentHTML('beforeend', modal);
+    } catch (error) {
+        Utils.showToast('Failed to load booking details: ' + error.message, 'error');
+    }
+};
+
+// ============================================
+// REVIEW MANAGEMENT
+// ============================================
+
+// Edit Review
+App.editReview = async function(reviewId, hotelId) {
+    try {
+        const reviews = await API.reviews.getHotelReviews(hotelId);
+        const review = reviews.find(r => r.id === reviewId);
+        
+        if (!review) {
+            Utils.showToast('Review not found', 'error');
+            return;
+        }
+
+        const modal = Components.modal('Edit Review', `
+            <form id="edit-review-form" class="form">
+                <div class="form-group">
+                    <label>Rating *</label>
+                    <select id="editRating" required>
+                        <option value="5" ${review.rating === 5 ? 'selected' : ''}>⭐⭐⭐⭐⭐ Excellent</option>
+                        <option value="4" ${review.rating === 4 ? 'selected' : ''}>⭐⭐⭐⭐ Good</option>
+                        <option value="3" ${review.rating === 3 ? 'selected' : ''}>⭐⭐⭐ Average</option>
+                        <option value="2" ${review.rating === 2 ? 'selected' : ''}>⭐⭐ Poor</option>
+                        <option value="1" ${review.rating === 1 ? 'selected' : ''}>⭐ Terrible</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Comment *</label>
+                    <textarea id="editComment" rows="4" required>${review.comment}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Review</button>
+            </form>
+        `);
+
+        document.body.insertAdjacentHTML('beforeend', modal);
+
+        Utils.$('#edit-review-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                rating: parseInt(Utils.$('#editRating').value),
+                comment: Utils.$('#editComment').value
+            };
+
+            try {
+                await API.reviews.update(reviewId, data);
+                Utils.showToast('Review updated successfully!', 'success');
+                Utils.$('.modal-overlay').remove();
+                Router.handleRoute();
+            } catch (error) {
+                Utils.showToast('Failed to update review: ' + error.message, 'error');
+            }
+        });
+    } catch (error) {
+        Utils.showToast('Failed to load review: ' + error.message, 'error');
+    }
+};
+
+// Delete Review
+App.deleteReview = async function(reviewId, hotelId) {
+    if (!confirm('Are you sure you want to delete this review?')) {
+        return;
+    }
+
+    try {
+        await API.reviews.delete(reviewId);
+        Utils.showToast('Review deleted successfully', 'success');
+        Router.navigate('/hotels/' + hotelId);
+    } catch (error) {
+        Utils.showToast('Failed to delete review: ' + error.message, 'error');
+    }
+};
+
+// ============================================
+// PAYMENT MANAGEMENT (ADMIN)
+// ============================================
+
+// View Payment Details
+App.viewPaymentDetails = async function(paymentId) {
+    try {
+        const payment = await API.payments.getById(paymentId);
+        
+        const modal = Components.modal('Payment Details', `
+            <div class="payment-detail-modal">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <strong>Payment ID:</strong>
+                        <span>${payment.id}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Status:</strong>
+                        <span class="badge badge-${payment.status.toLowerCase()}">${payment.status}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Amount:</strong>
+                        <span>$${payment.amount.toFixed(2)} ${payment.currency}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Payment Method:</strong>
+                        <span>${payment.paymentMethod}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Transaction ID:</strong>
+                        <span>${payment.transactionId || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Processed At:</strong>
+                        <span>${payment.processedAt ? new Date(payment.processedAt).toLocaleString() : 'N/A'}</span>
+                    </div>
+                </div>
+                ${payment.status === 'Completed' && Auth.hasRole('Admin') ? `
+                    <button class="btn btn-danger" onclick="App.showRefundModal(${payment.id}, ${payment.amount})">
+                        Process Refund
+                    </button>
+                ` : ''}
+            </div>
+        `);
+
+        document.body.insertAdjacentHTML('beforeend', modal);
+    } catch (error) {
+        Utils.showToast('Failed to load payment details: ' + error.message, 'error');
+    }
+};
+
+// Show Refund Modal
+App.showRefundModal = function(paymentId, amount) {
+    Utils.$('.modal-overlay').remove();
+    
+    const modal = Components.modal('Process Refund', `
+        <form id="refund-form" class="form">
+            <div class="form-group">
+                <label>Refund Amount ($) *</label>
+                <input type="number" id="refundAmount" value="${amount}" max="${amount}" min="0.01" step="0.01" required>
+                <small>Maximum: $${amount.toFixed(2)}</small>
+            </div>
+            <div class="form-group">
+                <label>Reason *</label>
+                <textarea id="refundReason" rows="3" required placeholder="Enter reason for refund..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-danger">Process Refund</button>
+        </form>
+    `);
+
+    document.body.insertAdjacentHTML('beforeend', modal);
+
+    Utils.$('#refund-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const data = {
+            amount: parseFloat(Utils.$('#refundAmount').value),
+            reason: Utils.$('#refundReason').value
+        };
+
+        try {
+            await API.payments.refund(paymentId, data);
+            Utils.showToast('Refund processed successfully!', 'success');
+            Utils.$('.modal-overlay').remove();
+        } catch (error) {
+            Utils.showToast('Failed to process refund: ' + error.message, 'error');
+        }
+    });
+};
+
+// ============================================
+// UPDATE EXISTING PAGES
+// ============================================
+
+// Update booking detail page to show payment details
+const originalBookingDetail = App.pages.bookingDetail;
+App.pages.bookingDetail = async function(params) {
+    if (!Auth.isAuthenticated()) {
+        Router.navigate('/login');
+        return;
+    }
+
+    try {
+        const booking = await API.bookings.getById(params.id);
+        
+        Utils.$('#app').innerHTML = `
+            <div class="container">
+                <div class="page-header">
+                    <h1>Booking Details</h1>
+                    <button class="btn btn-secondary" onclick="Router.navigate('/bookings')">
+                        ← Back to Bookings
+                    </button>
+                </div>
+                <div class="booking-detail-page">
+                    <div class="booking-card">
+                        <div class="booking-header">
+                            <h2>${booking.hotelName}</h2>
+                            <span class="badge badge-${booking.status.toLowerCase()}">${booking.status}</span>
+                        </div>
+                        <div class="booking-details">
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <strong>Booking ID:</strong>
+                                    <span>${booking.id}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <strong>Guest:</strong>
+                                    <span>${booking.guestName}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <strong>Email:</strong>
+                                    <span>${booking.guestEmail}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <strong>Check-in:</strong>
+                                    <span>${new Date(booking.checkInDate).toLocaleDateString()}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <strong>Check-out:</strong>
+                                    <span>${new Date(booking.checkOutDate).toLocaleDateString()}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <strong>Guests:</strong>
+                                    <span>${booking.numberOfGuests}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <strong>Total Amount:</strong>
+                                    <span>$${booking.totalAmount.toFixed(2)}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <strong>Booked On:</strong>
+                                    <span>${new Date(booking.createdAt).toLocaleString()}</span>
+                                </div>
+                            </div>
+                        </div>
+                        ${booking.status === 'Confirmed' ? `
+                            <button class="btn btn-danger" onclick="App.cancelBooking(${booking.id})">
+                                Cancel Booking
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        Utils.showToast('Failed to load booking: ' + error.message, 'error');
+        Router.navigate('/bookings');
+    }
+};

@@ -80,6 +80,7 @@ const Auth = {
         const bookingsLink = Utils.$('#bookings-link');
         const loyaltyLink = Utils.$('#loyalty-link');
         const adminLink = Utils.$('#admin-link');
+        const manageHotelsLink = Utils.$('#manage-hotels-link');
 
         if (this.isLoggedIn() && this.currentUser) {
             authLink.textContent = 'Logout';
@@ -90,8 +91,16 @@ const Auth = {
             // Show admin link only for admins
             if (this.currentUser.role === 'Admin') {
                 adminLink.style.display = 'block';
+                if (manageHotelsLink) manageHotelsLink.style.display = 'block';
             } else {
                 adminLink.style.display = 'none';
+            }
+
+            // Show manage hotels for hotel managers and admins
+            if (this.currentUser.role === 'HotelManager' || this.currentUser.role === 'Admin') {
+                if (manageHotelsLink) manageHotelsLink.style.display = 'block';
+            } else {
+                if (manageHotelsLink) manageHotelsLink.style.display = 'none';
             }
         } else {
             authLink.textContent = 'Login';

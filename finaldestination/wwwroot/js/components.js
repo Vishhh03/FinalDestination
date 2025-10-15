@@ -87,8 +87,11 @@ const Components = {
 
     // Review Card
     reviewCard(review) {
+        const currentUser = Auth.getCurrentUser();
+        const canEdit = currentUser && (currentUser.id === review.userId || Auth.hasRole('Admin'));
+        
         return `
-            <div class="card">
+            <div class="card review-card" data-review-id="${review.id}" data-user-id="${review.userId}">
                 <div class="card-header">
                     <div>
                         <strong>${Utils.escapeHtml(review.userName || 'Guest')}</strong>
@@ -98,6 +101,16 @@ const Components = {
                 </div>
                 <div class="card-body">
                     <p>${Utils.escapeHtml(review.comment)}</p>
+                    ${canEdit ? `
+                        <div class="review-actions">
+                            <button class="btn btn-sm btn-secondary" onclick="App.editReview(${review.id}, ${review.hotelId})">
+                                Edit
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="App.deleteReview(${review.id}, ${review.hotelId})">
+                                Delete
+                            </button>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         `;
