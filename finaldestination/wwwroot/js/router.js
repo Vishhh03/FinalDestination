@@ -23,20 +23,22 @@ const Router = {
     // Handle route change
     async handleRoute() {
         const hash = window.location.hash.slice(1) || '/';
-        const [path, ...params] = hash.split('/').filter(Boolean);
-        const route = '/' + (path || '');
-
-        this.currentRoute = route;
+        const hashParts = hash.split('/').filter(Boolean);
+        
+        this.currentRoute = hash;
 
         // Find matching route
-        let handler = this.routes[route];
+        let handler = null;
+        let routeParams = {};
+        
+        // First try exact match
+        handler = this.routes[hash];
         
         // Check for parameterized routes
         if (!handler) {
             for (const [routePath, routeHandler] of Object.entries(this.routes)) {
                 if (routePath.includes(':')) {
-                    const routeParts = routePath.split('/');
-                    const hashParts = hash.split('/');
+                    const routeParts = routePath.split('/').filter(Boolean);
                     
                     if (routeParts.length === hashParts.length) {
                         const match = routeParts.every((part, i) => {
@@ -46,13 +48,11 @@ const Router = {
                         if (match) {
                             handler = routeHandler;
                             // Extract params
-                            const paramObj = {};
                             routeParts.forEach((part, i) => {
                                 if (part.startsWith(':')) {
-                                    paramObj[part.slice(1)] = hashParts[i];
+                                    routeParams[part.slice(1)] = hashParts[i];
                                 }
                             });
-                            params.push(paramObj);
                             break;
                         }
                     }
@@ -62,7 +62,7 @@ const Router = {
 
         if (handler) {
             try {
-                await handler(...params);
+                await handler(routeParams);
                 Utils.scrollToTop();
             } catch (error) {
                 console.error('Route handler error:', error);

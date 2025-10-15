@@ -4,7 +4,7 @@ const Components = {
     // Hotel Card
     hotelCard(hotel) {
         return `
-            <div class="hotel-card" onclick="Router.navigate('/hotels/${hotel.id}')">
+            <div class="hotel-card" style="cursor: pointer;" onclick="Router.navigate('/hotels/${hotel.id}')">
                 <div class="hotel-image">
                     <img src="https://picsum.photos/600/400?random=${hotel.id}" alt="${Utils.escapeHtml(hotel.name)}">
                     <div class="hotel-badge">${hotel.availableRooms} rooms</div>
@@ -23,7 +23,7 @@ const Components = {
                             <div class="price-amount">${Utils.formatCurrency(hotel.pricePerNight)}</div>
                             <div class="price-label">per night</div>
                         </div>
-                        <button class="btn btn-primary" onclick="event.stopPropagation(); Router.navigate('/hotels/${hotel.id}')">
+                        <button class="btn btn-primary" onclick="event.stopPropagation(); Router.navigate('/hotels/${hotel.id}'); return false;">
                             View Details
                         </button>
                     </div>

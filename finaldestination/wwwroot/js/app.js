@@ -158,12 +158,21 @@ App.pages.hotels = async function() {
 
 // Hotel Detail Page
 App.pages.hotelDetail = async function(params) {
-    const hotelId = params.id;
+    const hotelId = parseInt(params.id);
     const app = Utils.$('#app');
+    
+    if (!hotelId || isNaN(hotelId)) {
+        Utils.showToast('Invalid hotel ID', 'error');
+        Router.navigate('/hotels');
+        return;
+    }
     
     app.innerHTML = `
         <section class="section">
             <div class="container">
+                <button class="btn btn-secondary mb-3" onclick="Router.navigate('/hotels')">
+                    ← Back to Hotels
+                </button>
                 <div id="hotel-detail">${Components.loadingSkeleton(1)}</div>
             </div>
         </section>
@@ -228,7 +237,16 @@ App.pages.hotelDetail = async function(params) {
             </div>
         `;
     } catch (error) {
-        Utils.$('#hotel-detail').innerHTML = Components.emptyState('Hotel not found', '😔');
+        console.error('Error loading hotel:', error);
+        Utils.showToast('Failed to load hotel: ' + error.message, 'error');
+        Utils.$('#hotel-detail').innerHTML = `
+            <div class="card">
+                ${Components.emptyState('Hotel not found', '😔')}
+                <button class="btn btn-secondary" onclick="Router.navigate('/hotels')">
+                    Back to Hotels
+                </button>
+            </div>
+        `;
     }
 };
 
