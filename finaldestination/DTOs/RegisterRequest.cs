@@ -28,8 +28,10 @@ public class RegisterRequest
     /// </summary>
     [Required(ErrorMessage = "Password is required")]
     [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be between 6 and 100 characters")]
-    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]", 
-        ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character")]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$",
+    ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one digit, one special character, and be at least 6 characters long")]
+
+
     public string Password { get; set; } = string.Empty;
 
     /// <summary>
