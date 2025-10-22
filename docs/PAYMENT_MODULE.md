@@ -581,6 +581,8 @@ public async Task<ActionResult<PaymentResult>> ProcessPayment(int id, PaymentReq
 
 ### With Loyalty Module
 
+#### Points Awarding After Payment
+
 ```csharp
 // Automatic loyalty points on successful payment
 public async Task<PaymentResult> ProcessPaymentAsync(PaymentRequest request)
@@ -598,10 +600,14 @@ public async Task<PaymentResult> ProcessPaymentAsync(PaymentRequest request)
         {
             try
             {
+                // Award points on the amount actually paid (after any loyalty discount)
                 await _loyaltyService.AwardPointsAsync(
                     booking.UserId.Value, 
                     booking.Id, 
-                    request.Amount);
+                    booking.TotalAmount); // This is already discounted amount
+                    
+                _logger.LogInformation("Awarded loyalty points for payment {PaymentId}", 
+                    result.PaymentId);
             }
             catch (Exception ex)
             {
@@ -615,6 +621,40 @@ public async Task<PaymentResult> ProcessPaymentAsync(PaymentRequest request)
     return result;
 }
 ```
+
+#### Payment Amount with Loyalty Discount
+
+When processing payment for a booking that used loyalty points:
+
+```csharp
+[HttpPost("{id}/payment")]
+public async Task<ActionResult<PaymentResult>> ProcessPayment(int id, PaymentRequest request)
+{
+    var booking = await _context.Bookings.FindAsync(id);
+    
+    // The booking.TotalAmount already includes the loyalty discount
+    if (request.Amount != booking.TotalAmount)
+    {
+        return BadRequest($"Payment amount {request.Amount:C} does not match booking total {booking.TotalAmount:C}");
+    }
+    
+    // Process payment for the discounted amount
+    var paymentResult = await _paymentService.ProcessPaymentAsync(request);
+    
+    if (paymentResult.Status == PaymentStatus.Completed)
+    {
+        // Award points on the discounted amount
+        await _loyaltyService.AwardPointsAsync(booking.UserId.Value, booking.Id, booking.TotalAmount);
+    }
+    
+    return Ok(paymentResult);
+}
+```
+
+**Important Notes**:
+- Payment amount should match `booking.TotalAmount` (which is already discounted)
+- Points are earned on the amount actually paid, not the original price
+- Example: $300 booking - $10 loyalty discount = $290 payment → earn 29 points (10% of $290)
 
 ## ⚙️ Configuration
 

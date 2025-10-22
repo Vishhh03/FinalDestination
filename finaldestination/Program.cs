@@ -19,12 +19,10 @@ builder.Services.AddControllers(options =>
 });
 
 // Database Configuration - SQL Server LocalDB or In-Memory for testing
-if (builder.Environment.IsDevelopment() && !builder.Configuration.GetValue<bool>("UseLocalDb", true))
-{
-    // Use In-Memory database for testing when LocalDB is not available
-    builder.Services.AddDbContext<HotelContext>(options =>
-        options.UseInMemoryDatabase("FinalDestinationDB"));
-}
+
+builder.Services.AddDbContext<HotelContext>(options =>
+    options.UseInMemoryDatabase("FinalDestinationDB"));
+    
 else
 {
     // Use SQL Server LocalDB for production-like development

@@ -181,6 +181,69 @@ public class LoyaltyService : ILoyaltyService
         return await _context.LoyaltyAccounts
             .AnyAsync(la => la.UserId == userId);
     }
+
+    public async Task<RedeemPointsResponse> RedeemPointsAsync(int userId, int pointsToRedeem)
+    {
+        if (pointsToRedeem <= 0)
+        {
+            throw new ArgumentException("Points to redeem must be greater than zero", nameof(pointsToRedeem));
+        }
+
+        // Get loyalty account
+        var loyaltyAccount = await _context.LoyaltyAccounts
+            .FirstOrDefaultAsync(la => la.UserId == userId);
+
+        if (loyaltyAccount == null)
+        {
+            throw new InvalidOperationException("Loyalty account not found. Please create an account first.");
+        }
+
+        // Check if user has sufficient points
+        if (loyaltyAccount.PointsBalance < pointsToRedeem)
+        {
+            throw new InvalidOperationException(
+                $"Insufficient points. Available: {loyaltyAccount.PointsBalance}, Required: {pointsToRedeem}");
+        }
+
+        // Calculate discount amount (1 point = $0.01)
+        var discountAmount = await CalculateDiscountFromPointsAsync(pointsToRedeem);
+
+        // Deduct points from balance
+        loyaltyAccount.PointsBalance -= pointsToRedeem;
+        loyaltyAccount.LastUpdated = DateTime.UtcNow;
+
+        // Create redemption transaction (negative points)
+        var transaction = new PointsTransaction
+        {
+            LoyaltyAccountId = loyaltyAccount.Id,
+            BookingId = null, // Will be updated when booking is created
+            PointsEarned = -pointsToRedeem,
+            Description = $"Redeemed {pointsToRedeem} points for ₹{discountAmount:F2} discount",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.PointsTransactions.Add(transaction);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("User {UserId} redeemed {Points} points for ${Discount:F2} discount",
+            userId, pointsToRedeem, discountAmount);
+
+        return new RedeemPointsResponse
+        {
+            PointsRedeemed = pointsToRedeem,
+            DiscountAmount = discountAmount,
+            RemainingBalance = loyaltyAccount.PointsBalance,
+            Message = $"Successfully redeemed {pointsToRedeem} points for ₹{discountAmount:F2} discount"
+        };
+    }
+
+    public Task<decimal> CalculateDiscountFromPointsAsync(int points)
+    {
+        // Conversion rate: 1 point = ₹0.10
+        // So 100 points = ₹10 discount
+        var discount = points * 0.10m;
+        return Task.FromResult(discount);
+    }
 }
 
 

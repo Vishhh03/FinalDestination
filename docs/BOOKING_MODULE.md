@@ -11,6 +11,7 @@ The Booking System module manages the complete booking lifecycle from creation t
 ## 🎯 Module Responsibilities
 
 - Booking creation and validation
+- **Loyalty points redemption integration**
 - Room availability management
 - Booking status lifecycle management
 - Payment integration and confirmation
@@ -515,14 +516,76 @@ public async Task<ActionResult<PaymentResult>> ProcessPayment(int id, PaymentReq
 
 ### With Loyalty Module
 
+#### Points Redemption During Booking
+
 ```csharp
-// Automatic loyalty points awarding
+// Apply loyalty points discount during booking creation
+[HttpPost]
+public async Task<ActionResult<BookingResponse>> CreateBooking(CreateBookingRequest request)
+{
+    var currentUserId = GetCurrentUserId();
+    
+    // Calculate base amount
+    var nights = (request.CheckOutDate - request.CheckInDate).Days;
+    var baseAmount = hotel.PricePerNight * nights;
+    var totalAmount = baseAmount;
+    
+    int? pointsRedeemed = null;
+    decimal? discountAmount = null;
+
+    // Apply loyalty points discount if requested
+    if (request.PointsToRedeem.HasValue && request.PointsToRedeem.Value > 0)
+    {
+        try
+        {
+            var redemptionResult = await _loyaltyService.RedeemPointsAsync(
+                currentUserId.Value, 
+                request.PointsToRedeem.Value);
+            
+            pointsRedeemed = redemptionResult.PointsRedeemed;
+            discountAmount = redemptionResult.DiscountAmount;
+            
+            // Apply discount to total amount
+            totalAmount = Math.Max(0, baseAmount - discountAmount.Value);
+            
+            _logger.LogInformation("Applied loyalty discount of ${Discount:F2} to booking",
+                discountAmount.Value);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to redeem loyalty points");
+            return BadRequest($"Failed to redeem loyalty points: {ex.Message}");
+        }
+    }
+
+    // Create booking with discount applied
+    var booking = new Booking
+    {
+        // ... other properties
+        TotalAmount = totalAmount,
+        LoyaltyPointsRedeemed = pointsRedeemed,
+        LoyaltyDiscountAmount = discountAmount,
+        // ...
+    };
+    
+    // Save booking
+    await _context.SaveChangesAsync();
+    
+    return CreatedAtAction(nameof(GetBooking), new { id = booking.Id }, response);
+}
+```
+
+#### Automatic Loyalty Points Awarding
+
+```csharp
+// Award points after successful payment
 private async Task AwardLoyaltyPointsAsync(Booking booking)
 {
     if (booking.UserId.HasValue)
     {
         try
         {
+            // Award points on the amount actually paid (after discount)
             await _loyaltyService.AwardPointsAsync(
                 booking.UserId.Value, 
                 booking.Id, 
@@ -538,6 +601,13 @@ private async Task AwardLoyaltyPointsAsync(Booking booking)
     }
 }
 ```
+
+**Key Points**:
+- Points are redeemed BEFORE booking creation
+- Discount is applied to the total amount
+- Points are earned on the DISCOUNTED amount (what user actually pays)
+- Redemption failures prevent booking creation
+- Points awarding failures don't prevent booking completion
 
 ### With Hotel Module
 

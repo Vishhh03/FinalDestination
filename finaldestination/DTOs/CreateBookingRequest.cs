@@ -52,6 +52,12 @@ public class CreateBookingRequest
     [Required(ErrorMessage = "Number of guests is required")]
     [Range(1, 10, ErrorMessage = "Number of guests must be between 1 and 10")]
     public int NumberOfGuests { get; set; } = 1;
+    
+    /// <summary>
+    /// Optional: Number of loyalty points to redeem for discount
+    /// </summary>
+    [Range(0, int.MaxValue, ErrorMessage = "Points to redeem must be zero or positive")]
+    public int? PointsToRedeem { get; set; }
 }
 
 

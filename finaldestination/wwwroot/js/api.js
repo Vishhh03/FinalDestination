@@ -228,6 +228,14 @@ const API = {
       return API.get(API_ENDPOINTS.loyaltyAccount);
     },
 
+    async calculateDiscount(points) {
+      return API.get(`${API_ENDPOINTS.loyaltyCalculateDiscount}?points=${points}`);
+    },
+
+    async redeem(pointsToRedeem) {
+      return API.post(API_ENDPOINTS.loyaltyRedeem, { pointsToRedeem });
+    },
+
     async getTransactions() {
       return API.get(API_ENDPOINTS.loyaltyTransactions);
     },

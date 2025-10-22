@@ -14,6 +14,8 @@ public class BookingResponse
     public DateTime CheckOutDate { get; set; }
     public int NumberOfGuests { get; set; }
     public decimal TotalAmount { get; set; }
+    public int? LoyaltyPointsRedeemed { get; set; }
+    public decimal? LoyaltyDiscountAmount { get; set; }
     public BookingStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
     public bool PaymentRequired { get; set; }

@@ -65,7 +65,9 @@ const API_ENDPOINTS = {
 
   // Loyalty
   loyaltyAccount: "/loyalty/account",
-  loyaltyTransactions: "/loyalty/transactions",
+  loyaltyTransactions: "/loyalty/history",
+  loyaltyCalculateDiscount: "/loyalty/calculate-discount",
+  loyaltyRedeem: "/loyalty/redeem",
 
   // Payments
   payment: (id) => `/payments/${id}`,

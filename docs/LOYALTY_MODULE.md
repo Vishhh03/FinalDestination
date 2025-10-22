@@ -12,6 +12,7 @@ The Loyalty Program module manages customer rewards, points accumulation, and lo
 
 - Loyalty account creation and management
 - Automatic points calculation and awarding
+- **Points redemption for booking discounts**
 - Points transaction history tracking
 - Points balance management
 - Reward calculation and validation
