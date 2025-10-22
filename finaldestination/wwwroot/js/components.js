@@ -70,6 +70,16 @@ const Components = {
                             <span class="price-amount" style="font-size: 1.5rem;">${Utils.formatCurrency(booking.totalAmount)}</span>
                         </div>
                     </div>
+                    ${booking.loyaltyPointsRedeemed ? `
+                        <div class="mt-2" style="padding: 0.75rem; background: var(--success); color: white; border-radius: 8px;">
+                            <strong>🎁 Loyalty Discount:</strong> ${booking.loyaltyPointsRedeemed} points redeemed = ${Utils.formatCurrency(booking.loyaltyDiscountAmount)} saved
+                        </div>
+                    ` : ''}
+                    ${booking.loyaltyPointsEarned ? `
+                        <div class="mt-2" style="padding: 0.75rem; background: var(--primary); color: white; border-radius: 8px;">
+                            <strong>✨ Points Earned:</strong> ${booking.loyaltyPointsEarned} points
+                        </div>
+                    ` : ''}
                     <div class="mt-3" style="display: flex; gap: 1rem;">
                         <button class="btn btn-secondary" onclick="Router.navigate('/bookings/${booking.id}')">
                             View Details

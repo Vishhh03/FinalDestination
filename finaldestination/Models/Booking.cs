@@ -11,6 +11,8 @@ public class Booking
     public DateTime CheckOutDate { get; set; }
     public int NumberOfGuests { get; set; }
     public decimal TotalAmount { get; set; }
+    public int? LoyaltyPointsRedeemed { get; set; }
+    public decimal? LoyaltyDiscountAmount { get; set; }
     public BookingStatus Status { get; set; } = BookingStatus.Confirmed;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     

@@ -136,16 +136,22 @@ Each module documentation includes:
 
 **Key Features**:
 - Points calculation (10% of booking amount)
+- **Points redemption for booking discounts**
 - Transaction history
 - Points balance tracking
 - Automatic point awarding
-- Minimum booking threshold
+- Discount calculation (1 point = $0.01)
 
 **Team**: Loyalty Team
 
 **Related Endpoints**:
 - `GET /api/loyalty/account`
-- `GET /api/loyalty/transactions`
+- `GET /api/loyalty/history`
+- `POST /api/loyalty/redeem`
+- `GET /api/loyalty/calculate-discount`
+
+**Additional Resources**:
+- [Loyalty Redemption Guide](LOYALTY_REDEMPTION_GUIDE.md) - Points redemption guide and API reference
 
 ---
 

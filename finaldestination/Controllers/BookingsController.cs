@@ -138,7 +138,36 @@ public class BookingsController : ControllerBase
 
         // Calculate total price
         var nights = (request.CheckOutDate - request.CheckInDate).Days;
-        var totalAmount = hotel.PricePerNight * nights;
+        var baseAmount = hotel.PricePerNight * nights;
+        var totalAmount = baseAmount;
+        
+        int? pointsRedeemed = null;
+        decimal? discountAmount = null;
+
+        // Apply loyalty points discount if requested
+        if (request.PointsToRedeem.HasValue && request.PointsToRedeem.Value > 0)
+        {
+            try
+            {
+                var redemptionResult = await _loyaltyService.RedeemPointsAsync(
+                    currentUserId.Value, 
+                    request.PointsToRedeem.Value);
+                
+                pointsRedeemed = redemptionResult.PointsRedeemed;
+                discountAmount = redemptionResult.DiscountAmount;
+                
+                // Apply discount to total amount (ensure it doesn't go below 0)
+                totalAmount = Math.Max(0, baseAmount - discountAmount.Value);
+                
+                _logger.LogInformation("Applied loyalty discount of ${Discount:F2} ({Points} points) to booking for user {UserId}",
+                    discountAmount.Value, pointsRedeemed.Value, currentUserId.Value);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to redeem loyalty points for user {UserId}", currentUserId.Value);
+                return BadRequest($"Failed to redeem loyalty points: {ex.Message}");
+            }
+        }
 
         // Create booking with pending status (requires payment)
         var booking = new Booking
@@ -151,6 +180,8 @@ public class BookingsController : ControllerBase
             CheckOutDate = request.CheckOutDate,
             NumberOfGuests = request.NumberOfGuests,
             TotalAmount = totalAmount,
+            LoyaltyPointsRedeemed = pointsRedeemed,
+            LoyaltyDiscountAmount = discountAmount,
             Status = BookingStatus.Confirmed, // Will be updated after payment
             CreatedAt = DateTime.UtcNow
         };
@@ -403,7 +434,7 @@ public class BookingsController : ControllerBase
         if (booking.UserId.HasValue)
         {
             var pointsTransaction = _context.PointsTransactions
-                .FirstOrDefault(pt => pt.BookingId == booking.Id);
+                .FirstOrDefault(pt => pt.BookingId == booking.Id && pt.PointsEarned > 0);
             loyaltyPointsEarned = pointsTransaction?.PointsEarned;
         }
 
@@ -419,6 +450,8 @@ public class BookingsController : ControllerBase
             CheckOutDate = booking.CheckOutDate,
             NumberOfGuests = booking.NumberOfGuests,
             TotalAmount = booking.TotalAmount,
+            LoyaltyPointsRedeemed = booking.LoyaltyPointsRedeemed,
+            LoyaltyDiscountAmount = booking.LoyaltyDiscountAmount,
             Status = booking.Status,
             CreatedAt = booking.CreatedAt,
             PaymentRequired = !hasPayment && booking.Status != BookingStatus.Cancelled,

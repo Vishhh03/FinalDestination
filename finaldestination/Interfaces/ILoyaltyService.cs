@@ -11,6 +11,8 @@ public interface ILoyaltyService
     Task<List<PointsTransactionResponse>> GetPointsHistoryAsync(int userId, int pageNumber = 1, int pageSize = 10);
     Task<int> CalculatePointsAsync(decimal bookingAmount);
     Task<bool> HasLoyaltyAccountAsync(int userId);
+    Task<RedeemPointsResponse> RedeemPointsAsync(int userId, int pointsToRedeem);
+    Task<decimal> CalculateDiscountFromPointsAsync(int points);
 }
 
 

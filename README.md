@@ -25,7 +25,7 @@ A comprehensive hotel booking API demonstrating modern ASP.NET Core development 
 - **📅 Booking System**: Room availability, booking lifecycle, date validation
 - **💳 Payment Processing**: Mock payment service, multiple methods, refunds
 - **⭐ Reviews & Ratings**: 1-5 star system with automatic hotel rating calculation
-- **🎁 Loyalty Program**: Points-based rewards (10% of booking amount)
+- **🎁 Loyalty Program**: Points-based rewards (10% of booking amount) with redemption for booking discounts
 - **🛡️ Infrastructure**: Global error handling, validation, logging, Swagger UI
 
 ## 🛠️ Technology Stack
@@ -59,6 +59,7 @@ dotnet run
 ### Access the Application
 
 After running `dotnet run`, open your browser to:
+
 - **Frontend**: https://localhost:5001 (default page)
 - **Swagger UI**: https://localhost:5001/swagger
 - **API Base**: https://localhost:5001/api
@@ -70,6 +71,7 @@ After running `dotnet run`, open your browser to:
 3. **Explore** hotels, make bookings, submit reviews!
 
 **Or use Swagger UI** for API testing at https://localhost:5001/swagger:
+
 1. Expand **POST /api/auth/login**
 2. Click **Try it out**, use credentials above
 3. Copy token, click **Authorize**, enter: `Bearer <token>`
@@ -116,15 +118,17 @@ Smart-Hotel-Booking-System/
 
 ## 📚 Documentation
 
-| Document                                         | Description                           |
-| ------------------------------------------------ | ------------------------------------- |
-| **[ARCHITECTURE.md](ARCHITECTURE.md)**           | System design, patterns, and diagrams |
-| **[API_REFERENCE.md](API_REFERENCE.md)**         | Complete API endpoint documentation   |
-| **[SETUP_GUIDE.md](SETUP_GUIDE.md)**             | Detailed setup for all environments   |
-| **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)**     | Common issues and solutions           |
-| **[docs/MODULE_INDEX.md](docs/MODULE_INDEX.md)** | Module-specific documentation         |
-| **[CONTRIBUTING.md](CONTRIBUTING.md)**           | Contribution guidelines               |
-| **[CHANGELOG.md](CHANGELOG.md)**                 | Version history                       |
+| Document                                                                 | Description                               |
+| ------------------------------------------------------------------------ | ----------------------------------------- |
+| **[ARCHITECTURE.md](ARCHITECTURE.md)**                                   | System design, patterns, and diagrams     |
+| **[API_REFERENCE.md](API_REFERENCE.md)**                                 | Complete API endpoint documentation       |
+| **[SETUP_GUIDE.md](SETUP_GUIDE.md)**                                     | Detailed setup for all environments       |
+| **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)**                             | Common issues and solutions               |
+| **[docs/MODULE_INDEX.md](docs/MODULE_INDEX.md)**                         | Module-specific documentation             |
+| **[REDEMPTION_SUMMARY.md](REDEMPTION_SUMMARY.md)**                       | Loyalty redemption quick summary          |
+| **[docs/LOYALTY_REDEMPTION_GUIDE.md](docs/LOYALTY_REDEMPTION_GUIDE.md)** | Detailed redemption guide & API reference |
+| **[CONTRIBUTING.md](CONTRIBUTING.md)**                                   | Contribution guidelines                   |
+| **[CHANGELOG.md](CHANGELOG.md)**                                         | Version history                           |
 
 ## 🔑 Sample Credentials
 

@@ -154,6 +154,51 @@ public class LoyaltyController : ControllerBase
         var points = await _loyaltyService.CalculatePointsAsync(bookingAmount);
         return Ok(points);
     }
+
+    /// <summary>
+    /// Calculate discount amount for a given number of points
+    /// </summary>
+    [HttpGet("calculate-discount")]
+    public async Task<ActionResult<decimal>> CalculateDiscount([FromQuery] int points)
+    {
+        if (points <= 0)
+        {
+            return BadRequest("Points must be greater than 0");
+        }
+
+        var discount = await _loyaltyService.CalculateDiscountFromPointsAsync(points);
+        return Ok(discount);
+    }
+
+    /// <summary>
+    /// Redeem loyalty points for discount (standalone redemption, not tied to booking)
+    /// Note: For booking-specific redemption, use the PointsToRedeem field in CreateBookingRequest
+    /// </summary>
+    [HttpPost("redeem")]
+    public async Task<ActionResult<RedeemPointsResponse>> RedeemPoints([FromBody] RedeemPointsRequest request)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized("Invalid user token");
+        }
+
+        try
+        {
+            var result = await _loyaltyService.RedeemPointsAsync(userId, request.PointsToRedeem);
+            _logger.LogInformation("User {UserId} redeemed {Points} points for ${Discount:F2} discount",
+                userId, result.PointsRedeemed, result.DiscountAmount);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 }
 
 
