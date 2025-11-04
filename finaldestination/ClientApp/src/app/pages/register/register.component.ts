@@ -19,6 +19,7 @@ export class RegisterComponent {
     name: '',
     email: '',
     password: '',
+    confirmPassword: '',
     contactNumber: '',
     role: 'Guest'
   };
