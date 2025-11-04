@@ -1,0 +1,66 @@
+<app-navbar></app-navbar>
+
+<section class="hero">
+  <div class="hero-content">
+    <h1>Find Your Perfect Stay</h1>
+    <p>Discover amazing hotels at the best prices</p>
+    
+    <div class="search-box">
+      <div class="search-field">
+        <i class="fas fa-map-marker-alt"></i>
+        <input type="text" [(ngModel)]="searchParams.city" placeholder="City">
+      </div>
+      <div class="search-field">
+        <i class="fas fa-dollar-sign"></i>
+        <input type="number" [(ngModel)]="searchParams.maxPrice" placeholder="Max Price">
+      </div>
+      <div class="search-field">
+        <i class="fas fa-star"></i>
+        <input type="number" [(ngModel)]="searchParams.minRating" placeholder="Min Rating" min="1" max="5">
+      </div>
+      <button class="btn-search" (click)="search()">
+        <i class="fas fa-search"></i> Search
+      </button>
+    </div>
+  </div>
+</section>
+
+<section class="featured-hotels">
+  <div class="container">
+    <h2>Featured Hotels</h2>
+    <div class="hotels-grid">
+      @for (hotel of featuredHotels; track hotel.id) {
+        <div class="hotel-card">
+          <div class="hotel-image">
+            <div class="placeholder-image">
+              <i class="fas fa-hotel"></i>
+            </div>
+            <div class="hotel-rating">
+              <i class="fas fa-star"></i> {{ hotel.rating | number:'1.1-1' }}
+            </div>
+          </div>
+          <div class="hotel-info">
+            <h3>{{ hotel.name }}</h3>
+            <p class="hotel-location">
+              <i class="fas fa-map-marker-alt"></i> {{ hotel.city }}
+            </p>
+            <p class="hotel-address">{{ hotel.address }}</p>
+            <div class="hotel-footer">
+              <div class="hotel-price">
+                <span class="price">\${{ hotel.pricePerNight }}</span>
+                <span class="per-night">/night</span>
+              </div>
+              <a [routerLink]="['/hotels', hotel.id]" class="btn-view">View Details</a>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <p>&copy; 2024 Final Destination. All rights reserved.</p>
+  </div>
+</footer>

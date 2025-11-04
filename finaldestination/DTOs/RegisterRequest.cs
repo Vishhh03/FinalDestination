@@ -44,7 +44,7 @@ public class RegisterRequest
     /// <summary>
     /// User's role (defaults to Guest)
     /// </summary>
-    public UserRole Role { get; set; } = UserRole.Guest;
+    //public UserRole Role { get; set; } = UserRole.Guest;
 
     /// <summary>
     /// Optional contact number

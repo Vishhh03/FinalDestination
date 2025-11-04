@@ -1,0 +1,124 @@
+<app-navbar></app-navbar>
+
+<div class="hotel-detail-container">
+  <div class="container">
+    @if (error) {
+      <div class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i> {{ error }}
+      </div>
+    }
+    
+    @if (success) {
+      <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i> {{ success }}
+      </div>
+    }
+    
+    @if (hotel) {
+      <div class="hotel-detail">
+        <div class="hotel-detail-header">
+          <div class="hotel-detail-image">
+            <div class="placeholder-image-large">
+              <i class="fas fa-hotel"></i>
+            </div>
+          </div>
+          <div class="hotel-detail-info">
+            <h1>{{ hotel.name }}</h1>
+            <div class="hotel-meta">
+              <span class="rating">
+                <i class="fas fa-star"></i> {{ hotel.rating | number:'1.1-1' }}
+              </span>
+              <span class="location">
+                <i class="fas fa-map-marker-alt"></i> {{ hotel.city }}
+              </span>
+            </div>
+            <p class="address">{{ hotel.address }}</p>
+            <div class="hotel-stats">
+              <div class="stat">
+                <i class="fas fa-door-open"></i>
+                <span>{{ hotel.availableRooms }} Rooms Available</span>
+              </div>
+              <div class="stat">
+                <i class="fas fa-dollar-sign"></i>
+                <span>\${{ hotel.pricePerNight }} per night</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="booking-section">
+          <h2>Book Your Stay</h2>
+          <form (ngSubmit)="bookHotel()" class="booking-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Check-in Date</label>
+                <input type="date" [(ngModel)]="bookingData.checkInDate" name="checkIn" required>
+              </div>
+              <div class="form-group">
+                <label>Check-out Date</label>
+                <input type="date" [(ngModel)]="bookingData.checkOutDate" name="checkOut" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Number of Guests</label>
+              <input type="number" [(ngModel)]="bookingData.numberOfGuests" name="guests" min="1" required>
+            </div>
+            <button type="submit" class="btn-book">Book Now</button>
+          </form>
+        </div>
+        
+        <div class="reviews-section">
+          <h2>Guest Reviews</h2>
+          
+          @if (authService.isAuthenticated()) {
+            <div class="review-form">
+              <h3>Write a Review</h3>
+              <form (ngSubmit)="submitReview()">
+                <div class="form-group">
+                  <label>Rating</label>
+                  <select [(ngModel)]="reviewData.rating" name="rating" required>
+                    <option [value]="5">5 - Excellent</option>
+                    <option [value]="4">4 - Very Good</option>
+                    <option [value]="3">3 - Good</option>
+                    <option [value]="2">2 - Fair</option>
+                    <option [value]="1">1 - Poor</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Comment</label>
+                  <textarea [(ngModel)]="reviewData.comment" name="comment" rows="4" placeholder="Share your experience..."></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Submit Review</button>
+              </form>
+            </div>
+          }
+          
+          <div class="reviews-list">
+            @for (review of reviews; track review.id) {
+              <div class="review-card">
+                <div class="review-header">
+                  <div class="reviewer-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="reviewer-name">{{ review.userName }}</span>
+                  </div>
+                  <div class="review-rating">
+                    <i class="fas fa-star"></i> {{ review.rating }}
+                  </div>
+                </div>
+                <p class="review-comment">{{ review.comment }}</p>
+                <p class="review-date">{{ review.createdAt | date:'medium' }}</p>
+              </div>
+            }
+            
+            @if (reviews.length === 0) {
+              <div class="no-reviews">
+                <i class="fas fa-comments"></i>
+                <p>No reviews yet. Be the first to review!</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

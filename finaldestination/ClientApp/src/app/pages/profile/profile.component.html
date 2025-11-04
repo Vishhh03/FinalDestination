@@ -1,0 +1,93 @@
+<app-navbar></app-navbar>
+
+<div class="page-header">
+  <div class="container">
+    <h1>My Profile</h1>
+    <p>Manage your account and loyalty points</p>
+  </div>
+</div>
+
+<section class="profile-section">
+  <div class="container">
+    <div class="profile-grid">
+      <div class="profile-card">
+        <h2><i class="fas fa-user"></i> Account Information</h2>
+        @if (authService.currentUser(); as user) {
+          <div class="profile-info">
+            <div class="info-item">
+              <label>Name</label>
+              <p>{{ user.name }}</p>
+            </div>
+            <div class="info-item">
+              <label>Email</label>
+              <p>{{ user.email }}</p>
+            </div>
+            <div class="info-item">
+              <label>Contact Number</label>
+              <p>{{ user.contactNumber || 'Not provided' }}</p>
+            </div>
+            <div class="info-item">
+              <label>Role</label>
+              <p class="role-badge">{{ user.role }}</p>
+            </div>
+            <div class="info-item">
+              <label>Member Since</label>
+              <p>{{ user.createdAt | date:'mediumDate' }}</p>
+            </div>
+          </div>
+        }
+      </div>
+      
+      <div class="profile-card">
+        <h2><i class="fas fa-star"></i> Loyalty Program</h2>
+        @if (loyaltyAccount) {
+          <div class="loyalty-info">
+            <div class="points-display">
+              <div class="points-circle">
+                <span class="points-value">{{ loyaltyAccount.pointsBalance }}</span>
+                <span class="points-label">Points</span>
+              </div>
+            </div>
+            <div class="loyalty-stats">
+              <div class="stat-item">
+                <label>Total Earned</label>
+                <p>{{ loyaltyAccount.totalPointsEarned }} points</p>
+              </div>
+              <div class="stat-item">
+                <label>Last Updated</label>
+                <p>{{ loyaltyAccount.lastUpdated | date:'medium' }}</p>
+              </div>
+            </div>
+          </div>
+        } @else {
+          <div class="no-loyalty">
+            <i class="fas fa-gift"></i>
+            <p>Start earning loyalty points with your first booking!</p>
+          </div>
+        }
+      </div>
+    </div>
+    
+    @if (transactions.length > 0) {
+      <div class="transactions-card">
+        <h2><i class="fas fa-history"></i> Points History</h2>
+        <div class="transactions-list">
+          @for (transaction of transactions; track transaction.id) {
+            <div class="transaction-item">
+              <div class="transaction-icon">
+                <i class="fas fa-plus-circle"></i>
+              </div>
+              <div class="transaction-details">
+                <p class="transaction-desc">{{ transaction.description }}</p>
+                <p class="transaction-date">{{ transaction.createdAt | date:'medium' }}</p>
+              </div>
+              <div class="transaction-points">
+                +{{ transaction.pointsEarned }} pts
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</section>

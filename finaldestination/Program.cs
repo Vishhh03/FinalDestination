@@ -20,9 +20,9 @@ builder.Services.AddControllers(options =>
 
 // Database Configuration - SQL Server LocalDB
 
-    // Use SQL Server LocalDB for production-like development
-    builder.Services.AddDbContext<HotelContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Use SQL Server LocalDB for production-like development
+builder.Services.AddDbContext<HotelContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
 // Authentication Configuration - JWT Bearer
@@ -157,13 +157,13 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<HotelContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    
+
     try
     {
         // Ensure database is created
         await context.Database.EnsureCreatedAsync();
         logger.LogInformation("Database initialized successfully");
-        
+
         // Seed comprehensive sample data
         await DataSeeder.SeedAsync(context);
         logger.LogInformation("Database seeded with sample data successfully");
@@ -176,7 +176,6 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
-
 
 
 

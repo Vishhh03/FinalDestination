@@ -137,9 +137,6 @@ public class HotelContext : DbContext
                   .IsRequired(false)
                   .OnDelete(DeleteBehavior.Restrict);
         });
-
-        // Note: Sample data seeding is now handled by the DataSeeder service
-        // This allows for more comprehensive and realistic test data
     }
 }
 

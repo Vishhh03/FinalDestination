@@ -1,49 +1,170 @@
-# FinalDestination Frontend
+# Final Destination - Angular Frontend
 
-A simple, clean hotel booking frontend with minimal dependencies.
+A modern, responsive hotel booking application built with AngularJS and connected to the ASP.NET Core backend.
 
-## 📁 File Structure
+## Features
+
+- **User Authentication**: Login and registration with JWT tokens
+- **Hotel Search**: Browse and search hotels by city, price, and rating
+- **Hotel Details**: View detailed hotel information with reviews
+- **Booking Management**: Create, view, and cancel bookings
+- **Payment Processing**: Secure payment integration
+- **Review System**: Submit and view hotel reviews
+- **Loyalty Program**: Track points and transaction history
+- **Responsive Design**: Modern UI that works on all devices
+
+## Technology Stack
+
+- **AngularJS 1.8.3**: Frontend framework
+- **Angular Route**: Client-side routing
+- **Font Awesome 6.4**: Icons
+- **Custom CSS**: Modern, gradient-based design
+
+## Project Structure
 
 ```
 wwwroot/
-├── index.html          # Main HTML file
+├── app/
+│   ├── controllers/
+│   │   ├── auth.controller.js
+│   │   ├── bookings.controller.js
+│   │   ├── hotels.controller.js
+│   │   ├── main.controller.js
+│   │   └── profile.controller.js
+│   ├── services/
+│   │   ├── auth.service.js
+│   │   ├── booking.service.js
+│   │   ├── hotel.service.js
+│   │   ├── loyalty.service.js
+│   │   └── review.service.js
+│   ├── views/
+│   │   ├── home.html
+│   │   ├── login.html
+│   │   ├── register.html
+│   │   ├── hotels.html
+│   │   ├── hotel-detail.html
+│   │   ├── bookings.html
+│   │   └── profile.html
+│   └── app.js
 ├── css/
-│   └── style.css       # All styles in one file
-├── js/
-│   ├── utils.js        # Utility functions
-│   ├── api.js          # API client
-│   ├── auth.js         # Authentication
-│   ├── router.js       # Simple routing
-│   └── app.js          # Main application
-└── assets/
-    └── icons/          # Logo and icons
+│   └── style.css
+└── index.html
 ```
 
-## 🚀 Features
+## Getting Started
 
-- ✅ **Simple Architecture** - No frameworks, just vanilla JS
-- ✅ **Responsive Design** - Works on all devices
-- ✅ **Authentication** - Login/register/logout
-- ✅ **Hotel Browsing** - List and search hotels
-- ✅ **Booking System** - Create and view bookings
-- ✅ **Clean Code** - Easy to understand and modify
+### Prerequisites
 
-## 📱 Pages
+- .NET 8.0 SDK
+- SQL Server LocalDB (included with Visual Studio)
 
-- **Home** - Welcome page
-- **Hotels** - Browse hotels
-- **Hotel Detail** - Individual hotel info
-- **Login/Register** - User authentication
-- **Profile** - User information
-- **Bookings** - User's bookings
+### Running the Application
 
-## 🛠 How to Customize
+1. **Start the Backend**:
+   ```bash
+   cd finaldestination
+   dotnet run
+   ```
 
-1. **Styling** - Edit `css/style.css`
-2. **Pages** - Modify functions in `js/app.js`
-3. **API** - Update endpoints in `js/api.js`
-4. **Authentication** - Customize `js/auth.js`
+2. **Access the Application**:
+   - Frontend: https://localhost:5001
+   - API: https://localhost:5001/api
+   - Swagger: https://localhost:5001/swagger
 
-## 🎯 Total Files: 6 JS + 1 CSS + 1 HTML = 8 files
+### Default Test Accounts
 
-Simple, clean, and ready for your custom design!
+The application comes with pre-seeded test accounts:
+
+**Admin Account**:
+- Email: admin@hotel.com
+- Password: Admin123!
+
+**Hotel Manager Account**:
+- Email: manager@hotel.com
+- Password: Manager123!
+
+**Guest Account**:
+- Email: guest@hotel.com
+- Password: Guest123!
+
+## API Configuration
+
+The frontend connects to the backend API at `https://localhost:5001/api`. To change this:
+
+1. Open `app/app.js`
+2. Update the `API_URL` constant:
+   ```javascript
+   .constant('API_URL', 'https://your-api-url/api')
+   ```
+
+## Features Guide
+
+### Authentication
+- JWT-based authentication
+- Token stored in localStorage
+- Automatic token inclusion in API requests
+- Protected routes for authenticated users
+
+### Hotel Search
+- Search by city, price range, and rating
+- Real-time filtering
+- Cached results for better performance
+
+### Booking Flow
+1. Browse hotels
+2. View hotel details
+3. Select dates and number of guests
+4. Create booking
+5. Process payment
+6. View booking confirmation
+
+### Loyalty Program
+- Earn points on bookings
+- View points balance
+- Track transaction history
+- Redeem points (future feature)
+
+## Design Features
+
+- **Modern Gradient UI**: Purple gradient hero sections
+- **Card-based Layout**: Clean, organized content
+- **Responsive Grid**: Adapts to all screen sizes
+- **Smooth Animations**: Hover effects and transitions
+- **Icon Integration**: Font Awesome icons throughout
+- **Color Scheme**: Professional blue and purple palette
+
+## Browser Support
+
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+
+## Troubleshooting
+
+### CORS Issues
+If you encounter CORS errors, ensure the backend is running and CORS is enabled in `Program.cs`.
+
+### API Connection Failed
+- Verify the backend is running on https://localhost:5001
+- Check the `API_URL` constant in `app/app.js`
+- Ensure SSL certificate is trusted
+
+### Authentication Issues
+- Clear localStorage: `localStorage.clear()`
+- Check token expiration (24 hours by default)
+- Verify credentials with test accounts
+
+## Future Enhancements
+
+- [ ] Hotel image uploads
+- [ ] Advanced search filters
+- [ ] Booking history export
+- [ ] Email notifications
+- [ ] Social media login
+- [ ] Multi-language support
+- [ ] Dark mode theme
+
+## License
+
+This project is part of the Final Destination hotel booking system.
