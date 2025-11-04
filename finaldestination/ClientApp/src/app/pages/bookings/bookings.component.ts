@@ -13,23 +13,24 @@ import { Booking } from '../../models/hotel.model';
 })
 export class BookingsComponent implements OnInit {
   bookingService = inject(BookingService);
-  
+
   bookings = signal<Booking[]>([]);
   selectedBooking = signal<Booking | null>(null);
   showPaymentModal = signal(false);
   error = signal('');
   success = signal('');
 
-  paymentData = signal({
+  // 👇 plain object for ngModel binding
+  paymentData = {
     amount: 0,
     currency: 'USD',
     paymentMethod: 'CreditCard',
     cardNumber: '',
     expiryMonth: 0,
-    expiryYear: 0,
+    expiryYear: 2024,
     cvv: '',
     cardHolderName: ''
-  });
+  };
 
   ngOnInit() {
     this.loadBookings();
@@ -39,6 +40,31 @@ export class BookingsComponent implements OnInit {
     this.bookingService.getMyBookings().subscribe(bookings => this.bookings.set(bookings));
   }
 
+  openPaymentModal(booking: Booking) {
+    this.selectedBooking.set(booking);
+    this.paymentData.amount = booking.totalAmount;
+    this.showPaymentModal.set(true);
+  }
+
+  closePaymentModal() {
+    this.showPaymentModal.set(false);
+    this.selectedBooking.set(null);
+  }
+
+  processPayment() {
+    const booking = this.selectedBooking();
+    if (booking) {
+      this.bookingService.processPayment(booking.id, this.paymentData).subscribe({
+        next: () => {
+          this.success.set('Payment processed successfully!');
+          this.closePaymentModal();
+          this.loadBookings();
+        },
+        error: (err) => this.error.set(err.error?.errorMessage || 'Payment failed')
+      });
+    }
+  }
+
   cancelBooking(id: number) {
     if (confirm('Are you sure you want to cancel this booking?')) {
       this.bookingService.cancel(id).subscribe({
@@ -46,7 +72,7 @@ export class BookingsComponent implements OnInit {
           this.success.set('Booking cancelled successfully');
           this.loadBookings();
         },
-        error: (err) => this.error = err.error?.message || 'Failed to cancel booking'
+        error: (err) => this.error.set(err.error?.message || 'Failed to cancel booking')
       });
     }
   }
