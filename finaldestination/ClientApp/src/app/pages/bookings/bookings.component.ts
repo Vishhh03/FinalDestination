@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
@@ -14,53 +14,39 @@ import { Booking } from '../../models/hotel.model';
 export class BookingsComponent implements OnInit {
   bookingService = inject(BookingService);
   
-  bookings: Booking[] = [];
-  selectedBooking: Booking | null = null;
-  showPaymentModal = false;
-  paymentData = { amount: 0, currency: 'USD', paymentMethod: 'CreditCard', cardNumber: '', expiryMonth: 0, expiryYear: 0, cvv: '', cardHolderName: '' };
-  error = '';
-  success = '';
+  bookings = signal<Booking[]>([]);
+  selectedBooking = signal<Booking | null>(null);
+  showPaymentModal = signal(false);
+  error = signal('');
+  success = signal('');
+
+  paymentData = signal({
+    amount: 0,
+    currency: 'USD',
+    paymentMethod: 'CreditCard',
+    cardNumber: '',
+    expiryMonth: 0,
+    expiryYear: 0,
+    cvv: '',
+    cardHolderName: ''
+  });
 
   ngOnInit() {
     this.loadBookings();
   }
 
   loadBookings() {
-    this.bookingService.getMyBookings().subscribe(bookings => this.bookings = bookings);
+    this.bookingService.getMyBookings().subscribe(bookings => this.bookings.set(bookings));
   }
 
   cancelBooking(id: number) {
     if (confirm('Are you sure you want to cancel this booking?')) {
       this.bookingService.cancel(id).subscribe({
         next: () => {
-          this.success = 'Booking cancelled successfully';
+          this.success.set('Booking cancelled successfully');
           this.loadBookings();
         },
         error: (err) => this.error = err.error?.message || 'Failed to cancel booking'
-      });
-    }
-  }
-
-  openPaymentModal(booking: Booking) {
-    this.selectedBooking = booking;
-    this.paymentData.amount = booking.totalAmount;
-    this.showPaymentModal = true;
-  }
-
-  closePaymentModal() {
-    this.showPaymentModal = false;
-    this.selectedBooking = null;
-  }
-
-  processPayment() {
-    if (this.selectedBooking) {
-      this.bookingService.processPayment(this.selectedBooking.id, this.paymentData).subscribe({
-        next: () => {
-          this.success = 'Payment processed successfully!';
-          this.closePaymentModal();
-          this.loadBookings();
-        },
-        error: (err) => this.error = err.error?.errorMessage || 'Payment failed'
       });
     }
   }

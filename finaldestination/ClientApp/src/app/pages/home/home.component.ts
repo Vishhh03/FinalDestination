@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -16,14 +16,15 @@ export class HomeComponent implements OnInit {
   hotelService = inject(HotelService);
   router = inject(Router);
   
-  featuredHotels: Hotel[] = [];
+  featuredHotels = signal<Hotel[]>([]);
   searchParams = { city: '', maxPrice: null as number | null, minRating: null as number | null };
 
   ngOnInit() {
-    this.hotelService.getAll().subscribe(hotels => {
-      this.featuredHotels = hotels.slice(0, 6);
-    });
-  }
+  this.hotelService.getAll().subscribe(hotels => {
+    this.featuredHotels.set(hotels.slice(0, 6));
+  });
+}
+
 
   search() {
     this.router.navigate(['/hotels'], { 

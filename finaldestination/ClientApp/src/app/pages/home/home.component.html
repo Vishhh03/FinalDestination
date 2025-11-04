@@ -29,7 +29,7 @@
   <div class="container">
     <h2>Featured Hotels</h2>
     <div class="hotels-grid">
-      @for (hotel of featuredHotels; track hotel.id) {
+      @for (hotel of featuredHotels(); track hotel.id) {
         <div class="hotel-card">
           <div class="hotel-image">
             <div class="placeholder-image">
