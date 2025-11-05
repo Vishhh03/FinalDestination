@@ -37,15 +37,18 @@ export class BookingsComponent implements OnInit {
   }
 
   loadBookings() {
-    this.error.set('');
-    this.bookingService.getMyBookings().subscribe({
-      next: (bookings) => {
-        console.log('Bookings received: ', bookings);
-        this.bookings.set(bookings)
-      },
-      error: (err) => this.error.set('Failed to load bookings')
-    });
-  }
+  this.error.set('');
+  this.bookingService.getMyBookings().subscribe({
+    next: (bookings) => {
+      bookings.forEach((booking, index) => {
+        console.log(`Booking ${index} status:`, booking.status, typeof booking.status);
+      });
+      this.bookings.set(bookings);
+    },
+    error: (err) => this.error.set('Failed to load bookings')
+  });
+}
+
 
   openPaymentModal(booking: Booking) {
     this.selectedBooking.set(booking);
