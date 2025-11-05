@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { BookingService } from '../../services/booking.service';
 import { Booking } from '../../models/hotel.model';
@@ -8,7 +9,7 @@ import { Booking } from '../../models/hotel.model';
 @Component({
   selector: 'app-bookings',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, RouterLink, NavbarComponent],
   templateUrl: './bookings.component.html'
 })
 export class BookingsComponent implements OnInit {
@@ -20,14 +21,13 @@ export class BookingsComponent implements OnInit {
   error = signal('');
   success = signal('');
 
-  // 👇 plain object for ngModel binding
   paymentData = {
     amount: 0,
     currency: 'USD',
     paymentMethod: 'CreditCard',
     cardNumber: '',
-    expiryMonth: 0,
-    expiryYear: 2024,
+    expiryMonth: 12,
+    expiryYear: 2025,
     cvv: '',
     cardHolderName: ''
   };
@@ -37,13 +37,25 @@ export class BookingsComponent implements OnInit {
   }
 
   loadBookings() {
-    this.bookingService.getMyBookings().subscribe(bookings => this.bookings.set(bookings));
+    this.error.set('');
+    this.bookingService.getMyBookings().subscribe({
+      next: (bookings) => {
+        console.log('Bookings received: ', bookings);
+        this.bookings.set(bookings)
+      },
+      error: (err) => this.error.set('Failed to load bookings')
+    });
   }
 
   openPaymentModal(booking: Booking) {
     this.selectedBooking.set(booking);
     this.paymentData.amount = booking.totalAmount;
+    this.paymentData.cardNumber = '';
+    this.paymentData.cvv = '';
+    this.paymentData.cardHolderName = '';
     this.showPaymentModal.set(true);
+    this.error.set('');
+    this.success.set('');
   }
 
   closePaymentModal() {
@@ -53,24 +65,38 @@ export class BookingsComponent implements OnInit {
 
   processPayment() {
     const booking = this.selectedBooking();
-    if (booking) {
-      this.bookingService.processPayment(booking.id, this.paymentData).subscribe({
-        next: () => {
+    if (!booking) return;
+
+    this.error.set('');
+    this.bookingService.processPayment(booking.id, this.paymentData).subscribe({
+      next: (response: any) => {
+        if (response.status === 'Completed') {
           this.success.set('Payment processed successfully!');
           this.closePaymentModal();
-          this.loadBookings();
-        },
-        error: (err) => this.error.set(err.error?.errorMessage || 'Payment failed')
-      });
-    }
+          setTimeout(() => {
+            this.success.set('');
+            this.loadBookings();
+          }, 2000);
+        } else {
+          this.error.set(response.errorMessage || 'Payment failed');
+        }
+      },
+      error: (err) => {
+        this.error.set(err.error?.errorMessage || err.error?.message || 'Payment processing failed');
+      }
+    });
   }
 
   cancelBooking(id: number) {
     if (confirm('Are you sure you want to cancel this booking?')) {
+      this.error.set('');
       this.bookingService.cancel(id).subscribe({
         next: () => {
           this.success.set('Booking cancelled successfully');
-          this.loadBookings();
+          setTimeout(() => {
+            this.success.set('');
+            this.loadBookings();
+          }, 2000);
         },
         error: (err) => this.error.set(err.error?.message || 'Failed to cancel booking')
       });

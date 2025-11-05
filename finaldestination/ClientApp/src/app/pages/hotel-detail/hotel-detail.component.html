@@ -2,19 +2,19 @@
 
 <div class="hotel-detail-container">
   <div class="container">
-    @if (error) {
+    @if (error()) {
       <div class="alert alert-error">
-        <i class="fas fa-exclamation-circle"></i> {{ error }}
+        <i class="fas fa-exclamation-circle"></i> {{ error() }}
       </div>
     }
     
-    @if (success) {
+    @if (success()) {
       <div class="alert alert-success">
-        <i class="fas fa-check-circle"></i> {{ success }}
+        <i class="fas fa-check-circle"></i> {{ success() }}
       </div>
     }
     
-    @if (hotel) {
+    @if (hotel(); as hotelData) {
       <div class="hotel-detail">
         <div class="hotel-detail-header">
           <div class="hotel-detail-image">
@@ -23,24 +23,24 @@
             </div>
           </div>
           <div class="hotel-detail-info">
-            <h1>{{ hotel.name }}</h1>
+            <h1>{{ hotelData.name }}</h1>
             <div class="hotel-meta">
               <span class="rating">
-                <i class="fas fa-star"></i> {{ hotel.rating | number:'1.1-1' }}
+                <i class="fas fa-star"></i> {{ hotelData.rating | number:'1.1-1' }}
               </span>
               <span class="location">
-                <i class="fas fa-map-marker-alt"></i> {{ hotel.city }}
+                <i class="fas fa-map-marker-alt"></i> {{ hotelData.city }}
               </span>
             </div>
-            <p class="address">{{ hotel.address }}</p>
+            <p class="address">{{ hotelData.address }}</p>
             <div class="hotel-stats">
               <div class="stat">
                 <i class="fas fa-door-open"></i>
-                <span>{{ hotel.availableRooms }} Rooms Available</span>
+                <span>{{ hotelData.availableRooms }} Rooms Available</span>
               </div>
               <div class="stat">
-                <i class="fas fa-dollar-sign"></i>
-                <span>\${{ hotel.pricePerNight }} per night</span>
+                <i class="fas fa-indian-rupee-sign"></i>
+                <span>${{ hotelData.pricePerNight | number:'1.2-2' }} per night</span>
               </div>
             </div>
           </div>
@@ -48,53 +48,126 @@
         
         <div class="booking-section">
           <h2>Book Your Stay</h2>
-          <form (ngSubmit)="bookHotel()" class="booking-form">
+          <form [formGroup]="bookingForm" (ngSubmit)="bookHotel()" class="booking-form">
             <div class="form-row">
               <div class="form-group">
-                <label>Check-in Date</label>
-                <input type="date" [(ngModel)]="bookingData.checkInDate" name="checkIn" required>
+                <label>Check-in Date *</label>
+                <input 
+                  type="date" 
+                  formControlName="checkInDate"
+                  [min]="today"
+                  [class.invalid]="checkInDate?.invalid && checkInDate?.touched">
+                @if (checkInDate?.invalid && checkInDate?.touched) {
+                  <span class="error-message">
+                    <i class="fas fa-exclamation-circle"></i> {{ getBookingErrorMessage('checkInDate') }}
+                  </span>
+                }
               </div>
               <div class="form-group">
-                <label>Check-out Date</label>
-                <input type="date" [(ngModel)]="bookingData.checkOutDate" name="checkOut" required>
+                <label>Check-out Date *</label>
+                <input 
+                  type="date" 
+                  formControlName="checkOutDate"
+                  [min]="bookingForm.value.checkInDate || tomorrow"
+                  [class.invalid]="checkOutDate?.invalid && checkOutDate?.touched">
+                @if (checkOutDate?.invalid && checkOutDate?.touched) {
+                  <span class="error-message">
+                    <i class="fas fa-exclamation-circle"></i> {{ getBookingErrorMessage('checkOutDate') }}
+                  </span>
+                }
               </div>
             </div>
             <div class="form-group">
-              <label>Number of Guests</label>
-              <input type="number" [(ngModel)]="bookingData.numberOfGuests" name="guests" min="1" required>
+              <label>Number of Guests *</label>
+              <input 
+                type="number" 
+                formControlName="numberOfGuests"
+                min="1" 
+                max="10"
+                [class.invalid]="numberOfGuests?.invalid && numberOfGuests?.touched">
+              @if (numberOfGuests?.invalid && numberOfGuests?.touched) {
+                <span class="error-message">
+                  <i class="fas fa-exclamation-circle"></i> {{ getBookingErrorMessage('numberOfGuests') }}
+                </span>
+              } @else {
+                <small class="hint">Maximum 10 guests per booking</small>
+              }
             </div>
-            <button type="submit" class="btn-book">Book Now</button>
+            
+            @if (calculateNights() > 0) {
+              <div class="booking-summary">
+                <div class="summary-row">
+                  <span>{{ calculateNights() }} night(s) × ${{ hotelData.pricePerNight | number:'1.2-2' }}</span>
+                  <span class="summary-total">${{ calculateTotal() | number:'1.2-2' }}</span>
+                </div>
+              </div>
+            }
+            
+            <button 
+              type="submit" 
+              class="btn-book" 
+              [disabled]="loading()">
+              @if (loading()) {
+                <i class="fas fa-spinner fa-spin"></i> Processing...
+              } @else {
+                <i class="fas fa-check"></i> Book Now
+              }
+            </button>
           </form>
         </div>
         
         <div class="reviews-section">
-          <h2>Guest Reviews</h2>
+          <h2>Guest Reviews ({{ reviews().length }})</h2>
           
           @if (authService.isAuthenticated()) {
             <div class="review-form">
               <h3>Write a Review</h3>
-              <form (ngSubmit)="submitReview()">
+              <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
                 <div class="form-group">
-                  <label>Rating</label>
-                  <select [(ngModel)]="reviewData.rating" name="rating" required>
-                    <option [value]="5">5 - Excellent</option>
-                    <option [value]="4">4 - Very Good</option>
-                    <option [value]="3">3 - Good</option>
-                    <option [value]="2">2 - Fair</option>
-                    <option [value]="1">1 - Poor</option>
+                  <label>Rating *</label>
+                  <select 
+                    formControlName="rating"
+                    [class.invalid]="rating?.invalid && rating?.touched">
+                    <option [value]="5">⭐⭐⭐⭐⭐ Excellent</option>
+                    <option [value]="4">⭐⭐⭐⭐ Very Good</option>
+                    <option [value]="3">⭐⭐⭐ Good</option>
+                    <option [value]="2">⭐⭐ Fair</option>
+                    <option [value]="1">⭐ Poor</option>
                   </select>
+                  @if (rating?.invalid && rating?.touched) {
+                    <span class="error-message">
+                      <i class="fas fa-exclamation-circle"></i> {{ getReviewErrorMessage('rating') }}
+                    </span>
+                  }
                 </div>
                 <div class="form-group">
-                  <label>Comment</label>
-                  <textarea [(ngModel)]="reviewData.comment" name="comment" rows="4" placeholder="Share your experience..."></textarea>
+                  <label>Comment *</label>
+                  <textarea 
+                    formControlName="comment"
+                    rows="4" 
+                    placeholder="Share your experience (minimum 10 characters)..."
+                    [class.invalid]="comment?.invalid && comment?.touched"></textarea>
+                  @if (comment?.invalid && comment?.touched) {
+                    <span class="error-message">
+                      <i class="fas fa-exclamation-circle"></i> {{ getReviewErrorMessage('comment') }}
+                    </span>
+                  } @else {
+                    <small class="hint">{{ comment?.value?.length || 0 }} / 1000 characters</small>
+                  }
                 </div>
-                <button type="submit" class="btn-submit">Submit Review</button>
+                <button type="submit" class="btn-submit">
+                  Submit Review
+                </button>
               </form>
+            </div>
+          } @else {
+            <div class="login-prompt">
+              <p><i class="fas fa-info-circle"></i> Please <a routerLink="/login">login</a> to write a review</p>
             </div>
           }
           
           <div class="reviews-list">
-            @for (review of reviews; track review.id) {
+            @for (review of reviews(); track review.id) {
               <div class="review-card">
                 <div class="review-header">
                   <div class="reviewer-info">
@@ -110,7 +183,7 @@
               </div>
             }
             
-            @if (reviews.length === 0) {
+            @if (reviews().length === 0) {
               <div class="no-reviews">
                 <i class="fas fa-comments"></i>
                 <p>No reviews yet. Be the first to review!</p>

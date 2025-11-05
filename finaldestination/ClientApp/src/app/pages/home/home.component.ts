@@ -20,15 +20,20 @@ export class HomeComponent implements OnInit {
   searchParams = { city: '', maxPrice: null as number | null, minRating: null as number | null };
 
   ngOnInit() {
-  this.hotelService.getAll().subscribe(hotels => {
-    this.featuredHotels.set(hotels.slice(0, 6));
-  });
-}
-
+    this.hotelService.getAll().subscribe({
+      next: (hotels) => {
+        this.featuredHotels.set(hotels.slice(0, 6));
+      },
+      error: (err) => console.error('Error loading hotels:', err)
+    });
+  }
 
   search() {
-    this.router.navigate(['/hotels'], { 
-      queryParams: this.searchParams 
-    });
+    const params: any = {};
+    if (this.searchParams.city) params.city = this.searchParams.city;
+    if (this.searchParams.maxPrice) params.maxPrice = this.searchParams.maxPrice;
+    if (this.searchParams.minRating) params.minRating = this.searchParams.minRating;
+    
+    this.router.navigate(['/hotels'], { queryParams: params });
   }
 }

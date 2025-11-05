@@ -139,10 +139,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Serve static files from wwwroot (frontend)
-app.UseDefaultFiles(); // Serves index.html by default
-app.UseStaticFiles();  // Serves CSS, JS, images, etc.
-
 // Global error handling middleware (must be early in pipeline)
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
