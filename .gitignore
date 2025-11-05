@@ -369,4 +369,7 @@ FodyWeavers.xsd
 #ANGULAR
 
 # Angular CLI cache
-/ClientApp/.angular/cache
+finaldestination/ClientApp/.angular/cache
+
+# Angular dist
+finaldestination/ClientApp/dist
