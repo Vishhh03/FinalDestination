@@ -11,7 +11,7 @@
         <input type="text" [(ngModel)]="searchParams.city" placeholder="City">
       </div>
       <div class="search-field">
-        <i class="fas fa-dollar-sign"></i>
+        <i class="fas fa-indian-rupee-sign"></i>
         <input type="number" [(ngModel)]="searchParams.maxPrice" placeholder="Max Price">
       </div>
       <div class="search-field">
@@ -47,7 +47,7 @@
             <p class="hotel-address">{{ hotel.address }}</p>
             <div class="hotel-footer">
               <div class="hotel-price">
-                <span class="price">\${{ hotel.pricePerNight }}</span>
+                <span class="price">{{ hotel.pricePerNight | currency:'INR':'symbol':'1.0-0'}}</span>
                 <span class="per-night">/night</span>
               </div>
               <a [routerLink]="['/hotels', hotel.id]" class="btn-view">View Details</a>

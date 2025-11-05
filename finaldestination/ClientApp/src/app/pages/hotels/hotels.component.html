@@ -31,7 +31,7 @@
             </p>
             <div class="hotel-footer">
               <div class="hotel-price">
-                <span class="price">${{ hotel.pricePerNight }}</span>
+                <span class="price">{{ hotel.pricePerNight | currency:'INR':'symbol':'1.0-0' }}</span>
                 <span class="per-night">/night</span>
               </div>
               <a [routerLink]="['/hotels', hotel.id]" class="btn-view">View Details</a>

@@ -149,7 +149,7 @@ public static class DataSeeder
                 Name = "Grand Plaza Hotel",
                 Address = "123 Main St",
                 City = "New York",
-                PricePerNight = 150.00m,
+                PricePerNight = 1500.00m,
                 AvailableRooms = 48, // Reduced from 50 due to bookings
                 Rating = 0, // Will be calculated from reviews
                 ReviewCount = 0,
@@ -162,7 +162,7 @@ public static class DataSeeder
                 Name = "Ocean View Resort",
                 Address = "456 Beach Ave",
                 City = "Miami",
-                PricePerNight = 200.00m,
+                PricePerNight = 2000.00m,
                 AvailableRooms = 28, // Reduced from 30 due to bookings
                 Rating = 0, // Will be calculated from reviews
                 ReviewCount = 0,
@@ -175,7 +175,7 @@ public static class DataSeeder
                 Name = "Mountain Lodge",
                 Address = "789 Pine Rd",
                 City = "Denver",
-                PricePerNight = 120.00m,
+                PricePerNight = 1200.00m,
                 AvailableRooms = 24, // Reduced from 25 due to bookings
                 Rating = 0, // Will be calculated from reviews
                 ReviewCount = 0,
@@ -188,7 +188,7 @@ public static class DataSeeder
                 Name = "Downtown Business Hotel",
                 Address = "321 Corporate Blvd",
                 City = "Chicago",
-                PricePerNight = 180.00m,
+                PricePerNight = 1800.00m,
                 AvailableRooms = 35,
                 Rating = 0, // Will be calculated from reviews
                 ReviewCount = 0,
@@ -201,7 +201,7 @@ public static class DataSeeder
                 Name = "Sunset Beach Resort",
                 Address = "789 Sunset Blvd",
                 City = "Los Angeles",
-                PricePerNight = 250.00m,
+                PricePerNight = 2500.00m,
                 AvailableRooms = 40,
                 Rating = 0, // Will be calculated from reviews
                 ReviewCount = 0,
@@ -214,7 +214,7 @@ public static class DataSeeder
                 Name = "Historic Inn",
                 Address = "456 Heritage St",
                 City = "Boston",
-                PricePerNight = 130.00m,
+                PricePerNight = 1300.00m,
                 AvailableRooms = 20,
                 Rating = 0, // Will be calculated from reviews
                 ReviewCount = 0,
