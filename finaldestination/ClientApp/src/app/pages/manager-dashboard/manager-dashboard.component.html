@@ -1,0 +1,169 @@
+<app-navbar></app-navbar>
+
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1>Hotel Manager Dashboard</h1>
+    <button class="btn-primary" (click)="showAddForm()" *ngIf="!showForm()">
+      Add New Hotel
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-error">{{ error() }}</div>
+  }
+
+  @if (success()) {
+    <div class="alert alert-success">{{ success() }}</div>
+  }
+
+  @if (loading() && !showForm()) {
+    <div class="loading">Loading hotels...</div>
+  }
+
+  @if (showForm()) {
+    <div class="hotel-form-card">
+      <div class="form-header">
+        <h2>{{ isEditing() ? 'Edit Hotel' : 'Add New Hotel' }}</h2>
+        <button class="btn-close" (click)="cancelForm()">×</button>
+      </div>
+
+      <form [formGroup]="hotelForm" (ngSubmit)="saveHotel()">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="name">Hotel Name *</label>
+            <input 
+              type="text" 
+              id="name" 
+              formControlName="name"
+              class="form-control"
+              [class.error]="hotelForm.get('name')?.touched && hotelForm.get('name')?.invalid"
+            />
+            @if (getErrorMessage('name')) {
+              <span class="error-message">{{ getErrorMessage('name') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="city">City *</label>
+            <input 
+              type="text" 
+              id="city" 
+              formControlName="city"
+              class="form-control"
+              [class.error]="hotelForm.get('city')?.touched && hotelForm.get('city')?.invalid"
+            />
+            @if (getErrorMessage('city')) {
+              <span class="error-message">{{ getErrorMessage('city') }}</span>
+            }
+          </div>
+
+          <div class="form-group full-width">
+            <label for="address">Address *</label>
+            <input 
+              type="text" 
+              id="address" 
+              formControlName="address"
+              class="form-control"
+              [class.error]="hotelForm.get('address')?.touched && hotelForm.get('address')?.invalid"
+            />
+            @if (getErrorMessage('address')) {
+              <span class="error-message">{{ getErrorMessage('address') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="pricePerNight">Price Per Night ($) *</label>
+            <input 
+              type="number" 
+              id="pricePerNight" 
+              formControlName="pricePerNight"
+              class="form-control"
+              min="1"
+              step="0.01"
+              [class.error]="hotelForm.get('pricePerNight')?.touched && hotelForm.get('pricePerNight')?.invalid"
+            />
+            @if (getErrorMessage('pricePerNight')) {
+              <span class="error-message">{{ getErrorMessage('pricePerNight') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="availableRooms">Available Rooms *</label>
+            <input 
+              type="number" 
+              id="availableRooms" 
+              formControlName="availableRooms"
+              class="form-control"
+              min="1"
+              [class.error]="hotelForm.get('availableRooms')?.touched && hotelForm.get('availableRooms')?.invalid"
+            />
+            @if (getErrorMessage('availableRooms')) {
+              <span class="error-message">{{ getErrorMessage('availableRooms') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="rating">Rating (0-5) *</label>
+            <input 
+              type="number" 
+              id="rating" 
+              formControlName="rating"
+              class="form-control"
+              min="0"
+              max="5"
+              step="0.1"
+              [class.error]="hotelForm.get('rating')?.touched && hotelForm.get('rating')?.invalid"
+            />
+            @if (getErrorMessage('rating')) {
+              <span class="error-message">{{ getErrorMessage('rating') }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="cancelForm()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="loading()">
+            {{ loading() ? 'Saving...' : (isEditing() ? 'Update Hotel' : 'Create Hotel') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <div class="hotels-grid">
+    @if (hotels().length === 0 && !loading()) {
+      <div class="empty-state">
+        <p>No hotels found. Click "Add New Hotel" to create your first hotel.</p>
+      </div>
+    }
+
+    @for (hotel of hotels(); track hotel.id) {
+      <div class="hotel-card">
+        <div class="hotel-card-header">
+          <h3>{{ hotel.name }}</h3>
+          <span class="rating">★ {{ hotel.rating.toFixed(1) }}</span>
+        </div>
+        
+        <div class="hotel-card-body">
+          <p class="location">📍 {{ hotel.city }}</p>
+          <p class="address">{{ hotel.address }}</p>
+          <div class="hotel-stats">
+            <div class="stat">
+              <span class="stat-label">Price/Night</span>
+              <span class="stat-value">${{ hotel.pricePerNight }}</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Available Rooms</span>
+              <span class="stat-value">{{ hotel.availableRooms }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hotel-card-actions">
+          <button class="btn-edit" (click)="editHotel(hotel)">Edit</button>
+          <button class="btn-delete" (click)="deleteHotel(hotel)">Delete</button>
+        </div>
+      </div>
+    }
+  </div>
+</div>
