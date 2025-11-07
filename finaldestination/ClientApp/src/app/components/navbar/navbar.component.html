@@ -7,15 +7,30 @@
         <ul class="nav-menu">
             <li><a routerLink="/">Home</a></li>
             <li><a routerLink="/hotels">Hotels</a></li>
-            @if (authService.currentUser()?.role == '2' || authService.currentUser()?.role == '3') {
+            
+            @if (authService.hasAnyRole(['HotelManager', 'Admin'])) {
             <li><a routerLink="/manager-dashboard" class="nav-link-highlight">My Dashboard</a></li>
             }
-            @if (authService.currentUser()) {
+            
+            @if (authService.isAuthenticated()) {
             <li><a routerLink="/bookings">My Bookings</a></li>
             <li><a routerLink="/profile">Profile</a></li>
-            <li><button (click)="authService.logout()" class="btn-secondary">Logout</button></li>
+            <li>
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span>{{ authService.currentUser()?.name }}</span>
+                    @if (authService.currentUser()?.loyaltyAccount) {
+                    <span class="points-badge">
+                        <i class="fas fa-star"></i>
+                        {{ authService.currentUser()?.loyaltyAccount?.pointsBalance }} pts
+                    </span>
+                    }
+                </div>
+            </li>
+            <li><button (click)="authService.logout()" class="btn-logout">Logout</button></li>
             } @else {
-            <li><a routerLink="/login" class="btn-primary">Login</a></li>
+            <li><a routerLink="/login" class="btn-login">Login</a></li>
+            <li><a routerLink="/register" class="btn-register">Register</a></li>
             }
         </ul>
     </div>

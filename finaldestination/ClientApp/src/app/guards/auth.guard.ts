@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRouteSnapshot } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 export const authGuard = () => {
@@ -12,4 +12,24 @@ export const authGuard = () => {
 
   router.navigate(['/login']);
   return false;
+};
+
+export const roleGuard = (allowedRoles: string[]) => {
+  return () => {
+    const authService = inject(AuthService);
+    const router = inject(Router);
+
+    if (!authService.isAuthenticated()) {
+      router.navigate(['/login']);
+      return false;
+    }
+
+    if (authService.hasAnyRole(allowedRoles)) {
+      return true;
+    }
+
+    // User is authenticated but doesn't have required role
+    router.navigate(['/']);
+    return false;
+  };
 };

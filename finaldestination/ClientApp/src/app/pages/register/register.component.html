@@ -2,27 +2,34 @@
 
 <div class="auth-container">
   <div class="auth-card">
-    <h2>Create Account</h2>
-    <p class="auth-subtitle">Join Final Destination today</p>
+    <div class="auth-header">
+      <h2>Create Account</h2>
+      <p class="auth-subtitle">Join Final Destination today</p>
+    </div>
     
     @if (error()) {
       <div class="alert alert-error">
-        <i class="fas fa-exclamation-circle"></i> {{ error() }}
+        <i class="fas fa-exclamation-circle"></i> 
+        <span>{{ error() }}</span>
+        <button class="alert-close" (click)="error.set('')">&times;</button>
       </div>
     }
     
     <form [formGroup]="registerForm" (ngSubmit)="register()" class="auth-form">
       <div class="form-group">
-        <label>Full Name *</label>
-        <div class="input-group" [class.error]="name?.invalid && name?.touched">
-          <i class="fas fa-user"></i>
+        <label for="name">Full Name *</label>
+        <div class="input-wrapper">
+          <i class="fas fa-user input-icon"></i>
           <input 
             type="text" 
+            id="name"
             formControlName="name"
+            class="form-control"
+            [class.error]="name?.invalid && name?.touched"
             placeholder="Enter your full name"
-            [class.invalid]="name?.invalid && name?.touched">
+            autocomplete="name">
         </div>
-        @if (name?.invalid && name?.touched) {
+        @if (getErrorMessage('name')) {
           <span class="error-message">
             <i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('name') }}
           </span>
@@ -30,16 +37,19 @@
       </div>
       
       <div class="form-group">
-        <label>Email *</label>
-        <div class="input-group" [class.error]="email?.invalid && email?.touched">
-          <i class="fas fa-envelope"></i>
+        <label for="email">Email Address *</label>
+        <div class="input-wrapper">
+          <i class="fas fa-envelope input-icon"></i>
           <input 
             type="email" 
+            id="email"
             formControlName="email"
+            class="form-control"
+            [class.error]="email?.invalid && email?.touched"
             placeholder="Enter your email"
-            [class.invalid]="email?.invalid && email?.touched">
+            autocomplete="email">
         </div>
-        @if (email?.invalid && email?.touched) {
+        @if (getErrorMessage('email')) {
           <span class="error-message">
             <i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('email') }}
           </span>
@@ -47,35 +57,44 @@
       </div>
       
       <div class="form-group">
-        <label>Password *</label>
-        <div class="input-group" [class.error]="password?.invalid && password?.touched">
-          <i class="fas fa-lock"></i>
+        <label for="password">Password *</label>
+        <div class="input-wrapper">
+          <i class="fas fa-lock input-icon"></i>
           <input 
             type="password" 
+            id="password"
             formControlName="password"
-            placeholder="Enter your password"
-            [class.invalid]="password?.invalid && password?.touched">
+            class="form-control"
+            [class.error]="password?.invalid && password?.touched"
+            placeholder="Create a strong password"
+            autocomplete="new-password">
         </div>
-        @if (password?.invalid && password?.touched) {
+        @if (getErrorMessage('password')) {
           <span class="error-message">
             <i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('password') }}
           </span>
         } @else {
-          <small class="hint">Min 8 characters with uppercase, lowercase, number & special character</small>
+          <small class="hint">
+            <i class="fas fa-info-circle"></i>
+            Min 8 characters with uppercase, lowercase, number & special character
+          </small>
         }
       </div>
       
       <div class="form-group">
-        <label>Contact Number</label>
-        <div class="input-group" [class.error]="contactNumber?.invalid && contactNumber?.touched">
-          <i class="fas fa-phone"></i>
+        <label for="contactNumber">Contact Number (Optional)</label>
+        <div class="input-wrapper">
+          <i class="fas fa-phone input-icon"></i>
           <input 
             type="tel" 
+            id="contactNumber"
             formControlName="contactNumber"
+            class="form-control"
+            [class.error]="contactNumber?.invalid && contactNumber?.touched"
             placeholder="Enter your phone number"
-            [class.invalid]="contactNumber?.invalid && contactNumber?.touched">
+            autocomplete="tel">
         </div>
-        @if (contactNumber?.invalid && contactNumber?.touched) {
+        @if (getErrorMessage('contactNumber')) {
           <span class="error-message">
             <i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('contactNumber') }}
           </span>
@@ -86,13 +105,13 @@
         @if (loading()) {
           <i class="fas fa-spinner fa-spin"></i> Creating account...
         } @else {
-          Register
+          <i class="fas fa-user-plus"></i> Register
         }
       </button>
     </form>
     
-    <p class="auth-footer">
-      Already have an account? <a routerLink="/login">Login here</a>
-    </p>
+    <div class="auth-footer">
+      <p>Already have an account? <a routerLink="/login">Login here</a></p>
+    </div>
   </div>
 </div>

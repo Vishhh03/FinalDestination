@@ -2,27 +2,34 @@
 
 <div class="auth-container">
   <div class="auth-card">
-    <h2>Welcome Back</h2>
-    <p class="auth-subtitle">Login to your account</p>
+    <div class="auth-header">
+      <h2>Welcome Back</h2>
+      <p class="auth-subtitle">Login to your account</p>
+    </div>
     
     @if (error()) {
       <div class="alert alert-error">
-        <i class="fas fa-exclamation-circle"></i> {{ error() }}
+        <i class="fas fa-exclamation-circle"></i> 
+        <span>{{ error() }}</span>
+        <button class="alert-close" (click)="error.set('')">&times;</button>
       </div>
     }
     
     <form [formGroup]="loginForm" (ngSubmit)="login()" class="auth-form">
       <div class="form-group">
-        <label>Email *</label>
-        <div class="input-group" [class.error]="email?.invalid && email?.touched">
-          <i class="fas fa-envelope"></i>
+        <label for="email">Email Address *</label>
+        <div class="input-wrapper">
+          <i class="fas fa-envelope input-icon"></i>
           <input 
             type="email" 
+            id="email"
             formControlName="email"
+            class="form-control"
+            [class.error]="email?.invalid && email?.touched"
             placeholder="Enter your email"
-            [class.invalid]="email?.invalid && email?.touched">
+            autocomplete="email">
         </div>
-        @if (email?.invalid && email?.touched) {
+        @if (getErrorMessage('email')) {
           <span class="error-message">
             <i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('email') }}
           </span>
@@ -30,16 +37,19 @@
       </div>
       
       <div class="form-group">
-        <label>Password *</label>
-        <div class="input-group" [class.error]="password?.invalid && password?.touched">
-          <i class="fas fa-lock"></i>
+        <label for="password">Password *</label>
+        <div class="input-wrapper">
+          <i class="fas fa-lock input-icon"></i>
           <input 
             type="password" 
+            id="password"
             formControlName="password"
+            class="form-control"
+            [class.error]="password?.invalid && password?.touched"
             placeholder="Enter your password"
-            [class.invalid]="password?.invalid && password?.touched">
+            autocomplete="current-password">
         </div>
-        @if (password?.invalid && password?.touched) {
+        @if (getErrorMessage('password')) {
           <span class="error-message">
             <i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('password') }}
           </span>
@@ -50,13 +60,13 @@
         @if (loading()) {
           <i class="fas fa-spinner fa-spin"></i> Logging in...
         } @else {
-          Login
+          <i class="fas fa-sign-in-alt"></i> Login
         }
       </button>
     </form>
     
-    <p class="auth-footer">
-      Don't have an account? <a routerLink="/register">Register here</a>
-    </p>
+    <div class="auth-footer">
+      <p>Don't have an account? <a routerLink="/register">Register here</a></p>
+    </div>
   </div>
 </div>

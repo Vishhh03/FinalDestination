@@ -1,197 +1,289 @@
 <app-navbar></app-navbar>
 
 <div class="hotel-detail-container">
-  <div class="container">
-    @if (error()) {
-      <div class="alert alert-error">
-        <i class="fas fa-exclamation-circle"></i> {{ error() }}
+  @if (error()) {
+    <div class="alert alert-error">
+      <i class="fas fa-exclamation-circle"></i> {{ error() }}
+      <button class="alert-close" (click)="error.set('')">&times;</button>
+    </div>
+  }
+  
+  @if (success()) {
+    <div class="alert alert-success">
+      <i class="fas fa-check-circle"></i> {{ success() }}
+      <button class="alert-close" (click)="success.set('')">&times;</button>
+    </div>
+  }
+  
+  @if (loading()) {
+    <div class="loading-spinner">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Loading hotel details...</p>
+    </div>
+  }
+  
+  @if (hotel(); as hotelData) {
+    <div class="hotel-header">
+      <h1>{{ hotelData.name }}</h1>
+      <div class="hotel-location">
+        <i class="fas fa-map-marker-alt"></i>
+        <span>{{ hotelData.city }}, {{ hotelData.address }}</span>
       </div>
-    }
-    
-    @if (success()) {
-      <div class="alert alert-success">
-        <i class="fas fa-check-circle"></i> {{ success() }}
+      <div class="hotel-rating">
+        <i class="fas fa-star"></i>
+        <span>{{ hotelData.rating.toFixed(1) }} / 5.0</span>
       </div>
-    }
+    </div>
     
-    @if (hotel(); as hotelData) {
-      <div class="hotel-detail">
-        <div class="hotel-detail-header">
-          <div class="hotel-detail-image">
-            <div class="placeholder-image-large">
-              <i class="fas fa-hotel"></i>
-            </div>
+    <div class="hotel-content">
+      <div class="hotel-info-card">
+        <h2>Hotel Information</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Price per Night</span>
+            <span class="info-value">${{ hotelData.pricePerNight.toFixed(2) }}</span>
           </div>
-          <div class="hotel-detail-info">
-            <h1>{{ hotelData.name }}</h1>
-            <div class="hotel-meta">
-              <span class="rating">
-                <i class="fas fa-star"></i> {{ hotelData.rating | number:'1.1-1' }}
-              </span>
-              <span class="location">
-                <i class="fas fa-map-marker-alt"></i> {{ hotelData.city }}
-              </span>
-            </div>
-            <p class="address">{{ hotelData.address }}</p>
-            <div class="hotel-stats">
-              <div class="stat">
-                <i class="fas fa-door-open"></i>
-                <span>{{ hotelData.availableRooms }} Rooms Available</span>
-              </div>
-              <div class="stat">
-                <i class="fas fa-indian-rupee-sign"></i>
-                <span>{{ hotelData.pricePerNight | number:'1.2-2' }} per night</span>
-              </div>
-            </div>
+          <div class="info-item">
+            <span class="info-label">Available Rooms</span>
+            <span class="info-value">{{ hotelData.availableRooms }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">City</span>
+            <span class="info-value">{{ hotelData.city }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Rating</span>
+            <span class="info-value">{{ hotelData.rating.toFixed(1) }} ⭐</span>
           </div>
         </div>
-        
-        <div class="booking-section">
-          <h2>Book Your Stay</h2>
-          <form [formGroup]="bookingForm" (ngSubmit)="bookHotel()" class="booking-form">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Check-in Date *</label>
-                <input 
-                  type="date" 
-                  formControlName="checkInDate"
-                  [min]="today"
-                  [class.invalid]="checkInDate?.invalid && checkInDate?.touched">
-                @if (checkInDate?.invalid && checkInDate?.touched) {
-                  <span class="error-message">
-                    <i class="fas fa-exclamation-circle"></i> {{ getBookingErrorMessage('checkInDate') }}
-                  </span>
-                }
-              </div>
-              <div class="form-group">
-                <label>Check-out Date *</label>
-                <input 
-                  type="date" 
-                  formControlName="checkOutDate"
-                  [min]="bookingForm.value.checkInDate || tomorrow"
-                  [class.invalid]="checkOutDate?.invalid && checkOutDate?.touched">
-                @if (checkOutDate?.invalid && checkOutDate?.touched) {
-                  <span class="error-message">
-                    <i class="fas fa-exclamation-circle"></i> {{ getBookingErrorMessage('checkOutDate') }}
-                  </span>
-                }
-              </div>
-            </div>
+      </div>
+      
+      <div class="booking-card">
+        <h2>Book Your Stay</h2>
+        <button class="btn-book" (click)="openBookingModal()">
+          <i class="fas fa-calendar-check"></i> Book Now
+        </button>
+      </div>
+    </div>
+    
+    <div class="reviews-section">
+      <div class="reviews-header">
+        <h2>Guest Reviews ({{ reviews().length }})</h2>
+        @if (reviews().length > 0) {
+          <div class="average-rating">
+            <i class="fas fa-star"></i>
+            <span>{{ getAverageRating().toFixed(1) }} Average</span>
+          </div>
+        }
+      </div>
+      
+      @if (authService.isAuthenticated()) {
+        <div class="review-form">
+          <h3>Write a Review</h3>
+          <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
             <div class="form-group">
-              <label>Number of Guests *</label>
-              <input 
-                type="number" 
-                formControlName="numberOfGuests"
-                min="1" 
-                max="10"
-                [class.invalid]="numberOfGuests?.invalid && numberOfGuests?.touched">
-              @if (numberOfGuests?.invalid && numberOfGuests?.touched) {
-                <span class="error-message">
-                  <i class="fas fa-exclamation-circle"></i> {{ getBookingErrorMessage('numberOfGuests') }}
-                </span>
-              } @else {
-                <small class="hint">Maximum 10 guests per booking</small>
+              <label>Rating *</label>
+              <select 
+                formControlName="rating"
+                class="form-control"
+                [class.error]="hasReviewError('rating')">
+                <option [value]="5">⭐⭐⭐⭐⭐ Excellent</option>
+                <option [value]="4">⭐⭐⭐⭐ Very Good</option>
+                <option [value]="3">⭐⭐⭐ Good</option>
+                <option [value]="2">⭐⭐ Fair</option>
+                <option [value]="1">⭐ Poor</option>
+              </select>
+              @if (getReviewErrorMessage('rating')) {
+                <span class="error-message">{{ getReviewErrorMessage('rating') }}</span>
               }
             </div>
             
-            @if (calculateNights() > 0) {
-              <div class="booking-summary">
-                <div class="summary-row">
-                  <span>{{ calculateNights() }} night(s) × ${{ hotelData.pricePerNight | number:'1.2-2' }}</span>
-                  <span class="summary-total">${{ calculateTotal() | number:'1.2-2' }}</span>
-                </div>
-              </div>
-            }
-            
-            <button 
-              type="submit" 
-              class="btn-book" 
-              [disabled]="loading()">
-              @if (loading()) {
-                <i class="fas fa-spinner fa-spin"></i> Processing...
+            <div class="form-group">
+              <label>Comment *</label>
+              <textarea 
+                formControlName="comment"
+                class="form-control"
+                [class.error]="hasReviewError('comment')"
+                rows="4" 
+                placeholder="Share your experience (minimum 10 characters)..."></textarea>
+              @if (getReviewErrorMessage('comment')) {
+                <span class="error-message">{{ getReviewErrorMessage('comment') }}</span>
               } @else {
-                <i class="fas fa-check"></i> Book Now
+                <small class="hint">{{ reviewForm.get('comment')?.value?.length || 0 }} / 1000 characters</small>
+              }
+            </div>
+            
+            <button type="submit" class="btn-primary" [disabled]="submittingReview()">
+              @if (submittingReview()) {
+                <i class="fas fa-spinner fa-spin"></i> Submitting...
+              } @else {
+                <i class="fas fa-paper-plane"></i> Submit Review
               }
             </button>
           </form>
         </div>
-        
-        <div class="reviews-section">
-          <h2>Guest Reviews ({{ reviews().length }})</h2>
-          
-          @if (authService.isAuthenticated()) {
-            <div class="review-form">
-              <h3>Write a Review</h3>
-              <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
-                <div class="form-group">
-                  <label>Rating *</label>
-                  <select 
-                    formControlName="rating"
-                    [class.invalid]="rating?.invalid && rating?.touched">
-                    <option [value]="5">⭐⭐⭐⭐⭐ Excellent</option>
-                    <option [value]="4">⭐⭐⭐⭐ Very Good</option>
-                    <option [value]="3">⭐⭐⭐ Good</option>
-                    <option [value]="2">⭐⭐ Fair</option>
-                    <option [value]="1">⭐ Poor</option>
-                  </select>
-                  @if (rating?.invalid && rating?.touched) {
-                    <span class="error-message">
-                      <i class="fas fa-exclamation-circle"></i> {{ getReviewErrorMessage('rating') }}
-                    </span>
-                  }
-                </div>
-                <div class="form-group">
-                  <label>Comment *</label>
-                  <textarea 
-                    formControlName="comment"
-                    rows="4" 
-                    placeholder="Share your experience (minimum 10 characters)..."
-                    [class.invalid]="comment?.invalid && comment?.touched"></textarea>
-                  @if (comment?.invalid && comment?.touched) {
-                    <span class="error-message">
-                      <i class="fas fa-exclamation-circle"></i> {{ getReviewErrorMessage('comment') }}
-                    </span>
-                  } @else {
-                    <small class="hint">{{ comment?.value?.length || 0 }} / 1000 characters</small>
-                  }
-                </div>
-                <button type="submit" class="btn-submit">
-                  Submit Review
-                </button>
-              </form>
-            </div>
-          } @else {
-            <div class="login-prompt">
-              <p><i class="fas fa-info-circle"></i> Please <a routerLink="/login">login</a> to write a review</p>
-            </div>
-          }
-          
-          <div class="reviews-list">
-            @for (review of reviews(); track review.id) {
-              <div class="review-card">
-                <div class="review-header">
-                  <div class="reviewer-info">
-                    <i class="fas fa-user-circle"></i>
-                    <span class="reviewer-name">{{ review.userName }}</span>
-                  </div>
-                  <div class="review-rating">
-                    <i class="fas fa-star"></i> {{ review.rating }}
-                  </div>
-                </div>
-                <p class="review-comment">{{ review.comment }}</p>
-                <p class="review-date">{{ review.createdAt | date:'medium' }}</p>
-              </div>
-            }
-            
-            @if (reviews().length === 0) {
-              <div class="no-reviews">
-                <i class="fas fa-comments"></i>
-                <p>No reviews yet. Be the first to review!</p>
-              </div>
-            }
-          </div>
+      } @else {
+        <div class="login-prompt">
+          <i class="fas fa-info-circle"></i>
+          <p>Please <a routerLink="/login">login</a> to write a review</p>
         </div>
+      }
+      
+      <div class="reviews-list">
+        @for (review of reviews(); track review.id) {
+          <div class="review-card">
+            <div class="review-header">
+              <div class="reviewer-info">
+                <i class="fas fa-user-circle"></i>
+                <span class="review-author">{{ review.userName }}</span>
+              </div>
+              <div class="review-rating">
+                @for (star of getRatingStars(review.rating); track $index) {
+                  @if (star === 'full') {
+                    <i class="fas fa-star"></i>
+                  } @else if (star === 'half') {
+                    <i class="fas fa-star-half-alt"></i>
+                  } @else {
+                    <i class="far fa-star"></i>
+                  }
+                }
+              </div>
+            </div>
+            <p class="review-date">{{ review.createdAt | date:'medium' }}</p>
+            <p class="review-comment">{{ review.comment }}</p>
+          </div>
+        }
+        
+        @if (reviews().length === 0) {
+          <div class="no-reviews">
+            <i class="fas fa-comments"></i>
+            <p>No reviews yet. Be the first to review!</p>
+          </div>
+        }
       </div>
-    }
+    </div>
+  }
+</div>
+
+<!-- Booking Modal -->
+@if (showBookingModal()) {
+<div class="modal-overlay" (click)="closeBookingModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Complete Your Booking</h2>
+      <button class="modal-close" (click)="closeBookingModal()">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      @if (error()) {
+        <div class="alert alert-error">
+          <i class="fas fa-exclamation-circle"></i> {{ error() }}
+        </div>
+      }
+      
+      <form [formGroup]="bookingForm" (ngSubmit)="bookHotel()">
+        <div class="form-group">
+          <label for="checkInDate">Check-in Date *</label>
+          <input 
+            type="date" 
+            id="checkInDate"
+            formControlName="checkInDate"
+            class="form-control"
+            [class.error]="hasBookingError('checkInDate')"
+            [min]="today"
+          />
+          @if (getBookingErrorMessage('checkInDate')) {
+            <span class="error-message">{{ getBookingErrorMessage('checkInDate') }}</span>
+          }
+        </div>
+        
+        <div class="form-group">
+          <label for="checkOutDate">Check-out Date *</label>
+          <input 
+            type="date" 
+            id="checkOutDate"
+            formControlName="checkOutDate"
+            class="form-control"
+            [class.error]="hasBookingError('checkOutDate')"
+            [min]="bookingForm.value.checkInDate || tomorrow"
+          />
+          @if (getBookingErrorMessage('checkOutDate')) {
+            <span class="error-message">{{ getBookingErrorMessage('checkOutDate') }}</span>
+          }
+        </div>
+        
+        <div class="form-group">
+          <label for="numberOfGuests">Number of Guests *</label>
+          <input 
+            type="number" 
+            id="numberOfGuests"
+            formControlName="numberOfGuests"
+            class="form-control"
+            [class.error]="hasBookingError('numberOfGuests')"
+            min="1" 
+            max="10"
+          />
+          @if (getBookingErrorMessage('numberOfGuests')) {
+            <span class="error-message">{{ getBookingErrorMessage('numberOfGuests') }}</span>
+          }
+        </div>
+        
+        @if (availablePoints() > 0) {
+          <div class="loyalty-section">
+            <div class="loyalty-header">
+              <span><i class="fas fa-gift"></i> Redeem Loyalty Points</span>
+              <span class="points-available">{{ availablePoints() }} points available</span>
+            </div>
+            <div class="form-group">
+              <label for="pointsToRedeem">Points to Redeem (100 points = $1)</label>
+              <input 
+                type="number" 
+                id="pointsToRedeem"
+                formControlName="pointsToRedeem"
+                class="form-control"
+                min="0"
+                [max]="maxRedeemablePoints()"
+                step="100"
+              />
+              <small class="hint">Maximum {{ maxRedeemablePoints() }} points (50% of total)</small>
+            </div>
+          </div>
+        }
+        
+        @if (nights() > 0) {
+          <div class="booking-summary">
+            <h3>Booking Summary</h3>
+            <div class="summary-row">
+              <span>{{ nights() }} night(s) × ${{ hotel()!.pricePerNight.toFixed(2) }}</span>
+              <strong>${{ totalAmount().toFixed(2) }}</strong>
+            </div>
+            @if (discount() > 0) {
+              <div class="summary-row">
+                <span>Loyalty Discount ({{ bookingForm.get('pointsToRedeem')?.value }} points)</span>
+                <strong class="discount">-${{ discount().toFixed(2) }}</strong>
+              </div>
+            }
+            <div class="summary-row total">
+              <span>Total Amount</span>
+              <strong>${{ finalAmount().toFixed(2) }}</strong>
+            </div>
+          </div>
+        }
+        
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeBookingModal()" [disabled]="submittingBooking()">
+            Cancel
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="submittingBooking()">
+            @if (submittingBooking()) {
+              <i class="fas fa-spinner fa-spin"></i> Processing...
+            } @else {
+              <i class="fas fa-check"></i> Confirm Booking
+            }
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
+}

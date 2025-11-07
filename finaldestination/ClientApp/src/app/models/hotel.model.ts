@@ -21,8 +21,55 @@ export interface Booking {
   checkOutDate: string;
   numberOfGuests: number;
   totalAmount: number;
-  status: string;
+  loyaltyPointsRedeemed?: number;
+  loyaltyDiscountAmount?: number;
+  loyaltyPointsEarned?: number;
+  status: BookingStatus;
   createdAt: string;
+  paymentRequired?: boolean;
+  paymentId?: number;
+}
+
+export enum BookingStatus {
+  Confirmed = 1,
+  Cancelled = 2,
+  Completed = 3
+}
+
+export enum PaymentStatus {
+  Pending = 0,
+  Completed = 1,
+  Failed = 2,
+  Refunded = 3
+}
+
+export enum PaymentMethod {
+  CreditCard = 0,
+  DebitCard = 1,
+  PayPal = 2,
+  BankTransfer = 3
+}
+
+export interface PaymentRequest {
+  bookingId: number;
+  amount: number;
+  currency: string;
+  paymentMethod: PaymentMethod;
+  cardNumber?: string;
+  cardHolderName?: string;
+  expiryMonth?: string;
+  expiryYear?: string;
+  cvv?: string;
+}
+
+export interface PaymentResult {
+  paymentId: number;
+  status: PaymentStatus;
+  transactionId: string;
+  amount: number;
+  currency: string;
+  errorMessage?: string;
+  processedAt: string;
 }
 
 export interface Review {
@@ -43,6 +90,13 @@ export interface User {
   contactNumber?: string;
   createdAt: string;
   isActive: boolean;
+  loyaltyAccount?: LoyaltyInfo;
+}
+
+export interface LoyaltyInfo {
+  pointsBalance: number;
+  totalPointsEarned: number;
+  lastUpdated: string;
 }
 
 export interface AuthResponse {
@@ -57,4 +111,10 @@ export interface LoyaltyAccount {
   pointsBalance: number;
   totalPointsEarned: number;
   lastUpdated: string;
+}
+
+export interface ApiError {
+  message: string;
+  details?: string;
+  errors?: { [key: string]: string[] };
 }
