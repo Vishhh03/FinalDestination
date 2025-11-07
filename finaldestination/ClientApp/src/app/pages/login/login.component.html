@@ -15,7 +15,7 @@
       </div>
     }
     
-    <form [formGroup]="loginForm" (ngSubmit)="login()" class="auth-form">
+    <form (ngSubmit)="login()" class="auth-form">
       <div class="form-group">
         <label for="email">Email Address *</label>
         <div class="input-wrapper">
@@ -23,17 +23,12 @@
           <input 
             type="email" 
             id="email"
-            formControlName="email"
+            [(ngModel)]="email"
+            name="email"
             class="form-control"
-            [class.error]="email?.invalid && email?.touched"
             placeholder="Enter your email"
-            autocomplete="email">
+            required>
         </div>
-        @if (getErrorMessage('email')) {
-          <span class="error-message">
-            <i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('email') }}
-          </span>
-        }
       </div>
       
       <div class="form-group">
@@ -43,17 +38,12 @@
           <input 
             type="password" 
             id="password"
-            formControlName="password"
+            [(ngModel)]="password"
+            name="password"
             class="form-control"
-            [class.error]="password?.invalid && password?.touched"
             placeholder="Enter your password"
-            autocomplete="current-password">
+            required>
         </div>
-        @if (getErrorMessage('password')) {
-          <span class="error-message">
-            <i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('password') }}
-          </span>
-        }
       </div>
       
       <button type="submit" class="btn-submit" [disabled]="loading()">

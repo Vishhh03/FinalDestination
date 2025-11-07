@@ -28,34 +28,28 @@
   }
 
   @if (loading() && !showForm()) {
-    <div class="loading-spinner">
-      <i class="fas fa-spinner fa-spin"></i>
-      <p>Loading hotels...</p>
-    </div>
+    <div class="loading">Loading hotels...</div>
   }
 
   @if (showForm()) {
     <div class="hotel-form-card">
       <div class="form-header">
         <h2>{{ isEditing() ? 'Edit Hotel' : 'Add New Hotel' }}</h2>
-        <button class="btn-close" (click)="cancelForm()" [disabled]="submitting()">&times;</button>
+        <button class="btn-close" (click)="cancelForm()">&times;</button>
       </div>
 
-      <form [formGroup]="hotelForm" (ngSubmit)="saveHotel()">
+      <form (ngSubmit)="saveHotel()">
         <div class="form-grid">
           <div class="form-group full-width">
             <label for="name">Hotel Name *</label>
             <input 
               type="text" 
               id="name" 
-              formControlName="name"
+              [(ngModel)]="name"
+              name="name"
               class="form-control"
-              [class.error]="hasError('name')"
               placeholder="Enter hotel name"
-            />
-            @if (getErrorMessage('name')) {
-              <span class="error-message">{{ getErrorMessage('name') }}</span>
-            }
+              required>
           </div>
 
           <div class="form-group">
@@ -63,14 +57,11 @@
             <input 
               type="text" 
               id="city" 
-              formControlName="city"
+              [(ngModel)]="city"
+              name="city"
               class="form-control"
-              [class.error]="hasError('city')"
               placeholder="Enter city"
-            />
-            @if (getErrorMessage('city')) {
-              <span class="error-message">{{ getErrorMessage('city') }}</span>
-            }
+              required>
           </div>
 
           <div class="form-group">
@@ -78,17 +69,13 @@
             <input 
               type="number" 
               id="rating" 
-              formControlName="rating"
+              [(ngModel)]="rating"
+              name="rating"
               class="form-control"
-              [class.error]="hasError('rating')"
               min="0"
               max="5"
               step="0.1"
-              placeholder="0.0"
-            />
-            @if (getErrorMessage('rating')) {
-              <span class="error-message">{{ getErrorMessage('rating') }}</span>
-            }
+              required>
           </div>
 
           <div class="form-group full-width">
@@ -96,14 +83,11 @@
             <input 
               type="text" 
               id="address" 
-              formControlName="address"
+              [(ngModel)]="address"
+              name="address"
               class="form-control"
-              [class.error]="hasError('address')"
               placeholder="Enter full address"
-            />
-            @if (getErrorMessage('address')) {
-              <span class="error-message">{{ getErrorMessage('address') }}</span>
-            }
+              required>
           </div>
 
           <div class="form-group">
@@ -111,16 +95,12 @@
             <input 
               type="number" 
               id="pricePerNight" 
-              formControlName="pricePerNight"
+              [(ngModel)]="pricePerNight"
+              name="pricePerNight"
               class="form-control"
-              [class.error]="hasError('pricePerNight')"
               min="1"
               step="0.01"
-              placeholder="0.00"
-            />
-            @if (getErrorMessage('pricePerNight')) {
-              <span class="error-message">{{ getErrorMessage('pricePerNight') }}</span>
-            }
+              required>
           </div>
 
           <div class="form-group">
@@ -128,107 +108,93 @@
             <input 
               type="number" 
               id="availableRooms" 
-              formControlName="availableRooms"
+              [(ngModel)]="availableRooms"
+              name="availableRooms"
               class="form-control"
-              [class.error]="hasError('availableRooms')"
               min="1"
-              placeholder="0"
-            />
-            @if (getErrorMessage('availableRooms')) {
-              <span class="error-message">{{ getErrorMessage('availableRooms') }}</span>
-            }
+              required>
           </div>
         </div>
 
         <div class="form-actions">
-          <button type="button" class="btn-secondary" (click)="cancelForm()" [disabled]="submitting()">
-            Cancel
-          </button>
-          <button type="submit" class="btn-primary" [disabled]="submitting()">
-            @if (submitting()) {
-              <i class="fas fa-spinner fa-spin"></i> Saving...
-            } @else {
-              <i class="fas fa-save"></i> {{ isEditing() ? 'Update Hotel' : 'Create Hotel' }}
-            }
+          <button type="button" class="btn-secondary" (click)="cancelForm()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="loading()">
+            {{ loading() ? 'Saving...' : (isEditing() ? 'Update Hotel' : 'Create Hotel') }}
           </button>
         </div>
       </form>
     </div>
   }
 
-  @if (!showForm()) {
-    <div class="hotels-grid">
-      @if (hotels().length === 0 && !loading()) {
-        <div class="empty-state">
-          <i class="fas fa-hotel"></i>
-          <p>No hotels found. Click "Add New Hotel" to create your first hotel.</p>
-        </div>
-      }
+  <div class="hotels-grid">
+    @if (hotels().length === 0 && !loading()) {
+      <div class="empty-state">
+        <p>No hotels found. Click "Add New Hotel" to create your first hotel.</p>
+      </div>
+    }
 
-      @for (hotel of hotels(); track hotel.id) {
-        <div class="hotel-card">
-          <div class="hotel-card-header">
-            <div>
-              <h3>{{ hotel.name }}</h3>
-              <p class="hotel-id">ID: #{{ hotel.id }}</p>
+    @for (hotel of hotels(); track hotel.id) {
+      <div class="hotel-card">
+        <div class="hotel-card-header">
+          <div>
+            <h3>{{ hotel.name }}</h3>
+            <p class="hotel-id">ID: #{{ hotel.id }}</p>
+          </div>
+          <span class="rating">
+            <i class="fas fa-star"></i> {{ hotel.rating.toFixed(1) }}
+          </span>
+        </div>
+        
+        <div class="hotel-card-body">
+          <div class="hotel-info">
+            <div class="info-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>{{ hotel.city }}</span>
             </div>
-            <span class="rating">
-              <i class="fas fa-star"></i> {{ hotel.rating.toFixed(1) }}
-            </span>
+            <div class="info-item">
+              <i class="fas fa-map"></i>
+              <span>{{ hotel.address }}</span>
+            </div>
           </div>
           
-          <div class="hotel-card-body">
-            <div class="hotel-info">
-              <div class="info-item">
-                <i class="fas fa-map-marker-alt"></i>
-                <span>{{ hotel.city }}</span>
-              </div>
-              <div class="info-item">
-                <i class="fas fa-map"></i>
-                <span>{{ hotel.address }}</span>
-              </div>
+          <div class="hotel-stats">
+            <div class="stat">
+              <span class="stat-label">Price/Night</span>
+              <span class="stat-value">${{ hotel.pricePerNight.toFixed(2) }}</span>
             </div>
-            
-            <div class="hotel-stats">
-              <div class="stat">
-                <span class="stat-label">Price/Night</span>
-                <span class="stat-value">${{ hotel.pricePerNight.toFixed(2) }}</span>
-              </div>
-              <div class="stat">
-                <span class="stat-label">Available Rooms</span>
-                <span class="stat-value">{{ hotel.availableRooms }}</span>
-              </div>
-            </div>
-
-            <div class="hotel-meta">
-              <span class="meta-item">
-                <i class="fas fa-calendar"></i>
-                Created: {{ hotel.createdAt | date:'mediumDate' }}
-              </span>
+            <div class="stat">
+              <span class="stat-label">Available Rooms</span>
+              <span class="stat-value">{{ hotel.availableRooms }}</span>
             </div>
           </div>
 
-          <div class="hotel-card-actions">
-            <button class="btn-edit" (click)="editHotel(hotel)">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-            <button class="btn-delete" (click)="confirmDelete(hotel)">
-              <i class="fas fa-trash"></i> Delete
-            </button>
+          <div class="hotel-meta">
+            <span class="meta-item">
+              <i class="fas fa-calendar"></i>
+              Created: {{ hotel.createdAt | date:'mediumDate' }}
+            </span>
           </div>
         </div>
-      }
-    </div>
-  }
+
+        <div class="hotel-card-actions">
+          <button class="btn-edit" (click)="editHotel(hotel)">
+            <i class="fas fa-edit"></i> Edit
+          </button>
+          <button class="btn-delete" (click)="confirmDelete(hotel)">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </div>
+      </div>
+    }
+  </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
 @if (showDeleteModal()) {
 <div class="modal-overlay" (click)="cancelDelete()">
   <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Confirm Delete</h2>
-      <button class="modal-close" (click)="cancelDelete()" [disabled]="submitting()">&times;</button>
+      <button class="modal-close" (click)="cancelDelete()">&times;</button>
     </div>
     
     <div class="modal-body">
@@ -240,15 +206,9 @@
     </div>
     
     <div class="modal-actions">
-      <button class="btn-secondary" (click)="cancelDelete()" [disabled]="submitting()">
-        Cancel
-      </button>
-      <button class="btn-danger" (click)="deleteHotel()" [disabled]="submitting()">
-        @if (submitting()) {
-          <i class="fas fa-spinner fa-spin"></i> Deleting...
-        } @else {
-          <i class="fas fa-trash"></i> Delete Hotel
-        }
+      <button class="btn-secondary" (click)="cancelDelete()">Cancel</button>
+      <button class="btn-danger" (click)="deleteHotel()" [disabled]="loading()">
+        {{ loading() ? 'Deleting...' : 'Delete Hotel' }}
       </button>
     </div>
   </div>

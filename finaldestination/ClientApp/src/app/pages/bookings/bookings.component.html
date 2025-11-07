@@ -131,7 +131,6 @@
     </div>
 </section>
 
-<!-- Payment Modal -->
 @if (showPaymentModal()) {
 <div class="modal-overlay" (click)="closePaymentModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
@@ -168,28 +167,17 @@
             </div>
             }
 
-            <form [formGroup]="paymentForm" (ngSubmit)="processPayment()">
-                <div class="form-group">
-                    <label for="paymentMethod">Payment Method *</label>
-                    <select id="paymentMethod" formControlName="paymentMethod" class="form-control">
-                        <option [value]="PaymentMethod.CreditCard">Credit Card</option>
-                        <option [value]="PaymentMethod.DebitCard">Debit Card</option>
-                    </select>
-                </div>
-
+            <form (ngSubmit)="processPayment()">
                 <div class="form-group">
                     <label for="cardHolderName">Card Holder Name *</label>
                     <input 
                         type="text" 
                         id="cardHolderName" 
-                        formControlName="cardHolderName"
+                        [(ngModel)]="cardHolderName"
+                        name="cardHolderName"
                         class="form-control"
-                        [class.error]="paymentForm.get('cardHolderName')?.touched && paymentForm.get('cardHolderName')?.invalid"
                         placeholder="John Doe"
-                    />
-                    @if (getFieldError('cardHolderName')) {
-                    <span class="error-message">{{ getFieldError('cardHolderName') }}</span>
-                    }
+                        required>
                 </div>
 
                 <div class="form-group">
@@ -197,49 +185,39 @@
                     <input 
                         type="text" 
                         id="cardNumber" 
-                        formControlName="cardNumber"
+                        [(ngModel)]="cardNumber"
+                        name="cardNumber"
                         class="form-control"
-                        [class.error]="paymentForm.get('cardNumber')?.touched && paymentForm.get('cardNumber')?.invalid"
                         placeholder="1234567890123456"
                         maxlength="16"
-                        (input)="onCardNumberInput($event)"
-                    />
-                    @if (getFieldError('cardNumber')) {
-                    <span class="error-message">{{ getFieldError('cardNumber') }}</span>
-                    }
+                        required>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="expiryMonth">Expiry Month *</label>
+                        <label for="expiryMonth">Month *</label>
                         <input 
                             type="text" 
                             id="expiryMonth" 
-                            formControlName="expiryMonth"
+                            [(ngModel)]="expiryMonth"
+                            name="expiryMonth"
                             class="form-control"
-                            [class.error]="paymentForm.get('expiryMonth')?.touched && paymentForm.get('expiryMonth')?.invalid"
                             placeholder="MM"
                             maxlength="2"
-                        />
-                        @if (getFieldError('expiryMonth')) {
-                        <span class="error-message">{{ getFieldError('expiryMonth') }}</span>
-                        }
+                            required>
                     </div>
 
                     <div class="form-group">
-                        <label for="expiryYear">Expiry Year *</label>
+                        <label for="expiryYear">Year *</label>
                         <input 
                             type="text" 
                             id="expiryYear" 
-                            formControlName="expiryYear"
+                            [(ngModel)]="expiryYear"
+                            name="expiryYear"
                             class="form-control"
-                            [class.error]="paymentForm.get('expiryYear')?.touched && paymentForm.get('expiryYear')?.invalid"
                             placeholder="YY"
                             maxlength="2"
-                        />
-                        @if (getFieldError('expiryYear')) {
-                        <span class="error-message">{{ getFieldError('expiryYear') }}</span>
-                        }
+                            required>
                     </div>
 
                     <div class="form-group">
@@ -247,15 +225,12 @@
                         <input 
                             type="text" 
                             id="cvv" 
-                            formControlName="cvv"
+                            [(ngModel)]="cvv"
+                            name="cvv"
                             class="form-control"
-                            [class.error]="paymentForm.get('cvv')?.touched && paymentForm.get('cvv')?.invalid"
                             placeholder="123"
                             maxlength="4"
-                        />
-                        @if (getFieldError('cvv')) {
-                        <span class="error-message">{{ getFieldError('cvv') }}</span>
-                        }
+                            required>
                     </div>
                 </div>
 
