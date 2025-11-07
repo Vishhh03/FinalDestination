@@ -214,7 +214,7 @@ public static class DataSeeder
                 Name = "Historic Inn",
                 Address = "456 Heritage St",
                 City = "Boston",
-                PricePerNight = 1300.00m,
+                PricePerNight = 1300.00m, 
                 AvailableRooms = 20,
                 Rating = 0, // Will be calculated from reviews
                 ReviewCount = 0,
