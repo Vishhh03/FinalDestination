@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
 import { Booking, PaymentRequest, PaymentResult } from '../models/hotel.model';
 
 @Injectable({
@@ -12,50 +10,23 @@ export class BookingService {
 
   constructor(private http: HttpClient) {}
 
-  getMyBookings(): Observable<Booking[]> {
-    return this.http.get<Booking[]>(`${this.apiUrl}/my`)
-      .pipe(catchError(this.handleError));
+  async getMyBookings(): Promise<Booking[]> {
+    return await this.http.get<Booking[]>(`${this.apiUrl}/my`).toPromise() || [];
   }
 
-  getBooking(id: number): Observable<Booking> {
-    return this.http.get<Booking>(`${this.apiUrl}/${id}`)
-      .pipe(catchError(this.handleError));
+  async getBooking(id: number): Promise<Booking | null> {
+    return await this.http.get<Booking>(`${this.apiUrl}/${id}`).toPromise() || null;
   }
 
-  create(booking: any): Observable<Booking> {
-    return this.http.post<Booking>(this.apiUrl, booking)
-      .pipe(catchError(this.handleError));
+  async create(booking: any): Promise<Booking | null> {
+    return await this.http.post<Booking>(this.apiUrl, booking).toPromise() || null;
   }
 
-  cancel(id: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}/cancel`, {})
-      .pipe(catchError(this.handleError));
+  async cancel(id: number): Promise<any> {
+    return await this.http.put(`${this.apiUrl}/${id}/cancel`, {}).toPromise();
   }
 
-  processPayment(bookingId: number, paymentData: PaymentRequest): Observable<PaymentResult> {
-    return this.http.post<PaymentResult>(`${this.apiUrl}/${bookingId}/payment`, paymentData)
-      .pipe(catchError(this.handleError));
-  }
-
-  private handleError(error: HttpErrorResponse) {
-    let errorMessage = 'An error occurred';
-    
-    if (error.error instanceof ErrorEvent) {
-      // Client-side error
-      errorMessage = error.error.message;
-    } else {
-      // Server-side error
-      if (error.error?.message) {
-        errorMessage = error.error.message;
-      } else if (error.error?.details) {
-        errorMessage = error.error.details;
-      } else if (typeof error.error === 'string') {
-        errorMessage = error.error;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-    }
-    
-    return throwError(() => ({ message: errorMessage, status: error.status, error: error.error }));
+  async processPayment(bookingId: number, paymentData: PaymentRequest): Promise<PaymentResult | null> {
+    return await this.http.post<PaymentResult>(`${this.apiUrl}/${bookingId}/payment`, paymentData).toPromise() || null;
   }
 }

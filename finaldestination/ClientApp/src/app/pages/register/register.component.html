@@ -15,7 +15,7 @@
       </div>
     }
     
-    <form [formGroup]="registerForm" (ngSubmit)="register()" class="auth-form">
+    <form (ngSubmit)="register()" class="auth-form">
       <div class="form-group">
         <label for="name">Full Name *</label>
         <div class="input-wrapper">
@@ -23,17 +23,12 @@
           <input 
             type="text" 
             id="name"
-            formControlName="name"
+            [(ngModel)]="name"
+            name="name"
             class="form-control"
-            [class.error]="name?.invalid && name?.touched"
             placeholder="Enter your full name"
-            autocomplete="name">
+            required>
         </div>
-        @if (getErrorMessage('name')) {
-          <span class="error-message">
-            <i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('name') }}
-          </span>
-        }
       </div>
       
       <div class="form-group">
@@ -43,17 +38,12 @@
           <input 
             type="email" 
             id="email"
-            formControlName="email"
+            [(ngModel)]="email"
+            name="email"
             class="form-control"
-            [class.error]="email?.invalid && email?.touched"
             placeholder="Enter your email"
-            autocomplete="email">
+            required>
         </div>
-        @if (getErrorMessage('email')) {
-          <span class="error-message">
-            <i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('email') }}
-          </span>
-        }
       </div>
       
       <div class="form-group">
@@ -63,22 +53,16 @@
           <input 
             type="password" 
             id="password"
-            formControlName="password"
+            [(ngModel)]="password"
+            name="password"
             class="form-control"
-            [class.error]="password?.invalid && password?.touched"
             placeholder="Create a strong password"
-            autocomplete="new-password">
+            required>
         </div>
-        @if (getErrorMessage('password')) {
-          <span class="error-message">
-            <i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('password') }}
-          </span>
-        } @else {
-          <small class="hint">
-            <i class="fas fa-info-circle"></i>
-            Min 8 characters with uppercase, lowercase, number & special character
-          </small>
-        }
+        <small class="hint">
+          <i class="fas fa-info-circle"></i>
+          Min 8 characters recommended
+        </small>
       </div>
       
       <div class="form-group">
@@ -88,17 +72,11 @@
           <input 
             type="tel" 
             id="contactNumber"
-            formControlName="contactNumber"
+            [(ngModel)]="contactNumber"
+            name="contactNumber"
             class="form-control"
-            [class.error]="contactNumber?.invalid && contactNumber?.touched"
-            placeholder="Enter your phone number"
-            autocomplete="tel">
+            placeholder="Enter your phone number">
         </div>
-        @if (getErrorMessage('contactNumber')) {
-          <span class="error-message">
-            <i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('contactNumber') }}
-          </span>
-        }
       </div>
       
       <button type="submit" class="btn-submit" [disabled]="loading()">

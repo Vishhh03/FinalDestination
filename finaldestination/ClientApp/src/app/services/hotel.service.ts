@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Hotel } from '../models/hotel.model';
 
 @Injectable({
@@ -12,72 +10,36 @@ export class HotelService {
 
     constructor(private http: HttpClient) { }
 
-    /** GET /api/Hotels */
-    getAll(): Observable<Hotel[]> {
-        return this.http.get<Hotel[]>(this.apiUrl)
-            .pipe(catchError(this.handleError));
+    async getAll(): Promise<Hotel[]> {
+        return await this.http.get<Hotel[]>(this.apiUrl).toPromise() || [];
     }
 
-    /** GET /api/Hotels/{id} */
-    getById(id: number): Observable<Hotel> {
-        return this.http.get<Hotel>(`${this.apiUrl}/${id}`)
-            .pipe(catchError(this.handleError));
+    async getById(id: number): Promise<Hotel | null> {
+        return await this.http.get<Hotel>(`${this.apiUrl}/${id}`).toPromise() || null;
     }
 
-    /** GET /api/Hotels/search */
-    search(city?: string, maxPrice?: number, minRating?: number): Observable<Hotel[]> {
+    async search(city?: string, maxPrice?: number, minRating?: number): Promise<Hotel[]> {
         let params = new HttpParams();
         if (city) params = params.set('city', city);
         if (maxPrice) params = params.set('maxPrice', maxPrice.toString());
         if (minRating) params = params.set('minRating', minRating.toString());
 
-        return this.http.get<Hotel[]>(`${this.apiUrl}/search`, { params })
-            .pipe(catchError(this.handleError));
+        return await this.http.get<Hotel[]>(`${this.apiUrl}/search`, { params }).toPromise() || [];
     }
 
-    /** GET /api/Hotels/my-hotels */
-    getMyHotels(): Observable<Hotel[]> {
-        return this.http.get<Hotel[]>(`${this.apiUrl}/my-hotels`)
-            .pipe(catchError(this.handleError));
+    async getMyHotels(): Promise<Hotel[]> {
+        return await this.http.get<Hotel[]>(`${this.apiUrl}/my-hotels`).toPromise() || [];
     }
 
-    /** POST /api/Hotels */
-    create(hotelData: any): Observable<Hotel> {
-        return this.http.post<Hotel>(this.apiUrl, hotelData)
-            .pipe(catchError(this.handleError));
+    async create(hotelData: any): Promise<Hotel | null> {
+        return await this.http.post<Hotel>(this.apiUrl, hotelData).toPromise() || null;
     }
 
-    /** PUT /api/Hotels/{id} */
-    update(id: number, hotelData: any): Observable<Hotel> {
-        return this.http.put<Hotel>(`${this.apiUrl}/${id}`, hotelData)
-            .pipe(catchError(this.handleError));
+    async update(id: number, hotelData: any): Promise<Hotel | null> {
+        return await this.http.put<Hotel>(`${this.apiUrl}/${id}`, hotelData).toPromise() || null;
     }
 
-    /** DELETE /api/Hotels/{id} */
-    delete(id: number): Observable<any> {
-        return this.http.delete<any>(`${this.apiUrl}/${id}`)
-            .pipe(catchError(this.handleError));
-    }
-
-    private handleError(error: HttpErrorResponse) {
-        let errorMessage = 'An error occurred';
-        
-        if (error.error instanceof ErrorEvent) {
-            // Client-side error
-            errorMessage = error.error.message;
-        } else {
-            // Server-side error
-            if (error.error?.message) {
-                errorMessage = error.error.message;
-            } else if (error.error?.details) {
-                errorMessage = error.error.details;
-            } else if (typeof error.error === 'string') {
-                errorMessage = error.error;
-            } else if (error.message) {
-                errorMessage = error.message;
-            }
-        }
-        
-        return throwError(() => ({ message: errorMessage, status: error.status, error: error.error }));
+    async delete(id: number): Promise<any> {
+        return await this.http.delete(`${this.apiUrl}/${id}`).toPromise();
     }
 }
