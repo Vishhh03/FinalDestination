@@ -44,11 +44,11 @@ export class ManagerDashboardComponent implements OnInit {
   loadHotels() {
     this.loading.set(true);
     this.hotelService.getMyHotels().subscribe({
-      next: (hotels) => {
+      next: (hotels: Hotel[]) => {
         this.hotels.set(hotels);
         this.loading.set(false);
       },
-      error: (err) => {
+      error: (err:any) => {
         this.error.set('Failed to load hotels');
         this.loading.set(false);
       }
@@ -118,7 +118,7 @@ export class ManagerDashboardComponent implements OnInit {
           this.loadHotels();
           setTimeout(() => this.success.set(''), 3000);
         },
-        error: (err) => {
+        error: (err:any) => {
           this.error.set(err.error?.message || 'Failed to update hotel');
           this.loading.set(false);
         }
@@ -132,7 +132,7 @@ export class ManagerDashboardComponent implements OnInit {
           this.loadHotels();
           setTimeout(() => this.success.set(''), 3000);
         },
-        error: (err) => {
+        error: (err:any) => {
           this.error.set(err.error?.message || 'Failed to create hotel');
           this.loading.set(false);
         }
@@ -153,7 +153,7 @@ export class ManagerDashboardComponent implements OnInit {
         this.loadHotels();
         setTimeout(() => this.success.set(''), 3000);
       },
-      error: (err) => {
+      error: (err:any) => {
         this.error.set(err.error?.message || 'Failed to delete hotel');
         this.loading.set(false);
       }
