@@ -15,41 +15,79 @@ import { Hotel } from '../../models/hotel.model';
   styleUrls: ['./manager-dashboard.component.css']
 })
 export class ManagerDashboardComponent implements OnInit {
-  hotelService = inject(HotelService);
-  authService = inject(AuthService);
-  router = inject(Router);
-  fb = inject(FormBuilder);
+  private hotelService = inject(HotelService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private fb = inject(FormBuilder);
 
   hotels = signal<Hotel[]>([]);
   selectedHotel = signal<Hotel | null>(null);
   showForm = signal(false);
+  showDeleteModal = signal(false);
+  hotelToDelete = signal<Hotel | null>(null);
   isEditing = signal(false);
   error = signal('');
   success = signal('');
   loading = signal(false);
+  submitting = signal(false);
 
   hotelForm: FormGroup = this.fb.group({
-    name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
-    address: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200)]],
-    city: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
-    pricePerNight: [0, [Validators.required, Validators.min(1), Validators.max(10000)]],
-    availableRooms: [0, [Validators.required, Validators.min(1), Validators.max(1000)]],
-    rating: [0, [Validators.required, Validators.min(0), Validators.max(5)]]
+    name: ['', [
+      Validators.required, 
+      Validators.minLength(2), 
+      Validators.maxLength(100),
+      Validators.pattern(/^[a-zA-Z0-9\s\-&',.]+$/)
+    ]],
+    address: ['', [
+      Validators.required, 
+      Validators.minLength(5), 
+      Validators.maxLength(200)
+    ]],
+    city: ['', [
+      Validators.required, 
+      Validators.minLength(2), 
+      Validators.maxLength(50),
+      Validators.pattern(/^[a-zA-Z\s\-]+$/)
+    ]],
+    pricePerNight: [0, [
+      Validators.required, 
+      Validators.min(1), 
+      Validators.max(10000)
+    ]],
+    availableRooms: [0, [
+      Validators.required, 
+      Validators.min(1), 
+      Validators.max(1000)
+    ]],
+    rating: [0, [
+      Validators.required, 
+      Validators.min(0), 
+      Validators.max(5)
+    ]]
   });
 
   ngOnInit() {
+    // Check if user is authorized
+    const user = this.authService.currentUser();
+    if (!user || (user.role !== 'HotelManager' && user.role !== 'Admin')) {
+      this.router.navigate(['/']);
+      return;
+    }
+    
     this.loadHotels();
   }
 
   loadHotels() {
     this.loading.set(true);
+    this.error.set('');
+    
     this.hotelService.getMyHotels().subscribe({
       next: (hotels: Hotel[]) => {
         this.hotels.set(hotels);
         this.loading.set(false);
       },
-      error: (err:any) => {
-        this.error.set('Failed to load hotels');
+      error: (err: any) => {
+        this.error.set(err.message || 'Failed to load hotels');
         this.loading.set(false);
       }
     });
@@ -96,15 +134,17 @@ export class ManagerDashboardComponent implements OnInit {
   }
 
   saveHotel() {
+    // Mark all fields as touched to show validation errors
+    Object.keys(this.hotelForm.controls).forEach(key => {
+      this.hotelForm.get(key)?.markAsTouched();
+    });
+
     if (this.hotelForm.invalid) {
-      Object.keys(this.hotelForm.controls).forEach(key => {
-        this.hotelForm.get(key)?.markAsTouched();
-      });
       this.error.set('Please fill in all required fields correctly');
       return;
     }
 
-    this.loading.set(true);
+    this.submitting.set(true);
     this.error.set('');
 
     const hotelData = this.hotelForm.value;
@@ -113,73 +153,98 @@ export class ManagerDashboardComponent implements OnInit {
       this.hotelService.update(this.selectedHotel()!.id, hotelData).subscribe({
         next: () => {
           this.success.set('Hotel updated successfully');
-          this.loading.set(false);
+          this.submitting.set(false);
           this.showForm.set(false);
           this.loadHotels();
           setTimeout(() => this.success.set(''), 3000);
         },
-        error: (err:any) => {
-          this.error.set(err.error?.message || 'Failed to update hotel');
-          this.loading.set(false);
+        error: (err: any) => {
+          this.error.set(err.message || 'Failed to update hotel');
+          this.submitting.set(false);
         }
       });
     } else {
       this.hotelService.create(hotelData).subscribe({
         next: () => {
           this.success.set('Hotel created successfully');
-          this.loading.set(false);
+          this.submitting.set(false);
           this.showForm.set(false);
           this.loadHotels();
           setTimeout(() => this.success.set(''), 3000);
         },
-        error: (err:any) => {
-          this.error.set(err.error?.message || 'Failed to create hotel');
-          this.loading.set(false);
+        error: (err: any) => {
+          this.error.set(err.message || 'Failed to create hotel');
+          this.submitting.set(false);
         }
       });
     }
   }
 
-  deleteHotel(hotel: Hotel) {
-    if (!confirm(`Are you sure you want to delete ${hotel.name}?`)) {
-      return;
-    }
+  confirmDelete(hotel: Hotel) {
+    this.hotelToDelete.set(hotel);
+    this.showDeleteModal.set(true);
+    this.error.set('');
+  }
 
-    this.loading.set(true);
+  cancelDelete() {
+    this.showDeleteModal.set(false);
+    this.hotelToDelete.set(null);
+  }
+
+  deleteHotel() {
+    const hotel = this.hotelToDelete();
+    if (!hotel) return;
+
+    this.submitting.set(true);
+    this.error.set('');
+    
     this.hotelService.delete(hotel.id).subscribe({
       next: () => {
         this.success.set('Hotel deleted successfully');
-        this.loading.set(false);
+        this.submitting.set(false);
+        this.showDeleteModal.set(false);
+        this.hotelToDelete.set(null);
         this.loadHotels();
         setTimeout(() => this.success.set(''), 3000);
       },
-      error: (err:any) => {
-        this.error.set(err.error?.message || 'Failed to delete hotel');
-        this.loading.set(false);
+      error: (err: any) => {
+        this.error.set(err.message || 'Failed to delete hotel');
+        this.submitting.set(false);
+        this.showDeleteModal.set(false);
+        this.hotelToDelete.set(null);
       }
     });
   }
 
   getErrorMessage(field: string): string {
     const control = this.hotelForm.get(field);
-    if (!control || !control.touched) return '';
+    if (!control || !control.touched || !control.errors) {
+      return '';
+    }
 
-    if (control.hasError('required')) {
-      return `${this.getFieldLabel(field)} is required`;
+    const errors = control.errors;
+    const label = this.getFieldLabel(field);
+
+    if (errors['required']) {
+      return `${label} is required`;
     }
-    if (control.hasError('minlength')) {
-      return `${this.getFieldLabel(field)} must be at least ${control.errors?.['minlength'].requiredLength} characters`;
+    if (errors['minlength']) {
+      return `${label} must be at least ${errors['minlength'].requiredLength} characters`;
     }
-    if (control.hasError('maxlength')) {
-      return `${this.getFieldLabel(field)} must not exceed ${control.errors?.['maxlength'].requiredLength} characters`;
+    if (errors['maxlength']) {
+      return `${label} must not exceed ${errors['maxlength'].requiredLength} characters`;
     }
-    if (control.hasError('min')) {
-      return `${this.getFieldLabel(field)} must be at least ${control.errors?.['min'].min}`;
+    if (errors['min']) {
+      return `${label} must be at least ${errors['min'].min}`;
     }
-    if (control.hasError('max')) {
-      return `${this.getFieldLabel(field)} must not exceed ${control.errors?.['max'].max}`;
+    if (errors['max']) {
+      return `${label} must not exceed ${errors['max'].max}`;
     }
-    return '';
+    if (errors['pattern']) {
+      return this.getPatternError(field);
+    }
+
+    return 'Invalid value';
   }
 
   private getFieldLabel(field: string): string {
@@ -192,5 +257,18 @@ export class ManagerDashboardComponent implements OnInit {
       rating: 'Rating'
     };
     return labels[field] || field;
+  }
+
+  private getPatternError(field: string): string {
+    const errors: { [key: string]: string } = {
+      name: 'Hotel name can only contain letters, numbers, spaces, and basic punctuation',
+      city: 'City name can only contain letters, spaces, and hyphens'
+    };
+    return errors[field] || 'Invalid format';
+  }
+
+  hasError(field: string): boolean {
+    const control = this.hotelForm.get(field);
+    return !!(control && control.touched && control.invalid);
   }
 }
