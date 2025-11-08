@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
@@ -12,42 +12,34 @@ import { Hotel } from '../../models/hotel.model';
   templateUrl: './hotels.component.html'
 })
 export class HotelsComponent implements OnInit {
-  hotelService = inject(HotelService);
-  route = inject(ActivatedRoute);
-  
   hotels = signal<Hotel[]>([]);
   loading = signal(true);
 
-  ngOnInit() {
-    this.route.queryParams.subscribe(params => {
+  constructor(
+    private hotelService: HotelService,
+    private route: ActivatedRoute
+  ) {}
+
+  async ngOnInit() {
+    this.route.queryParams.subscribe(async params => {
       this.loading.set(true);
       
-      if (params['city'] || params['maxPrice'] || params['minRating']) {
-        this.hotelService.search(
-          params['city'],
-          params['maxPrice'] ? +params['maxPrice'] : undefined,
-          params['minRating'] ? +params['minRating'] : undefined
-        ).subscribe({
-          next: (hotels) => {
-            this.hotels.set(hotels);
-            this.loading.set(false);
-          },
-          error: (err) => {
-            console.error('Error searching hotels:', err);
-            this.loading.set(false);
-          }
-        });
-      } else {
-        this.hotelService.getAll().subscribe({
-          next: (hotels) => {
-            this.hotels.set(hotels);
-            this.loading.set(false);
-          },
-          error: (err) => {
-            console.error('Error loading hotels:', err);
-            this.loading.set(false);
-          }
-        });
+      try {
+        let hotels: Hotel[];
+        if (params['city'] || params['maxPrice'] || params['minRating']) {
+          hotels = await this.hotelService.search(
+            params['city'],
+            params['maxPrice'] ? +params['maxPrice'] : undefined,
+            params['minRating'] ? +params['minRating'] : undefined
+          );
+        } else {
+          hotels = await this.hotelService.getAll();
+        }
+        this.hotels.set(hotels);
+      } catch (err) {
+        console.error('Error loading hotels:', err);
+      } finally {
+        this.loading.set(false);
       }
     });
   }
