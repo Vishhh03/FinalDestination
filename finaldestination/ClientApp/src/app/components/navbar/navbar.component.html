@@ -4,6 +4,19 @@
             <i class="fas fa-hotel"></i>
             <span>Final Destination</span>
         </a>
+        
+        <!-- DEBUG INFO - Remove after fixing -->
+        @if (authService.isAuthenticated()) {
+        <div style="position: fixed; top: 60px; right: 10px; background: #fff; border: 2px solid #f00; padding: 10px; z-index: 9999; font-size: 12px; max-width: 300px;">
+            <strong>🐛 DEBUG INFO:</strong><br>
+            User: {{ authService.currentUser()?.name }}<br>
+            Role: <strong>{{ authService.currentUser()?.role }}</strong><br>
+            Role Type: {{ typeof(authService.currentUser()?.role) }}<br>
+            hasRole('HotelManager'): {{ authService.hasRole('HotelManager') }}<br>
+            hasAnyRole(['HotelManager', 'Admin']): {{ authService.hasAnyRole(['HotelManager', 'Admin']) }}
+        </div>
+        }
+        
         <ul class="nav-menu">
             <li><a routerLink="/">Home</a></li>
             <li><a routerLink="/hotels">Hotels</a></li>

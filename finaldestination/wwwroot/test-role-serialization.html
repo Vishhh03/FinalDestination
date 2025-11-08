@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Role Serialization Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Role Serialization Test</h1>
+    <p>This page tests if the backend is correctly serializing UserRole enum as strings.</p>
+
+    <div class="test-section">
+        <h2>Test 1: Login as Hotel Manager</h2>
+        <button onclick="testLogin('manager@hotel.com', 'manager123')">Login as Manager</button>
+        <div id="manager-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Login as Admin</h2>
+        <button onclick="testLogin('admin@hotel.com', 'admin123')">Login as Admin</button>
+        <div id="admin-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Login as Guest</h2>
+        <button onclick="testLogin('guest@hotel.com', 'guest123')">Login as Guest</button>
+        <div id="guest-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Get Current User (/api/auth/me)</h2>
+        <button onclick="testGetMe()">Get Current User</button>
+        <div id="me-result"></div>
+    </div>
+
+    <script>
+        let currentToken = null;
+
+        async function testLogin(email, password) {
+            const resultDiv = document.getElementById(email.includes('manager') ? 'manager-result' : 
+                                                     email.includes('admin') ? 'admin-result' : 'guest-result');
+            resultDiv.innerHTML = '<p class="info">⏳ Testing login...</p>';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+
+                const data = await response.json();
+                currentToken = data.token;
+
+                // Check role type
+                const roleValue = data.user.role;
+                const roleType = typeof roleValue;
+                const isString = roleType === 'string';
+                const isNumber = roleType === 'number';
+
+                let html = '<h3>✅ Login Successful</h3>';
+                html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                html += '<h4>Role Analysis:</h4>';
+                html += '<ul>';
+                html += `<li>Role Value: <strong>${roleValue}</strong></li>`;
+                html += `<li>Role Type: <strong>${roleType}</strong></li>`;
+                
+                if (isString) {
+                    html += '<li class="success">✅ Role is a STRING (correct!)</li>';
+                } else if (isNumber) {
+                    html += '<li class="error">❌ Role is a NUMBER (incorrect!)</li>';
+                    html += '<li class="error">Backend is NOT serializing enums as strings!</li>';
+                } else {
+                    html += '<li class="error">❌ Role is neither string nor number (unexpected!)</li>';
+                }
+                
+                html += '</ul>';
+                resultDiv.innerHTML = html;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testGetMe() {
+            const resultDiv = document.getElementById('me-result');
+            
+            if (!currentToken) {
+                resultDiv.innerHTML = '<p class="error">❌ Please login first to get a token</p>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p class="info">⏳ Fetching current user...</p>';
+
+            try {
+                const response = await fetch('/api/auth/me', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+
+                const data = await response.json();
+
+                // Check role type
+                const roleValue = data.role;
+                const roleType = typeof roleValue;
+                const isString = roleType === 'string';
+                const isNumber = roleType === 'number';
+
+                let html = '<h3>✅ User Data Retrieved</h3>';
+                html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                html += '<h4>Role Analysis:</h4>';
+                html += '<ul>';
+                html += `<li>Role Value: <strong>${roleValue}</strong></li>`;
+                html += `<li>Role Type: <strong>${roleType}</strong></li>`;
+                
+                if (isString) {
+                    html += '<li class="success">✅ Role is a STRING (correct!)</li>';
+                } else if (isNumber) {
+                    html += '<li class="error">❌ Role is a NUMBER (incorrect!)</li>';
+                    html += '<li class="error">Backend is NOT serializing enums as strings!</li>';
+                } else {
+                    html += '<li class="error">❌ Role is neither string nor number (unexpected!)</li>';
+                }
+                
+                html += '</ul>';
+                resultDiv.innerHTML = html;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
