@@ -2,48 +2,41 @@
     <div class="container">
         <a routerLink="/" class="nav-brand">
             <i class="fas fa-hotel"></i>
-            <span>Final Destination</span>
+            <span class="brand-text">Final Destination</span>
         </a>
-        
-        <!-- DEBUG INFO - Remove after fixing -->
-        @if (authService.isAuthenticated()) {
-        <div style="position: fixed; top: 60px; right: 10px; background: #fff; border: 2px solid #f00; padding: 10px; z-index: 9999; font-size: 12px; max-width: 300px;">
-            <strong>🐛 DEBUG INFO:</strong><br>
-            User: {{ authService.currentUser()?.name }}<br>
-            Role: <strong>{{ authService.currentUser()?.role }}</strong><br>
-            Role Type: {{ typeof(authService.currentUser()?.role) }}<br>
-            hasRole('HotelManager'): {{ authService.hasRole('HotelManager') }}<br>
-            hasAnyRole(['HotelManager', 'Admin']): {{ authService.hasAnyRole(['HotelManager', 'Admin']) }}
-        </div>
-        }
         
         <ul class="nav-menu">
             <li><a routerLink="/">Home</a></li>
             <li><a routerLink="/hotels">Hotels</a></li>
             
             @if (authService.hasAnyRole(['HotelManager', 'Admin'])) {
-            <li><a routerLink="/manager-dashboard" class="nav-link-highlight">My Dashboard</a></li>
+            <li><a routerLink="/manager-dashboard" class="nav-link-highlight">Dashboard</a></li>
             }
             
             @if (authService.isAuthenticated()) {
-            <li><a routerLink="/bookings">My Bookings</a></li>
-            <li><a routerLink="/profile">Profile</a></li>
-            <li>
+            <li><a routerLink="/bookings">Bookings</a></li>
+            <li class="user-menu">
                 <div class="user-info">
                     <i class="fas fa-user-circle"></i>
-                    <span>{{ authService.currentUser()?.name }}</span>
+                    <span class="user-name">{{ authService.currentUser()?.name }}</span>
                     @if (authService.currentUser()?.loyaltyAccount) {
                     <span class="points-badge">
-                        <i class="fas fa-star"></i>
                         {{ authService.currentUser()?.loyaltyAccount?.pointsBalance }} pts
                     </span>
                     }
                 </div>
+                <div class="dropdown-menu">
+                    <a routerLink="/profile" class="dropdown-item">
+                        <i class="fas fa-user"></i> Profile
+                    </a>
+                    <button (click)="authService.logout()" class="dropdown-item logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
             </li>
-            <li><button (click)="authService.logout()" class="btn-logout">Logout</button></li>
             } @else {
             <li><a routerLink="/login" class="btn-login">Login</a></li>
-            <li><a routerLink="/register" class="btn-register">Register</a></li>
+            <li><a routerLink="/register" class="btn-register">Sign Up</a></li>
             }
         </ul>
     </div>
