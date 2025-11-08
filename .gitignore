@@ -368,8 +368,39 @@ FodyWeavers.xsd
 
 #ANGULAR
 
+# Node modules (ensure all variations are ignored)
+node_modules/
+**/node_modules/
+finaldestination/ClientApp/node_modules/
+
 # Angular CLI cache
 finaldestination/ClientApp/.angular/cache
+.angular/
 
 # Angular dist
 finaldestination/ClientApp/dist
+dist/
+
+# Angular build outputs
+finaldestination/ClientApp/out-tsc/
+out-tsc/
+
+# Package manager lock files (optional - uncomment if you want to ignore)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Environment files (if they contain secrets)
+# finaldestination/ClientApp/.env
+# finaldestination/ClientApp/.env.local
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
