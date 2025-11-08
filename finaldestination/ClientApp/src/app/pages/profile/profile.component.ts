@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
@@ -22,48 +22,44 @@ interface PointsTransaction {
   templateUrl: './profile.component.html'
 })
 export class ProfileComponent implements OnInit {
-  authService = inject(AuthService);
-  http = inject(HttpClient);
-  
   loyaltyAccount = signal<LoyaltyAccount | null>(null);
   transactions = signal<PointsTransaction[]>([]);
   loading = signal(false);
   error = signal('');
 
-  ngOnInit() {
-    this.loadLoyaltyData();
+  constructor(
+    public auth: AuthService,
+    private http: HttpClient
+  ) {}
+
+  async ngOnInit() {
+    await this.loadLoyaltyData();
   }
 
-  loadLoyaltyData() {
+  async loadLoyaltyData() {
     this.loading.set(true);
     this.error.set('');
 
-    // Load loyalty account
-    this.http.get<LoyaltyAccount>('/api/loyalty/account').subscribe({
-      next: (account) => {
-        this.loyaltyAccount.set(account);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        console.error('Failed to load loyalty account:', err);
-        this.error.set('Failed to load loyalty information');
-        this.loading.set(false);
-      }
-    });
+    try {
+      const account = await this.http.get<LoyaltyAccount>('/api/loyalty/account').toPromise();
+      if (account) this.loyaltyAccount.set(account);
+    } catch (err) {
+      console.error('Failed to load loyalty account:', err);
+      this.error.set('Failed to load loyalty information');
+    }
     
-    // Load transactions
-    this.http.get<PointsTransaction[]>('/api/loyalty/transactions').subscribe({
-      next: (transactions) => {
-        this.transactions.set(transactions);
-      },
-      error: (err) => {
-        console.error('Failed to load transactions:', err);
-      }
-    });
+    try {
+      const transactions = await this.http.get<PointsTransaction[]>('/api/loyalty/transactions').toPromise();
+      if (transactions) this.transactions.set(transactions);
+    } catch (err) {
+      console.error('Failed to load transactions:', err);
+    }
+
+    this.loading.set(false);
   }
 
-  refreshProfile() {
-    this.authService.refreshUserData();
-    this.loadLoyaltyData();
+  async refreshProfile() {
+    await this.auth.refreshUserData();
+    await this.loadLoyaltyData();
   }
 }

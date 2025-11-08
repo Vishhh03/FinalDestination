@@ -12,7 +12,7 @@
     <div class="profile-grid">
       <div class="profile-card">
         <h2><i class="fas fa-user"></i> Account Information</h2>
-        @if (authService.currentUser(); as user) {
+        @if (auth.currentUser(); as user) {
           <div class="profile-info">
             <div class="info-item">
               <label>Name</label>
@@ -40,22 +40,22 @@
       
       <div class="profile-card">
         <h2><i class="fas fa-star"></i> Loyalty Program</h2>
-        @if (loyaltyAccount) {
+        @if (loyaltyAccount(); as account) {
           <div class="loyalty-info">
             <div class="points-display">
               <div class="points-circle">
-                <span class="points-value">{{ loyaltyAccount.pointsBalance }}</span>
+                <span class="points-value">{{ account.pointsBalance }}</span>
                 <span class="points-label">Points</span>
               </div>
             </div>
             <div class="loyalty-stats">
               <div class="stat-item">
                 <label>Total Earned</label>
-                <p>{{ loyaltyAccount.totalPointsEarned }} points</p>
+                <p>{{ account.totalPointsEarned }} points</p>
               </div>
               <div class="stat-item">
                 <label>Last Updated</label>
-                <p>{{ loyaltyAccount.lastUpdated | date:'medium' }}</p>
+                <p>{{ account.lastUpdated | date:'medium' }}</p>
               </div>
             </div>
           </div>
@@ -68,21 +68,29 @@
       </div>
     </div>
     
-    @if (transactions.length > 0) {
+    @if (transactions().length > 0) {
       <div class="transactions-card">
         <h2><i class="fas fa-history"></i> Points History</h2>
         <div class="transactions-list">
-          @for (transaction of transactions; track transaction.id) {
+          @for (transaction of transactions(); track transaction.id) {
             <div class="transaction-item">
               <div class="transaction-icon">
-                <i class="fas fa-plus-circle"></i>
+                @if (transaction.pointsEarned > 0) {
+                  <i class="fas fa-plus-circle"></i>
+                } @else {
+                  <i class="fas fa-minus-circle"></i>
+                }
               </div>
               <div class="transaction-details">
                 <p class="transaction-desc">{{ transaction.description }}</p>
-                <p class="transaction-date">{{ transaction.createdAt | date:'medium' }}</p>
+                <p class="transaction-date">{{ transaction.transactionDate | date:'medium' }}</p>
               </div>
               <div class="transaction-points">
-                +{{ transaction.pointsEarned }} pts
+                @if (transaction.pointsEarned > 0) {
+                  <span class="earned">+{{ transaction.pointsEarned }} pts</span>
+                } @else {
+                  <span class="redeemed">-{{ transaction.pointsRedeemed }} pts</span>
+                }
               </div>
             </div>
           }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -13,26 +13,30 @@ import { Hotel } from '../../models/hotel.model';
   templateUrl: './home.component.html'
 })
 export class HomeComponent implements OnInit {
-  hotelService = inject(HotelService);
-  router = inject(Router);
-  
   featuredHotels = signal<Hotel[]>([]);
-  searchParams = { city: '', maxPrice: null as number | null, minRating: null as number | null };
+  city = '';
+  maxPrice: number | null = null;
+  minRating: number | null = null;
 
-  ngOnInit() {
-    this.hotelService.getAll().subscribe({
-      next: (hotels) => {
-        this.featuredHotels.set(hotels.slice(0, 6));
-      },
-      error: (err) => console.error('Error loading hotels:', err)
-    });
+  constructor(
+    private hotelService: HotelService,
+    private router: Router
+  ) {}
+
+  async ngOnInit() {
+    try {
+      const hotels = await this.hotelService.getAll();
+      this.featuredHotels.set(hotels.slice(0, 6));
+    } catch (err) {
+      console.error('Error loading hotels:', err);
+    }
   }
 
   search() {
     const params: any = {};
-    if (this.searchParams.city) params.city = this.searchParams.city;
-    if (this.searchParams.maxPrice) params.maxPrice = this.searchParams.maxPrice;
-    if (this.searchParams.minRating) params.minRating = this.searchParams.minRating;
+    if (this.city) params.city = this.city;
+    if (this.maxPrice) params.maxPrice = this.maxPrice;
+    if (this.minRating) params.minRating = this.minRating;
     
     this.router.navigate(['/hotels'], { queryParams: params });
   }
