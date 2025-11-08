@@ -16,6 +16,11 @@ builder.Services.AddControllers(options =>
 {
     // Add global validation filter
     options.Filters.Add<ValidationFilter>();
+})
+.AddJsonOptions(options =>
+{
+    // Serialize enums as strings instead of numbers
+    options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
 });
 
 // Database Configuration - SQL Server LocalDB
