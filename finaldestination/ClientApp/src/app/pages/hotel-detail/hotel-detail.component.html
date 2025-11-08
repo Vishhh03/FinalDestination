@@ -77,40 +77,34 @@
         }
       </div>
       
-      @if (authService.isAuthenticated()) {
+      @if (auth.isAuthenticated()) {
         <div class="review-form">
           <h3>Write a Review</h3>
-          <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
+          <form (ngSubmit)="submitReview()">
             <div class="form-group">
               <label>Rating *</label>
               <select 
-                formControlName="rating"
-                class="form-control"
-                [class.error]="hasReviewError('rating')">
+                [(ngModel)]="rating"
+                name="rating"
+                class="form-control">
                 <option [value]="5">⭐⭐⭐⭐⭐ Excellent</option>
                 <option [value]="4">⭐⭐⭐⭐ Very Good</option>
                 <option [value]="3">⭐⭐⭐ Good</option>
                 <option [value]="2">⭐⭐ Fair</option>
                 <option [value]="1">⭐ Poor</option>
               </select>
-              @if (getReviewErrorMessage('rating')) {
-                <span class="error-message">{{ getReviewErrorMessage('rating') }}</span>
-              }
             </div>
             
             <div class="form-group">
               <label>Comment *</label>
               <textarea 
-                formControlName="comment"
+                [(ngModel)]="comment"
+                name="comment"
                 class="form-control"
-                [class.error]="hasReviewError('comment')"
                 rows="4" 
-                placeholder="Share your experience (minimum 10 characters)..."></textarea>
-              @if (getReviewErrorMessage('comment')) {
-                <span class="error-message">{{ getReviewErrorMessage('comment') }}</span>
-              } @else {
-                <small class="hint">{{ reviewForm.get('comment')?.value?.length || 0 }} / 1000 characters</small>
-              }
+                placeholder="Share your experience (minimum 10 characters)..."
+                required></textarea>
+              <small class="hint">{{ comment.length }} / 1000 characters</small>
             </div>
             
             <button type="submit" class="btn-primary" [disabled]="submittingReview()">
@@ -181,20 +175,18 @@
         </div>
       }
       
-      <form [formGroup]="bookingForm" (ngSubmit)="bookHotel()">
+      <form (ngSubmit)="bookHotel()">
         <div class="form-group">
           <label for="checkInDate">Check-in Date *</label>
           <input 
             type="date" 
             id="checkInDate"
-            formControlName="checkInDate"
+            [(ngModel)]="checkInDate"
+            name="checkInDate"
             class="form-control"
-            [class.error]="hasBookingError('checkInDate')"
             [min]="today"
+            required
           />
-          @if (getBookingErrorMessage('checkInDate')) {
-            <span class="error-message">{{ getBookingErrorMessage('checkInDate') }}</span>
-          }
         </div>
         
         <div class="form-group">
@@ -202,14 +194,12 @@
           <input 
             type="date" 
             id="checkOutDate"
-            formControlName="checkOutDate"
+            [(ngModel)]="checkOutDate"
+            name="checkOutDate"
             class="form-control"
-            [class.error]="hasBookingError('checkOutDate')"
-            [min]="bookingForm.value.checkInDate || tomorrow"
+            [min]="checkInDate || tomorrow"
+            required
           />
-          @if (getBookingErrorMessage('checkOutDate')) {
-            <span class="error-message">{{ getBookingErrorMessage('checkOutDate') }}</span>
-          }
         </div>
         
         <div class="form-group">
@@ -217,15 +207,13 @@
           <input 
             type="number" 
             id="numberOfGuests"
-            formControlName="numberOfGuests"
+            [(ngModel)]="numberOfGuests"
+            name="numberOfGuests"
             class="form-control"
-            [class.error]="hasBookingError('numberOfGuests')"
             min="1" 
             max="10"
+            required
           />
-          @if (getBookingErrorMessage('numberOfGuests')) {
-            <span class="error-message">{{ getBookingErrorMessage('numberOfGuests') }}</span>
-          }
         </div>
         
         @if (availablePoints() > 0) {
@@ -239,7 +227,8 @@
               <input 
                 type="number" 
                 id="pointsToRedeem"
-                formControlName="pointsToRedeem"
+                [(ngModel)]="pointsToRedeem"
+                name="pointsToRedeem"
                 class="form-control"
                 min="0"
                 [max]="maxRedeemablePoints()"
@@ -259,7 +248,7 @@
             </div>
             @if (discount() > 0) {
               <div class="summary-row">
-                <span>Loyalty Discount ({{ bookingForm.get('pointsToRedeem')?.value }} points)</span>
+                <span>Loyalty Discount ({{ pointsToRedeem }} points)</span>
                 <strong class="discount">-${{ discount().toFixed(2) }}</strong>
               </div>
             }
