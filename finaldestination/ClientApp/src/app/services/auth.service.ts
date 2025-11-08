@@ -140,10 +140,15 @@ export class AuthService {
 
   hasRole(role: string): boolean {
     const user = this.currentUser();
-    const result = user?.role === role;
+    if (!user) return false;
+    
+    // Ensure role is a string (it should be after normalization)
+    const userRole = typeof user.role === 'string' ? user.role : String(user.role);
+    const result = userRole === role;
+    
     console.log(`🔍 [AUTH] hasRole('${role}'):`, {
-      currentRole: user?.role,
-      roleType: typeof user?.role,
+      currentRole: userRole,
+      roleType: typeof userRole,
       expectedRole: role,
       expectedType: typeof role,
       result
@@ -153,10 +158,15 @@ export class AuthService {
 
   hasAnyRole(roles: string[]): boolean {
     const user = this.currentUser();
-    const result = user ? roles.includes(user.role) : false;
+    if (!user) return false;
+    
+    // Ensure role is a string (it should be after normalization)
+    const userRole = typeof user.role === 'string' ? user.role : String(user.role);
+    const result = roles.includes(userRole);
+    
     console.log(`🔍 [AUTH] hasAnyRole([${roles.join(', ')}]):`, {
-      currentRole: user?.role,
-      roleType: typeof user?.role,
+      currentRole: userRole,
+      roleType: typeof userRole,
       expectedRoles: roles,
       result
     });
