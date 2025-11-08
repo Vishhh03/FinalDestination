@@ -102,6 +102,35 @@ public class HotelsController : ControllerBase
     }
 
     /// <summary>
+    /// Gets hotels managed by the current user (requires HotelManager or Admin role)
+    /// </summary>
+    /// <returns>List of hotels managed by the current user</returns>
+    [HttpGet("my-hotels")]
+    [Authorize(Roles = "HotelManager,Admin")]
+    public async Task<ActionResult<IEnumerable<Hotel>>> GetMyHotels()
+    {
+        // Get user ID from JWT token claims
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+        {
+            _logger.LogWarning("Unable to extract user ID from token");
+            return Unauthorized("Invalid token");
+        }
+
+        _logger.LogInformation("Retrieving hotels for manager with ID: {UserId}", userId);
+
+        // Get hotels where the current user is the manager
+        var hotels = await _context.Hotels
+            .Include(h => h.Manager)
+            .Where(h => h.ManagerId == userId)
+            .ToListAsync();
+
+        _logger.LogInformation("Found {Count} hotels for manager {UserId}", hotels.Count, userId);
+
+        return Ok(hotels);
+    }
+
+    /// <summary>
     /// Searches hotels by city and/or maximum price with caching
     /// </summary>
     /// <param name="city">City to search in (optional)</param>
