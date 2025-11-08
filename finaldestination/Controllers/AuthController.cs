@@ -189,6 +189,8 @@ public class AuthController : ControllerBase
             };
 
             _logger.LogInformation("User logged in successfully: {Email}", user.Email);
+            _logger.LogInformation("🎭 User role: {Role} (Type: {RoleType})", userInfo.Role, userInfo.Role.GetType().Name);
+            _logger.LogInformation("📤 Sending auth response with user: {@UserInfo}", userInfo);
             return Ok(response);
         }
         catch (Exception ex)
@@ -244,6 +246,9 @@ public class AuthController : ControllerBase
             }
 
             var userInfo = await CreateUserInfoAsync(user);
+            _logger.LogInformation("🔄 Refreshing user data for: {Email}", user.Email);
+            _logger.LogInformation("🎭 User role: {Role} (Type: {RoleType})", userInfo.Role, userInfo.Role.GetType().Name);
+            _logger.LogInformation("📤 Sending user info: {@UserInfo}", userInfo);
             return Ok(userInfo);
         }
         catch (Exception ex)
