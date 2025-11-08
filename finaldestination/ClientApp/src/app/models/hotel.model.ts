@@ -86,7 +86,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  role: string;
+  role: string | number; // Can be string or number (backend should send string, but we handle both)
   contactNumber?: string;
   createdAt: string;
   isActive: boolean;

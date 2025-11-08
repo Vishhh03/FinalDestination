@@ -30,12 +30,36 @@ export class AuthService {
       const user = JSON.parse(userStr);
       console.log('✅ [AUTH] User loaded from storage:', user);
       console.log('🎭 [AUTH] User role:', user.role, 'Type:', typeof user.role);
-      this.currentUser.set(user);
+      
+      // WORKAROUND: Convert numeric role to string if needed
+      const normalizedUser = this.normalizeUserRole(user);
+      
+      this.currentUser.set(normalizedUser);
       this.refreshUserData();
     } else {
       console.log('❌ [AUTH] No valid user in storage, clearing auth');
       this.clearAuth();
     }
+  }
+
+  /**
+   * WORKAROUND: Convert numeric role enum to string
+   * Backend should send strings, but if it sends numbers, convert them
+   */
+  private normalizeUserRole(user: User): User {
+    if (typeof user.role === 'number') {
+      console.warn('⚠️ [AUTH] Role is numeric, converting to string. Backend should be restarted!');
+      const roleMap: { [key: number]: string } = {
+        1: 'Guest',
+        2: 'HotelManager',
+        3: 'Admin'
+      };
+      return {
+        ...user,
+        role: roleMap[user.role as any] || 'Guest'
+      };
+    }
+    return user;
   }
 
   async login(email: string, password: string): Promise<void> {
@@ -58,8 +82,12 @@ export class AuthService {
       if (user) {
         console.log('📥 [AUTH] Refreshed user data:', user);
         console.log('🎭 [AUTH] Refreshed user role:', user.role, 'Type:', typeof user.role);
-        localStorage.setItem('user', JSON.stringify(user));
-        this.currentUser.set(user);
+        
+        // WORKAROUND: Convert numeric role to string if needed
+        const normalizedUser = this.normalizeUserRole(user);
+        
+        localStorage.setItem('user', JSON.stringify(normalizedUser));
+        this.currentUser.set(normalizedUser);
       }
     } catch (error: any) {
       console.error('❌ [AUTH] Error refreshing user data:', error);
@@ -69,11 +97,15 @@ export class AuthService {
 
   private saveAuth(response: AuthResponse): void {
     console.log('💾 [AUTH] Saving auth to localStorage:', response.user);
+    
+    // WORKAROUND: Convert numeric role to string if needed
+    const user = this.normalizeUserRole(response.user);
+    
     localStorage.setItem('token', response.token);
-    localStorage.setItem('user', JSON.stringify(response.user));
+    localStorage.setItem('user', JSON.stringify(user));
     localStorage.setItem('expiresAt', response.expiresAt);
-    this.currentUser.set(response.user);
-    console.log('✅ [AUTH] Auth saved, current user role:', response.user.role);
+    this.currentUser.set(user);
+    console.log('✅ [AUTH] Auth saved, current user role:', user.role);
   }
 
   private clearAuth(): void {
