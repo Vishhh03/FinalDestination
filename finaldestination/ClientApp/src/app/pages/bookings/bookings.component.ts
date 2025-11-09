@@ -182,49 +182,21 @@ export class BookingsComponent implements OnInit {
     }
 
     getStatusText(status: BookingStatus): string {
-        console.log('🔍 getStatusText called with:', {
-            rawStatus: status,
-            type: typeof status,
-            asNumber: Number(status),
-            isNaN: isNaN(Number(status)),
-            BookingStatusEnum: BookingStatus,
-            Confirmed: BookingStatus.Confirmed,
-            Cancelled: BookingStatus.Cancelled,
-            Completed: BookingStatus.Completed,
-            strictEqual1: status === 1,
-            strictEqual2: status === 2,
-            strictEqual3: status === 3,
-            looseEqual1: status == 1,
-            looseEqual2: status == 2,
-            looseEqual3: status == 3
-        });
-        
-        // Handle both numeric and enum values
+        // Handle both string and numeric enum values from API
+        const statusStr = String(status).toLowerCase();
         const statusNum = Number(status);
-        switch (statusNum) {
-            case BookingStatus.Confirmed:
-            case 1:
-                return 'Confirmed';
-            case BookingStatus.Cancelled:
-            case 2:
-                return 'Cancelled';
-            case BookingStatus.Completed:
-            case 3:
-                return 'Completed';
-            default:
-                console.error('❌ UNKNOWN STATUS - Full debug:', {
-                    status,
-                    statusNum,
-                    allComparisons: {
-                        'statusNum === 1': statusNum === 1,
-                        'statusNum === 2': statusNum === 2,
-                        'statusNum === 3': statusNum === 3,
-                        'statusNum === BookingStatus.Confirmed': statusNum === BookingStatus.Confirmed,
-                        'statusNum === BookingStatus.Cancelled': statusNum === BookingStatus.Cancelled,
-                        'statusNum === BookingStatus.Completed': statusNum === BookingStatus.Completed
-                    }
-                });
-                return 'Unknown';
+        
+        // Check string values first (backend sends strings)
+        if (statusStr === 'confirmed' || statusNum === 1 || statusNum === BookingStatus.Confirmed) {
+            return 'Confirmed';
         }
+        if (statusStr === 'cancelled' || statusNum === 2 || statusNum === BookingStatus.Cancelled) {
+            return 'Cancelled';
+        }
+        if (statusStr === 'completed' || statusNum === 3 || statusNum === BookingStatus.Completed) {
+            return 'Completed';
+        }
+        
+        return 'Unknown';
     }
 }
