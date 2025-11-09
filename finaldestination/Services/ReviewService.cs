@@ -28,6 +28,18 @@ public class ReviewService : IReviewService
             throw new ArgumentException("Hotel not found");
         }
 
+        // Check if user has a paid booking for this hotel
+        var hasPaidBooking = await _context.Bookings
+            .AnyAsync(b => b.UserId == userId 
+                        && b.HotelId == request.HotelId 
+                        && b.Status == BookingStatus.Confirmed
+                        && _context.Payments.Any(p => p.BookingId == b.Id && p.Status == PaymentStatus.Completed));
+
+        if (!hasPaidBooking)
+        {
+            throw new InvalidOperationException("You can only review hotels where you have completed a paid booking");
+        }
+
         // Check if user already reviewed this hotel
         var existingReview = await _context.Reviews
             .FirstOrDefaultAsync(r => r.UserId == userId && r.HotelId == request.HotelId);

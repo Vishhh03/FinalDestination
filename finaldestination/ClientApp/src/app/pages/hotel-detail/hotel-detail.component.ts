@@ -25,6 +25,7 @@ export class HotelDetailComponent implements OnInit {
   submittingBooking = signal(false);
   submittingReview = signal(false);
   showBookingModal = signal(false);
+  canReview = signal(false);
 
   today = new Date().toISOString().split('T')[0];
   tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
@@ -74,6 +75,31 @@ export class HotelDetailComponent implements OnInit {
     const id = +this.route.snapshot.params['id'];
     await this.loadHotelDetails(id);
     await this.loadReviews(id);
+    if (this.auth.isAuthenticated()) {
+      await this.checkReviewEligibility(id);
+    }
+  }
+
+  async checkReviewEligibility(hotelId: number) {
+    try {
+      // Check if user has any paid bookings for this hotel
+      const bookings = await this.bookingService.getMyBookings();
+      const hasPaidBooking = bookings.some(b => 
+        b.hotelId === hotelId && 
+        b.paymentId !== null && 
+        b.paymentId !== undefined
+      );
+      
+      // Check if user already reviewed this hotel
+      const hasReviewed = this.reviews().some(r => 
+        r.userId === this.auth.currentUser()?.id
+      );
+      
+      this.canReview.set(hasPaidBooking && !hasReviewed);
+    } catch (err) {
+      console.error('Error checking review eligibility:', err);
+      this.canReview.set(false);
+    }
   }
 
   async loadHotelDetails(id: number) {
@@ -204,11 +230,12 @@ export class HotelDetailComponent implements OnInit {
         this.reviews.set([review, ...currentReviews]);
         this.rating = 5;
         this.comment = '';
+        this.canReview.set(false); // User can't review again
         this.success.set('Review submitted successfully!');
         setTimeout(() => this.success.set(''), 3000);
       }
     } catch (err: any) {
-      this.error.set(err.message || 'Failed to submit review');
+      this.error.set(err.error?.message || err.message || 'Failed to submit review');
     } finally {
       this.submittingReview.set(false);
     }
