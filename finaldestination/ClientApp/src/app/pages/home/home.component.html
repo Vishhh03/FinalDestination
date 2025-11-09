@@ -41,17 +41,17 @@
     <div class="search-box">
       <div class="search-field">
         <i class="fas fa-map-marker-alt"></i>
-        <input type="text" [(ngModel)]="city" name="city" placeholder="City (e.g., Mumbai, Delhi)" (input)="onSearchInput()">
+        <input type="text" [(ngModel)]="city" name="city" placeholder="City (e.g., Mumbai, Delhi)">
       </div>
       <div class="search-field">
         <i class="fas fa-indian-rupee-sign"></i>
-        <input type="number" [(ngModel)]="maxPrice" name="maxPrice" placeholder="Max Price (₹)" (input)="onSearchInput()">
+        <input type="number" [(ngModel)]="maxPrice" name="maxPrice" placeholder="Max Price (₹)">
       </div>
       <div class="search-field">
         <i class="fas fa-star"></i>
-        <input type="number" [(ngModel)]="minRating" name="minRating" placeholder="Min Rating (1-5)" min="1" max="5" step="0.5" (input)="onSearchInput()">
+        <input type="number" [(ngModel)]="minRating" name="minRating" placeholder="Min Rating (1-5)" min="1" max="5" step="0.5">
       </div>
-      <button class="btn-search" (click)="performSearch()">
+      <button class="btn-search" (click)="search()">
         <i class="fas fa-search"></i> Search
       </button>
     </div>

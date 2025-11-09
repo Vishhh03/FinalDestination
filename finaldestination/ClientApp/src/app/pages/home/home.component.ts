@@ -2,8 +2,6 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { HotelService } from '../../services/hotel.service';
 import { Hotel } from '../../models/hotel.model';
@@ -20,8 +18,6 @@ export class HomeComponent implements OnInit {
   city = '';
   maxPrice: number | null = null;
   minRating: number | null = null;
-  
-  private searchSubject = new Subject<void>();
 
   // Hero slider
   heroImages = [
@@ -64,26 +60,13 @@ export class HomeComponent implements OnInit {
 
     // Start auto-slide
     this.startAutoSlide();
-    
-    // Setup debounced search
-    this.searchSubject.pipe(
-      debounceTime(500), // Wait 500ms after user stops typing
-      distinctUntilChanged()
-    ).subscribe(() => {
-      this.performSearch();
-    });
   }
 
   ngOnDestroy() {
     this.stopAutoSlide();
-    this.searchSubject.complete();
   }
   
-  onSearchInput() {
-    this.searchSubject.next();
-  }
-  
-  performSearch() {
+  search() {
     const params: any = {};
     if (this.city) params.city = this.city;
     if (this.maxPrice) params.maxPrice = this.maxPrice;
@@ -120,12 +103,4 @@ export class HomeComponent implements OnInit {
     this.startAutoSlide(); // Restart auto-slide after manual navigation
   }
 
-  search() {
-    const params: any = {};
-    if (this.city) params.city = this.city;
-    if (this.maxPrice) params.maxPrice = this.maxPrice;
-    if (this.minRating) params.minRating = this.minRating;
-    
-    this.router.navigate(['/hotels'], { queryParams: params });
-  }
 }

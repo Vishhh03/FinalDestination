@@ -9,6 +9,28 @@
 
 <section class="hotels-section">
   <div class="container">
+    <!-- Search Bar -->
+    <div class="search-bar">
+      <div class="search-field">
+        <i class="fas fa-map-marker-alt"></i>
+        <input type="text" [(ngModel)]="city" name="city" placeholder="City (e.g., Mumbai, Delhi)">
+      </div>
+      <div class="search-field">
+        <i class="fas fa-indian-rupee-sign"></i>
+        <input type="number" [(ngModel)]="maxPrice" name="maxPrice" placeholder="Max Price (₹)">
+      </div>
+      <div class="search-field">
+        <i class="fas fa-star"></i>
+        <input type="number" [(ngModel)]="minRating" name="minRating" placeholder="Min Rating" min="1" max="5" step="0.5">
+      </div>
+      <button class="btn-search" (click)="search()">
+        <i class="fas fa-search"></i> Search
+      </button>
+      <button class="btn-clear" (click)="clearSearch()">
+        <i class="fas fa-times"></i> Clear
+      </button>
+    </div>
+    
     <div class="hotels-grid">
       @for (hotel of hotels(); track hotel.id) {
         <div class="hotel-card">
@@ -49,6 +71,37 @@
       <div class="no-results">
         <i class="fas fa-search"></i>
         <p>No hotels found matching your criteria</p>
+      </div>
+    }
+    
+    @if (totalPages() > 1) {
+      <div class="pagination">
+        <button 
+          class="page-btn" 
+          (click)="goToPage(currentPage() - 1)" 
+          [disabled]="currentPage() === 1">
+          <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        
+        @for (page of pages; track page) {
+          <button 
+            class="page-btn" 
+            [class.active]="page === currentPage()"
+            (click)="goToPage(page)">
+            {{ page }}
+          </button>
+        }
+        
+        <button 
+          class="page-btn" 
+          (click)="goToPage(currentPage() + 1)" 
+          [disabled]="currentPage() === totalPages()">
+          Next <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+      
+      <div class="pagination-info">
+        Showing {{ (currentPage() - 1) * pageSize + 1 }} - {{ Math.min(currentPage() * pageSize, allHotels().length) }} of {{ allHotels().length }} hotels
       </div>
     }
   </div>
