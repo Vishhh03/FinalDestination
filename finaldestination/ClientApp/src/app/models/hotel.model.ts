@@ -39,17 +39,17 @@ export enum BookingStatus {
 }
 
 export enum PaymentStatus {
-  Pending = 0,
-  Completed = 1,
-  Failed = 2,
-  Refunded = 3
+  Pending = 1,
+  Completed = 2,
+  Failed = 3,
+  Refunded = 4
 }
 
 export enum PaymentMethod {
-  CreditCard = 0,
-  DebitCard = 1,
-  PayPal = 2,
-  BankTransfer = 3
+  CreditCard = 1,
+  DebitCard = 2,
+  PayPal = 3,
+  BankTransfer = 4
 }
 
 export interface PaymentRequest {
