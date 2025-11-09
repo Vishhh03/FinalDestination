@@ -182,6 +182,23 @@ export class BookingsComponent implements OnInit {
     }
 
     getStatusText(status: BookingStatus): string {
+        console.log('🔍 getStatusText called with:', {
+            rawStatus: status,
+            type: typeof status,
+            asNumber: Number(status),
+            isNaN: isNaN(Number(status)),
+            BookingStatusEnum: BookingStatus,
+            Confirmed: BookingStatus.Confirmed,
+            Cancelled: BookingStatus.Cancelled,
+            Completed: BookingStatus.Completed,
+            strictEqual1: status === 1,
+            strictEqual2: status === 2,
+            strictEqual3: status === 3,
+            looseEqual1: status == 1,
+            looseEqual2: status == 2,
+            looseEqual3: status == 3
+        });
+        
         // Handle both numeric and enum values
         const statusNum = Number(status);
         switch (statusNum) {
@@ -195,7 +212,18 @@ export class BookingsComponent implements OnInit {
             case 3:
                 return 'Completed';
             default:
-                console.warn('Unknown booking status:', status, 'Type:', typeof status);
+                console.error('❌ UNKNOWN STATUS - Full debug:', {
+                    status,
+                    statusNum,
+                    allComparisons: {
+                        'statusNum === 1': statusNum === 1,
+                        'statusNum === 2': statusNum === 2,
+                        'statusNum === 3': statusNum === 3,
+                        'statusNum === BookingStatus.Confirmed': statusNum === BookingStatus.Confirmed,
+                        'statusNum === BookingStatus.Cancelled': statusNum === BookingStatus.Cancelled,
+                        'statusNum === BookingStatus.Completed': statusNum === BookingStatus.Completed
+                    }
+                });
                 return 'Unknown';
         }
     }
