@@ -43,23 +43,27 @@
 }
 
 .nav-menu a {
-    color: white;
+    color: rgba(255, 255, 255, 0.95);
     text-decoration: none;
     font-weight: 500;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
     white-space: nowrap;
     padding: 0.5rem 0.75rem;
-    border-radius: 4px;
+    border-radius: 6px;
     position: relative;
 }
 
 .nav-menu a:hover {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    transform: translateY(-1px);
 }
 
 .nav-menu a.active {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
     font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .nav-menu a.active::after {
@@ -68,10 +72,21 @@
     bottom: -8px;
     left: 50%;
     transform: translateX(-50%);
-    width: 30px;
+    width: 40px;
     height: 3px;
-    background: white;
+    background: #48bb78;
     border-radius: 2px;
+    box-shadow: 0 2px 4px rgba(72, 187, 120, 0.4);
+}
+
+.nav-link-highlight {
+    background: linear-gradient(135deg, rgba(72, 187, 120, 0.3) 0%, rgba(56, 161, 105, 0.3) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.nav-link-highlight:hover {
+    background: linear-gradient(135deg, rgba(72, 187, 120, 0.4) 0%, rgba(56, 161, 105, 0.4) 100%) !important;
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* User Menu with Dropdown */
@@ -180,40 +195,42 @@
 }
 
 .btn-login, .btn-register {
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 1.25rem;
     border: none;
     border-radius: 6px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
     text-decoration: none;
     display: inline-block;
     font-size: 0.9rem;
 }
 
 .btn-login {
-    background: white;
-    color: #667eea;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: #ffffff;
+    color: #5a67d8;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    border: 2px solid transparent;
 }
 
 .btn-login:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    background: #f8f9fa;
+    box-shadow: 0 6px 16px rgba(90, 103, 216, 0.3);
+    background: #f7fafc;
+    border-color: #5a67d8;
 }
 
 .btn-register {
-    background: #ffd700;
-    color: #333;
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: #ffffff;
     font-weight: 700;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
 }
 
 .btn-register:hover {
-    background: #ffed4e;
+    background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 6px 16px rgba(72, 187, 120, 0.4);
 }
 
 @media (max-width: 1024px) {
