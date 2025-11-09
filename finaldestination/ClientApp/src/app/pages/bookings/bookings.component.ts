@@ -41,6 +41,20 @@ export class BookingsComponent implements OnInit {
         this.loading.set(true);
         try {
             const bookings = await this.bookingService.getMyBookings();
+            console.log('=== BOOKINGS DEBUG ===');
+            console.log('Raw bookings from API:', JSON.stringify(bookings, null, 2));
+            bookings.forEach((booking, index) => {
+                console.log(`Booking ${index}:`, {
+                    id: booking.id,
+                    status: booking.status,
+                    statusType: typeof booking.status,
+                    statusValue: booking.status,
+                    statusAsNumber: Number(booking.status),
+                    statusText: this.getStatusText(booking.status)
+                });
+            });
+            console.log('BookingStatus enum:', BookingStatus);
+            console.log('=== END DEBUG ===');
             this.bookings.set(bookings);
         } catch (err: any) {
             this.error.set(err.message || 'Failed to load bookings');
