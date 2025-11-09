@@ -143,95 +143,274 @@ public static class DataSeeder
     {
         var hotels = new List<Hotel>
         {
+            // Mumbai Hotels
             new Hotel
             {
-                //Id = 1,
-                Name = "Grand Plaza Hotel",
-                Address = "123 Main St",
-                City = "New York",
-                PricePerNight = 1500.00m,
-                AvailableRooms = 48,
+                Name = "Taj Mahal Palace Mumbai",
+                Address = "Apollo Bunder, Colaba",
+                City = "Mumbai",
+                PricePerNight = 15000.00m,
+                AvailableRooms = 45,
                 Rating = 0,
                 ReviewCount = 0,
                 ManagerId = 2,
                 ImageUrl = "https://images.unsplash.com/photo-1566073771259-6a8506099945",
-                Images = "https://images.unsplash.com/photo-1566073771259-6a8506099945,https://images.unsplash.com/photo-1582719478250-c89cae4dc85b,https://images.unsplash.com/photo-1618773928121-c32242e63f39",
+                Images = "https://images.unsplash.com/photo-1566073771259-6a8506099945,https://images.unsplash.com/photo-1582719478250-c89cae4dc85b",
                 CreatedAt = DateTime.UtcNow.AddDays(-90)
             },
             new Hotel
             {
-               // Id = 2,
-                Name = "Ocean View Resort",
-                Address = "456 Beach Ave",
-                City = "Miami",
-                PricePerNight = 2000.00m,
-                AvailableRooms = 28,
+                Name = "Marine Plaza Hotel",
+                Address = "Marine Drive",
+                City = "Mumbai",
+                PricePerNight = 8500.00m,
+                AvailableRooms = 32,
                 Rating = 0,
                 ReviewCount = 0,
                 ManagerId = 2,
                 ImageUrl = "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb",
-                Images = "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb,https://images.unsplash.com/photo-1520250497591-112f2f40a3f4,https://images.unsplash.com/photo-1571896349842-33c89424de2d",
+                Images = "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb,https://images.unsplash.com/photo-1520250497591-112f2f40a3f4",
                 CreatedAt = DateTime.UtcNow.AddDays(-85)
             },
+            
+            // Delhi Hotels
             new Hotel
             {
-              //  Id = 3,
-                Name = "Mountain Lodge",
-                Address = "789 Pine Rd",
-                City = "Denver",
-                PricePerNight = 1200.00m,
-                AvailableRooms = 24,
+                Name = "The Imperial New Delhi",
+                Address = "Janpath, Connaught Place",
+                City = "Delhi",
+                PricePerNight = 12000.00m,
+                AvailableRooms = 38,
                 Rating = 0,
                 ReviewCount = 0,
                 ManagerId = 3,
                 ImageUrl = "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa",
-                Images = "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa,https://images.unsplash.com/photo-1506905925346-21bda4d32df4,https://images.unsplash.com/photo-1631049307264-da0ec9d70304",
+                Images = "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa,https://images.unsplash.com/photo-1506905925346-21bda4d32df4",
                 CreatedAt = DateTime.UtcNow.AddDays(-80)
             },
             new Hotel
             {
-                //Id = 4,
-                Name = "Downtown Business Hotel",
-                Address = "321 Corporate Blvd",
-                City = "Chicago",
-                PricePerNight = 1800.00m,
-                AvailableRooms = 35,
+                Name = "Leela Palace Delhi",
+                Address = "Chanakyapuri Diplomatic Enclave",
+                City = "Delhi",
+                PricePerNight = 18000.00m,
+                AvailableRooms = 28,
                 Rating = 0,
                 ReviewCount = 0,
                 ManagerId = 3,
                 ImageUrl = "https://images.unsplash.com/photo-1590490360182-c33d57733427",
-                Images = "https://images.unsplash.com/photo-1590490360182-c33d57733427,https://images.unsplash.com/photo-1611892440504-42a792e24d32,https://images.unsplash.com/photo-1584132967334-10e028bd69f7",
-                CreatedAt = DateTime.UtcNow.AddDays(-70)
+                Images = "https://images.unsplash.com/photo-1590490360182-c33d57733427,https://images.unsplash.com/photo-1611892440504-42a792e24d32",
+                CreatedAt = DateTime.UtcNow.AddDays(-75)
             },
+            
+            // Bangalore Hotels
             new Hotel
             {
-              //  Id = 5,
-                Name = "Sunset Beach Resort",
-                Address = "789 Sunset Blvd",
-                City = "Los Angeles",
-                PricePerNight = 2500.00m,
-                AvailableRooms = 40,
+                Name = "ITC Gardenia Bangalore",
+                Address = "Residency Road",
+                City = "Bangalore",
+                PricePerNight = 9500.00m,
+                AvailableRooms = 42,
                 Rating = 0,
                 ReviewCount = 0,
                 ManagerId = 2,
                 ImageUrl = "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4",
-                Images = "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4,https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9,https://images.unsplash.com/photo-1582719478250-c89cae4dc85b",
-                CreatedAt = DateTime.UtcNow.AddDays(-65)
+                Images = "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4,https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9",
+                CreatedAt = DateTime.UtcNow.AddDays(-70)
             },
             new Hotel
             {
-               // Id = 6,
-                Name = "Historic Inn",
-                Address = "456 Heritage St",
-                City = "Boston",
-                PricePerNight = 1300.00m, 
-                AvailableRooms = 20,
+                Name = "The Oberoi Bangalore",
+                Address = "MG Road",
+                City = "Bangalore",
+                PricePerNight = 11000.00m,
+                AvailableRooms = 35,
                 Rating = 0,
                 ReviewCount = 0,
                 ManagerId = 3,
                 ImageUrl = "https://images.unsplash.com/photo-1564501049412-61c2a3083791",
-                Images = "https://images.unsplash.com/photo-1564501049412-61c2a3083791,https://images.unsplash.com/photo-1551882547-ff40c63fe5fa,https://images.unsplash.com/photo-1445019980597-93fa8acb246c",
+                Images = "https://images.unsplash.com/photo-1564501049412-61c2a3083791,https://images.unsplash.com/photo-1551882547-ff40c63fe5fa",
+                CreatedAt = DateTime.UtcNow.AddDays(-65)
+            },
+            
+            // Goa Hotels
+            new Hotel
+            {
+                Name = "Taj Exotica Goa",
+                Address = "Calwaddo, Benaulim",
+                City = "Goa",
+                PricePerNight = 13500.00m,
+                AvailableRooms = 50,
+                Rating = 0,
+                ReviewCount = 0,
+                ManagerId = 2,
+                ImageUrl = "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb",
+                Images = "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb,https://images.unsplash.com/photo-1520250497591-112f2f40a3f4",
                 CreatedAt = DateTime.UtcNow.AddDays(-60)
+            },
+            new Hotel
+            {
+                Name = "Alila Diwa Goa",
+                Address = "Majorda Beach",
+                City = "Goa",
+                PricePerNight = 10500.00m,
+                AvailableRooms = 40,
+                Rating = 0,
+                ReviewCount = 0,
+                ManagerId = 3,
+                ImageUrl = "https://images.unsplash.com/photo-1571896349842-33c89424de2d",
+                Images = "https://images.unsplash.com/photo-1571896349842-33c89424de2d,https://images.unsplash.com/photo-1582719478250-c89cae4dc85b",
+                CreatedAt = DateTime.UtcNow.AddDays(-55)
+            },
+            
+            // Jaipur Hotels
+            new Hotel
+            {
+                Name = "Rambagh Palace Jaipur",
+                Address = "Bhawani Singh Road",
+                City = "Jaipur",
+                PricePerNight = 16000.00m,
+                AvailableRooms = 30,
+                Rating = 0,
+                ReviewCount = 0,
+                ManagerId = 2,
+                ImageUrl = "https://images.unsplash.com/photo-1566073771259-6a8506099945",
+                Images = "https://images.unsplash.com/photo-1566073771259-6a8506099945,https://images.unsplash.com/photo-1618773928121-c32242e63f39",
+                CreatedAt = DateTime.UtcNow.AddDays(-50)
+            },
+            new Hotel
+            {
+                Name = "Fairmont Jaipur",
+                Address = "Riico Kukas",
+                City = "Jaipur",
+                PricePerNight = 8000.00m,
+                AvailableRooms = 45,
+                Rating = 0,
+                ReviewCount = 0,
+                ManagerId = 3,
+                ImageUrl = "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa",
+                Images = "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa,https://images.unsplash.com/photo-1506905925346-21bda4d32df4",
+                CreatedAt = DateTime.UtcNow.AddDays(-45)
+            },
+            
+            // Hyderabad Hotels
+            new Hotel
+            {
+                Name = "Taj Falaknuma Palace",
+                Address = "Engine Bowli, Falaknuma",
+                City = "Hyderabad",
+                PricePerNight = 20000.00m,
+                AvailableRooms = 25,
+                Rating = 0,
+                ReviewCount = 0,
+                ManagerId = 2,
+                ImageUrl = "https://images.unsplash.com/photo-1590490360182-c33d57733427",
+                Images = "https://images.unsplash.com/photo-1590490360182-c33d57733427,https://images.unsplash.com/photo-1611892440504-42a792e24d32",
+                CreatedAt = DateTime.UtcNow.AddDays(-40)
+            },
+            new Hotel
+            {
+                Name = "ITC Kohenur Hyderabad",
+                Address = "HITEC City",
+                City = "Hyderabad",
+                PricePerNight = 9000.00m,
+                AvailableRooms = 38,
+                Rating = 0,
+                ReviewCount = 0,
+                ManagerId = 3,
+                ImageUrl = "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4",
+                Images = "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4,https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9",
+                CreatedAt = DateTime.UtcNow.AddDays(-35)
+            },
+            
+            // Chennai Hotels
+            new Hotel
+            {
+                Name = "ITC Grand Chola Chennai",
+                Address = "Guindy",
+                City = "Chennai",
+                PricePerNight = 11500.00m,
+                AvailableRooms = 42,
+                Rating = 0,
+                ReviewCount = 0,
+                ManagerId = 2,
+                ImageUrl = "https://images.unsplash.com/photo-1564501049412-61c2a3083791",
+                Images = "https://images.unsplash.com/photo-1564501049412-61c2a3083791,https://images.unsplash.com/photo-1551882547-ff40c63fe5fa",
+                CreatedAt = DateTime.UtcNow.AddDays(-30)
+            },
+            new Hotel
+            {
+                Name = "The Leela Palace Chennai",
+                Address = "Adyar Seaface",
+                City = "Chennai",
+                PricePerNight = 13000.00m,
+                AvailableRooms = 35,
+                Rating = 0,
+                ReviewCount = 0,
+                ManagerId = 3,
+                ImageUrl = "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb",
+                Images = "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb,https://images.unsplash.com/photo-1520250497591-112f2f40a3f4",
+                CreatedAt = DateTime.UtcNow.AddDays(-25)
+            },
+            
+            // Kolkata Hotels
+            new Hotel
+            {
+                Name = "The Oberoi Grand Kolkata",
+                Address = "Jawaharlal Nehru Road",
+                City = "Kolkata",
+                PricePerNight = 10000.00m,
+                AvailableRooms = 40,
+                Rating = 0,
+                ReviewCount = 0,
+                ManagerId = 2,
+                ImageUrl = "https://images.unsplash.com/photo-1566073771259-6a8506099945",
+                Images = "https://images.unsplash.com/photo-1566073771259-6a8506099945,https://images.unsplash.com/photo-1582719478250-c89cae4dc85b",
+                CreatedAt = DateTime.UtcNow.AddDays(-20)
+            },
+            new Hotel
+            {
+                Name = "ITC Royal Bengal Kolkata",
+                Address = "Golf Green",
+                City = "Kolkata",
+                PricePerNight = 8500.00m,
+                AvailableRooms = 45,
+                Rating = 0,
+                ReviewCount = 0,
+                ManagerId = 3,
+                ImageUrl = "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa",
+                Images = "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa,https://images.unsplash.com/photo-1506905925346-21bda4d32df4",
+                CreatedAt = DateTime.UtcNow.AddDays(-15)
+            },
+            
+            // Pune Hotels
+            new Hotel
+            {
+                Name = "JW Marriott Pune",
+                Address = "Senapati Bapat Road",
+                City = "Pune",
+                PricePerNight = 7500.00m,
+                AvailableRooms = 50,
+                Rating = 0,
+                ReviewCount = 0,
+                ManagerId = 2,
+                ImageUrl = "https://images.unsplash.com/photo-1590490360182-c33d57733427",
+                Images = "https://images.unsplash.com/photo-1590490360182-c33d57733427,https://images.unsplash.com/photo-1611892440504-42a792e24d32",
+                CreatedAt = DateTime.UtcNow.AddDays(-10)
+            },
+            new Hotel
+            {
+                Name = "The Westin Pune",
+                Address = "Koregaon Park Annexe",
+                City = "Pune",
+                PricePerNight = 6500.00m,
+                AvailableRooms = 48,
+                Rating = 0,
+                ReviewCount = 0,
+                ManagerId = 3,
+                ImageUrl = "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4",
+                Images = "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4,https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9",
+                CreatedAt = DateTime.UtcNow.AddDays(-5)
             }
         };
 
