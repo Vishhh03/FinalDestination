@@ -53,6 +53,10 @@ export class AdminComponent implements OnInit {
     rating: 0,
     managerId: null as number | null
   };
+  
+  selectedFile: File | null = null;
+  imagePreview = '';
+  uploading = signal(false);
 
   constructor(
     private http: HttpClient,
@@ -102,6 +106,8 @@ export class AdminComponent implements OnInit {
       rating: 0,
       managerId: null
     };
+    this.imagePreview = '';
+    this.selectedFile = null;
     this.showHotelForm.set(true);
     this.error.set('');
   }
@@ -118,6 +124,8 @@ export class AdminComponent implements OnInit {
       rating: hotel.rating,
       managerId: hotel.managerId || null
     };
+    this.imagePreview = hotel.imageUrl || '';
+    this.selectedFile = null;
     this.showHotelForm.set(true);
     this.error.set('');
   }
@@ -125,7 +133,66 @@ export class AdminComponent implements OnInit {
   cancelHotelForm() {
     this.showHotelForm.set(false);
     this.selectedHotel.set(null);
+    this.selectedFile = null;
+    this.imagePreview = '';
     this.error.set('');
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        this.error.set('Invalid file type. Please upload JPG, PNG, or WebP images.');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        this.error.set('File size exceeds 5MB limit.');
+        return;
+      }
+
+      this.selectedFile = file;
+      
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+      
+      this.error.set('');
+    }
+  }
+
+  async uploadImage(): Promise<string | null> {
+    if (!this.selectedFile) return null;
+
+    this.uploading.set(true);
+    const formData = new FormData();
+    formData.append('file', this.selectedFile);
+
+    try {
+      const response = await fetch('/api/upload/hotel-image', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Upload failed');
+      }
+
+      const result = await response.json();
+      return result.imageUrl;
+    } catch (err: any) {
+      this.error.set(err.message || 'Failed to upload image');
+      return null;
+    } finally {
+      this.uploading.set(false);
+    }
   }
 
   async saveHotel() {
@@ -142,13 +209,22 @@ export class AdminComponent implements OnInit {
     this.loading.set(true);
     this.error.set('');
 
-    const hotelData = {
-      ...this.hotelForm,
-      imageUrl: this.selectedHotel()?.imageUrl || null,
-      images: this.selectedHotel()?.images || null
-    };
-
     try {
+      let uploadedImageUrl = null;
+      if (this.selectedFile) {
+        uploadedImageUrl = await this.uploadImage();
+        if (!uploadedImageUrl) {
+          this.loading.set(false);
+          return;
+        }
+      }
+
+      const hotelData = {
+        ...this.hotelForm,
+        imageUrl: uploadedImageUrl || this.selectedHotel()?.imageUrl || null,
+        images: this.selectedHotel()?.images || null
+      };
+
       if (this.isEditingHotel() && this.selectedHotel()) {
         await this.hotelService.update(this.selectedHotel()!.id, hotelData);
         this.success.set('Hotel updated successfully');

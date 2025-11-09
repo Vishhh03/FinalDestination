@@ -135,6 +135,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Serve static files from wwwroot
+app.UseStaticFiles();
+
 // Global error handling middleware (must be early in pipeline)
 app.UseMiddleware<ErrorHandlingMiddleware>();
 

@@ -295,6 +295,10 @@ docs/build/
 docs/_build/
 docs/.doctrees/
 
+# Uploaded Files (User Content)
+finaldestination/wwwroot/uploads/
+!finaldestination/wwwroot/uploads/.gitkeep
+
 # ============================================
 # Security & Sensitive Data
 # ============================================
