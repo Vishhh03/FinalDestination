@@ -13,6 +13,10 @@ public class Hotel
     public int? ManagerId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
+    // Image URLs (comma-separated for simplicity, or use JSON)
+    public string? ImageUrl { get; set; } // Primary image
+    public string? Images { get; set; } // Additional images (comma-separated URLs)
+    
     // Navigation Properties
     public User? Manager { get; set; }
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>();

@@ -6,19 +6,19 @@
         </a>
         
         <ul class="nav-menu">
-            <li><a routerLink="/">Home</a></li>
-            <li><a routerLink="/hotels">Hotels</a></li>
+            <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a></li>
+            <li><a routerLink="/hotels" routerLinkActive="active">Hotels</a></li>
             
             @if (authService.hasRole('HotelManager')) {
-            <li><a routerLink="/manager-dashboard" class="nav-link-highlight">Dashboard</a></li>
+            <li><a routerLink="/manager-dashboard" routerLinkActive="active">Dashboard</a></li>
             }
             
             @if (authService.hasRole('Admin')) {
-            <li><a routerLink="/admin" class="nav-link-highlight">Admin Panel</a></li>
+            <li><a routerLink="/admin" routerLinkActive="active">Admin Panel</a></li>
             }
             
             @if (authService.isAuthenticated()) {
-            <li><a routerLink="/bookings">Bookings</a></li>
+            <li><a routerLink="/bookings" routerLinkActive="active">Bookings</a></li>
             <li class="user-menu">
                 <div class="user-info">
                     <i class="fas fa-user-circle"></i>
@@ -30,7 +30,7 @@
                     }
                 </div>
                 <div class="dropdown-menu">
-                    <a routerLink="/profile" class="dropdown-item">
+                    <a routerLink="/profile" routerLinkActive="active" class="dropdown-item">
                         <i class="fas fa-user"></i> Profile
                     </a>
                     <button (click)="authService.logout()" class="dropdown-item logout-btn">

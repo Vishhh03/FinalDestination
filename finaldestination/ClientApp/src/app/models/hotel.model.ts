@@ -8,6 +8,8 @@ export interface Hotel {
   rating: number;
   managerId: number;
   createdAt: string;
+  imageUrl?: string;
+  images?: string[];
 }
 
 export interface Booking {
