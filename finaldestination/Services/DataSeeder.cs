@@ -143,7 +143,7 @@ public static class DataSeeder
     {
         var hotels = new List<Hotel>
         {
-            // Mumbai Hotels
+            // Mumbai Hotels - Manager 2
             new Hotel
             {
                 Name = "Taj Mahal Palace Mumbai",
@@ -158,6 +158,7 @@ public static class DataSeeder
                 Images = "https://images.unsplash.com/photo-1566073771259-6a8506099945,https://images.unsplash.com/photo-1582719478250-c89cae4dc85b",
                 CreatedAt = DateTime.UtcNow.AddDays(-90)
             },
+            // Mumbai Hotels - Manager 3
             new Hotel
             {
                 Name = "Marine Plaza Hotel",
@@ -167,13 +168,13 @@ public static class DataSeeder
                 AvailableRooms = 32,
                 Rating = 0,
                 ReviewCount = 0,
-                ManagerId = 2,
+                ManagerId = 3,
                 ImageUrl = "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb",
                 Images = "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb,https://images.unsplash.com/photo-1520250497591-112f2f40a3f4",
                 CreatedAt = DateTime.UtcNow.AddDays(-85)
             },
             
-            // Delhi Hotels
+            // Delhi Hotels - Manager 2
             new Hotel
             {
                 Name = "The Imperial New Delhi",
@@ -183,11 +184,12 @@ public static class DataSeeder
                 AvailableRooms = 38,
                 Rating = 0,
                 ReviewCount = 0,
-                ManagerId = 3,
+                ManagerId = 2,
                 ImageUrl = "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa",
                 Images = "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa,https://images.unsplash.com/photo-1506905925346-21bda4d32df4",
                 CreatedAt = DateTime.UtcNow.AddDays(-80)
             },
+            // Delhi Hotels - Manager 3
             new Hotel
             {
                 Name = "Leela Palace Delhi",
@@ -203,7 +205,7 @@ public static class DataSeeder
                 CreatedAt = DateTime.UtcNow.AddDays(-75)
             },
             
-            // Bangalore Hotels
+            // Bangalore Hotels - Manager 2
             new Hotel
             {
                 Name = "ITC Gardenia Bangalore",
@@ -218,6 +220,7 @@ public static class DataSeeder
                 Images = "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4,https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9",
                 CreatedAt = DateTime.UtcNow.AddDays(-70)
             },
+            // Bangalore Hotels - Manager 3
             new Hotel
             {
                 Name = "The Oberoi Bangalore",
@@ -233,7 +236,7 @@ public static class DataSeeder
                 CreatedAt = DateTime.UtcNow.AddDays(-65)
             },
             
-            // Goa Hotels
+            // Goa Hotels - Manager 2
             new Hotel
             {
                 Name = "Taj Exotica Goa",
@@ -248,6 +251,7 @@ public static class DataSeeder
                 Images = "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb,https://images.unsplash.com/photo-1520250497591-112f2f40a3f4",
                 CreatedAt = DateTime.UtcNow.AddDays(-60)
             },
+            // Goa Hotels - Manager 3
             new Hotel
             {
                 Name = "Alila Diwa Goa",
@@ -263,7 +267,7 @@ public static class DataSeeder
                 CreatedAt = DateTime.UtcNow.AddDays(-55)
             },
             
-            // Jaipur Hotels
+            // Jaipur Hotels - Manager 2
             new Hotel
             {
                 Name = "Rambagh Palace Jaipur",
@@ -278,6 +282,7 @@ public static class DataSeeder
                 Images = "https://images.unsplash.com/photo-1566073771259-6a8506099945,https://images.unsplash.com/photo-1618773928121-c32242e63f39",
                 CreatedAt = DateTime.UtcNow.AddDays(-50)
             },
+            // Jaipur Hotels - Manager 3
             new Hotel
             {
                 Name = "Fairmont Jaipur",
@@ -293,7 +298,7 @@ public static class DataSeeder
                 CreatedAt = DateTime.UtcNow.AddDays(-45)
             },
             
-            // Hyderabad Hotels
+            // Hyderabad Hotels - Manager 2
             new Hotel
             {
                 Name = "Taj Falaknuma Palace",
@@ -308,6 +313,7 @@ public static class DataSeeder
                 Images = "https://images.unsplash.com/photo-1590490360182-c33d57733427,https://images.unsplash.com/photo-1611892440504-42a792e24d32",
                 CreatedAt = DateTime.UtcNow.AddDays(-40)
             },
+            // Hyderabad Hotels - Manager 3
             new Hotel
             {
                 Name = "ITC Kohenur Hyderabad",
@@ -323,7 +329,7 @@ public static class DataSeeder
                 CreatedAt = DateTime.UtcNow.AddDays(-35)
             },
             
-            // Chennai Hotels
+            // Chennai Hotels - Manager 2
             new Hotel
             {
                 Name = "ITC Grand Chola Chennai",
@@ -338,6 +344,7 @@ public static class DataSeeder
                 Images = "https://images.unsplash.com/photo-1564501049412-61c2a3083791,https://images.unsplash.com/photo-1551882547-ff40c63fe5fa",
                 CreatedAt = DateTime.UtcNow.AddDays(-30)
             },
+            // Chennai Hotels - Manager 3
             new Hotel
             {
                 Name = "The Leela Palace Chennai",
@@ -353,7 +360,7 @@ public static class DataSeeder
                 CreatedAt = DateTime.UtcNow.AddDays(-25)
             },
             
-            // Kolkata Hotels
+            // Kolkata Hotels - Manager 2
             new Hotel
             {
                 Name = "The Oberoi Grand Kolkata",
@@ -368,6 +375,7 @@ public static class DataSeeder
                 Images = "https://images.unsplash.com/photo-1566073771259-6a8506099945,https://images.unsplash.com/photo-1582719478250-c89cae4dc85b",
                 CreatedAt = DateTime.UtcNow.AddDays(-20)
             },
+            // Kolkata Hotels - Manager 3
             new Hotel
             {
                 Name = "ITC Royal Bengal Kolkata",
@@ -383,7 +391,7 @@ public static class DataSeeder
                 CreatedAt = DateTime.UtcNow.AddDays(-15)
             },
             
-            // Pune Hotels
+            // Pune Hotels - Manager 2
             new Hotel
             {
                 Name = "JW Marriott Pune",
@@ -398,6 +406,7 @@ public static class DataSeeder
                 Images = "https://images.unsplash.com/photo-1590490360182-c33d57733427,https://images.unsplash.com/photo-1611892440504-42a792e24d32",
                 CreatedAt = DateTime.UtcNow.AddDays(-10)
             },
+            // Pune Hotels - Manager 3
             new Hotel
             {
                 Name = "The Westin Pune",

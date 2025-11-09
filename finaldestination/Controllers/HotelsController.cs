@@ -347,7 +347,11 @@ public class HotelsController : ControllerBase
 
         _logger.LogInformation("Attempting to delete hotel with ID: {HotelId}", id);
 
-        var hotel = await _context.Hotels.FindAsync(id);
+        var hotel = await _context.Hotels
+            .Include(h => h.Reviews)
+            .Include(h => h.Bookings)
+            .FirstOrDefaultAsync(h => h.Id == id);
+            
         if (hotel == null)
         {
             _logger.LogWarning("Hotel with ID {HotelId} not found for deletion", id);
@@ -374,8 +378,7 @@ public class HotelsController : ControllerBase
         }
 
         // Check if hotel has active bookings
-        var hasActiveBookings = await _context.Bookings
-            .AnyAsync(b => b.HotelId == id && b.Status == BookingStatus.Confirmed);
+        var hasActiveBookings = hotel.Bookings.Any(b => b.Status == BookingStatus.Confirmed);
 
         if (hasActiveBookings)
         {
@@ -383,16 +386,40 @@ public class HotelsController : ControllerBase
             return BadRequest("Cannot delete hotel with active bookings. Please cancel all bookings first.");
         }
 
-        _context.Hotels.Remove(hotel);
-        await _context.SaveChangesAsync();
+        try
+        {
+            // Delete related reviews first
+            if (hotel.Reviews.Any())
+            {
+                _context.Reviews.RemoveRange(hotel.Reviews);
+                _logger.LogInformation("Deleted {Count} reviews for hotel {HotelId}", hotel.Reviews.Count, id);
+            }
 
-        // Invalidate relevant caches
-        await InvalidateHotelCaches();
-        await _cache.RemoveAsync($"{HOTEL_CACHE_KEY_PREFIX}{id}");
+            // Delete related bookings (only completed/cancelled ones)
+            var bookingsToDelete = hotel.Bookings.Where(b => b.Status != BookingStatus.Confirmed).ToList();
+            if (bookingsToDelete.Any())
+            {
+                _context.Bookings.RemoveRange(bookingsToDelete);
+                _logger.LogInformation("Deleted {Count} bookings for hotel {HotelId}", bookingsToDelete.Count, id);
+            }
 
-        _logger.LogInformation("Hotel {HotelId} deleted successfully", id);
+            // Finally delete the hotel
+            _context.Hotels.Remove(hotel);
+            await _context.SaveChangesAsync();
 
-        return NoContent();
+            // Invalidate relevant caches
+            await InvalidateHotelCaches();
+            await _cache.RemoveAsync($"{HOTEL_CACHE_KEY_PREFIX}{id}");
+
+            _logger.LogInformation("Hotel {HotelId} deleted successfully", id);
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting hotel {HotelId}", id);
+            return StatusCode(500, "An error occurred while deleting the hotel. Please try again.");
+        }
     }
 
     /// <summary>

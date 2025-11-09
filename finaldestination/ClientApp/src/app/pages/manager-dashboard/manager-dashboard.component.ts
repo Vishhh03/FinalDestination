@@ -110,7 +110,10 @@ export class ManagerDashboardComponent implements OnInit {
       city: this.city,
       pricePerNight: this.pricePerNight,
       availableRooms: this.availableRooms,
-      rating: this.rating
+      rating: this.rating,
+      imageUrl: this.selectedHotel()?.imageUrl || null,
+      images: this.selectedHotel()?.images || null,
+      managerId: this.selectedHotel()?.managerId || null
     };
 
     try {

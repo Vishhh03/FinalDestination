@@ -142,12 +142,18 @@ export class AdminComponent implements OnInit {
     this.loading.set(true);
     this.error.set('');
 
+    const hotelData = {
+      ...this.hotelForm,
+      imageUrl: this.selectedHotel()?.imageUrl || null,
+      images: this.selectedHotel()?.images || null
+    };
+
     try {
       if (this.isEditingHotel() && this.selectedHotel()) {
-        await this.hotelService.update(this.selectedHotel()!.id, this.hotelForm);
+        await this.hotelService.update(this.selectedHotel()!.id, hotelData);
         this.success.set('Hotel updated successfully');
       } else {
-        await this.hotelService.create(this.hotelForm);
+        await this.hotelService.create(hotelData);
         this.success.set('Hotel created successfully');
       }
       this.showHotelForm.set(false);
