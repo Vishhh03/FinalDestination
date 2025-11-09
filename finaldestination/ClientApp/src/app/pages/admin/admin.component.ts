@@ -57,6 +57,7 @@ export class AdminComponent implements OnInit {
   selectedFile: File | null = null;
   imagePreview = '';
   uploading = signal(false);
+  imageRemoved = false;
 
   constructor(
     private http: HttpClient,
@@ -108,6 +109,7 @@ export class AdminComponent implements OnInit {
     };
     this.imagePreview = '';
     this.selectedFile = null;
+    this.imageRemoved = false;
     this.showHotelForm.set(true);
     this.error.set('');
   }
@@ -126,6 +128,7 @@ export class AdminComponent implements OnInit {
     };
     this.imagePreview = hotel.imageUrl || '';
     this.selectedFile = null;
+    this.imageRemoved = false;
     this.showHotelForm.set(true);
     this.error.set('');
   }
@@ -135,7 +138,14 @@ export class AdminComponent implements OnInit {
     this.selectedHotel.set(null);
     this.selectedFile = null;
     this.imagePreview = '';
+    this.imageRemoved = false;
     this.error.set('');
+  }
+
+  removeImage() {
+    this.imagePreview = '';
+    this.selectedFile = null;
+    this.imageRemoved = true;
   }
 
   onFileSelected(event: any) {
@@ -210,10 +220,19 @@ export class AdminComponent implements OnInit {
     this.error.set('');
 
     try {
-      let uploadedImageUrl = null;
-      if (this.selectedFile) {
-        uploadedImageUrl = await this.uploadImage();
-        if (!uploadedImageUrl) {
+      // Determine final image URL
+      let finalImageUrl = this.selectedHotel()?.imageUrl || null;
+
+      // If user removed the image, set to null
+      if (this.imageRemoved) {
+        finalImageUrl = null;
+      }
+      // If user uploaded a new image, use that
+      else if (this.selectedFile) {
+        const newImageUrl = await this.uploadImage();
+        if (newImageUrl) {
+          finalImageUrl = newImageUrl;
+        } else {
           this.loading.set(false);
           return;
         }
@@ -221,7 +240,7 @@ export class AdminComponent implements OnInit {
 
       const hotelData = {
         ...this.hotelForm,
-        imageUrl: uploadedImageUrl || this.selectedHotel()?.imageUrl || null,
+        imageUrl: finalImageUrl,
         images: this.selectedHotel()?.images || null
       };
 

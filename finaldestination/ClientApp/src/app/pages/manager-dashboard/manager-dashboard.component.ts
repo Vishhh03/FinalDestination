@@ -35,6 +35,7 @@ export class ManagerDashboardComponent implements OnInit {
   selectedFile: File | null = null;
   imagePreview = '';
   uploading = signal(false);
+  imageRemoved = false;
 
   constructor(
     private hotelService: HotelService,
@@ -74,6 +75,7 @@ export class ManagerDashboardComponent implements OnInit {
     this.imageUrl = '';
     this.imagePreview = '';
     this.selectedFile = null;
+    this.imageRemoved = false;
     this.showForm.set(true);
     this.error.set('');
   }
@@ -90,6 +92,7 @@ export class ManagerDashboardComponent implements OnInit {
     this.imageUrl = hotel.imageUrl || '';
     this.imagePreview = hotel.imageUrl || '';
     this.selectedFile = null;
+    this.imageRemoved = false;
     this.showForm.set(true);
     this.error.set('');
   }
@@ -99,7 +102,15 @@ export class ManagerDashboardComponent implements OnInit {
     this.selectedHotel.set(null);
     this.selectedFile = null;
     this.imagePreview = '';
+    this.imageRemoved = false;
     this.error.set('');
+  }
+
+  removeImage() {
+    this.imagePreview = '';
+    this.selectedFile = null;
+    this.imageUrl = '';
+    this.imageRemoved = true;
   }
 
   onFileSelected(event: any) {
@@ -177,12 +188,18 @@ export class ManagerDashboardComponent implements OnInit {
     this.error.set('');
 
     try {
-      // Upload new image if selected
-      let uploadedImageUrl = this.imageUrl;
-      if (this.selectedFile) {
+      // Determine final image URL
+      let finalImageUrl = this.selectedHotel()?.imageUrl || null;
+
+      // If user removed the image, set to null
+      if (this.imageRemoved) {
+        finalImageUrl = null;
+      }
+      // If user uploaded a new image, use that
+      else if (this.selectedFile) {
         const newImageUrl = await this.uploadImage();
         if (newImageUrl) {
-          uploadedImageUrl = newImageUrl;
+          finalImageUrl = newImageUrl;
         } else {
           this.loading.set(false);
           return; // Upload failed, error already set
@@ -196,7 +213,7 @@ export class ManagerDashboardComponent implements OnInit {
         pricePerNight: this.pricePerNight,
         availableRooms: this.availableRooms,
         rating: this.rating,
-        imageUrl: uploadedImageUrl || this.selectedHotel()?.imageUrl || null,
+        imageUrl: finalImageUrl,
         images: this.selectedHotel()?.images || null,
         managerId: this.selectedHotel()?.managerId || null
       };

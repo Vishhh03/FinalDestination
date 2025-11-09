@@ -208,3 +208,125 @@ Authorization: Bearer {token}
 - **Loyalty Module**: Points earning and redemption
 - **Payments Module**: Payment processing
 - **Authentication Module**: User identification
+
+
+## Room Availability Integration
+
+### Automatic Room Management
+
+The booking system automatically manages hotel room availability:
+
+**Booking Creation**:
+```csharp
+// Reserve the room
+hotel.AvailableRooms--;
+booking.Status = BookingStatus.Confirmed;
+```
+
+**Payment Success**:
+```csharp
+// Room remains reserved
+booking.Status = BookingStatus.Confirmed;
+// Award loyalty points
+await _loyaltyService.AwardPointsAsync(userId, bookingId, amount);
+```
+
+**Payment Failure**:
+```csharp
+// Restore room availability
+hotel.AvailableRooms++;
+booking.Status = BookingStatus.Cancelled;
+```
+
+**Booking Cancellation**:
+```csharp
+// Restore room availability
+hotel.AvailableRooms++;
+booking.Status = BookingStatus.Cancelled;
+// Process refund if payment was completed
+```
+
+**Booking Deletion** (Admin only):
+```csharp
+if (booking.Status == BookingStatus.Confirmed)
+{
+    hotel.AvailableRooms++;  // Restore room
+}
+```
+
+### Validation Rules
+
+**Room Availability Check**:
+```csharp
+if (hotel.AvailableRooms < 1)
+{
+    return BadRequest("No rooms available at this hotel");
+}
+```
+
+**Date Validation**:
+- Check-in date must be in the future
+- Check-out date must be after check-in date
+- Minimum 1 night stay
+
+**Guest Validation**:
+- Number of guests must be positive
+- Maximum guests per room (configurable)
+
+## Booking Lifecycle
+
+```
+1. Create Booking
+   ↓
+2. Reserve Room (AvailableRooms--)
+   ↓
+3. Process Payment
+   ↓
+4a. Payment Success → Confirm Booking → Award Points
+4b. Payment Failure → Cancel Booking → Restore Room
+   ↓
+5. Complete Stay → Update Status
+   ↓
+6. Optional: Cancel → Refund → Restore Room
+```
+
+## Indian Standard Time (IST)
+
+All booking timestamps use IST timezone:
+- Booking creation time
+- Check-in/check-out dates
+- Payment processing time
+- Cancellation time
+
+Helper method: `TimeHelper.GetISTNow()`
+
+## Booking Status Flow
+
+```
+Pending → (Payment) → Confirmed → (Stay Complete) → Completed
+   ↓                      ↓
+   └─→ (Payment Fail) → Cancelled
+                          ↑
+                          └─→ (User Cancel) ← Confirmed
+```
+
+## Integration with Other Modules
+
+**Hotels Module**:
+- Room availability updates
+- Hotel information retrieval
+- Manager assignment
+
+**Payments Module**:
+- Payment processing
+- Refund handling
+- Transaction tracking
+
+**Loyalty Module**:
+- Points earning (10% of booking amount)
+- Points redemption for discounts
+- Transaction history
+
+**Reviews Module**:
+- Only users with paid bookings can review
+- Review eligibility check

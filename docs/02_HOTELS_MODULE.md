@@ -223,3 +223,115 @@ GET /api/hotels/search?city=New York&maxPrice=200&minRating=4
 - **Bookings Module**: Hotel availability and pricing
 - **Reviews Module**: Hotel ratings
 - **Authentication Module**: Manager ownership
+
+
+## Image Upload Feature
+
+### Backend Implementation
+
+#### UploadController
+**Location**: `Controllers/UploadController.cs`
+
+**Endpoints**:
+```
+POST   /api/upload/hotel-image  - Upload hotel image
+DELETE /api/upload/hotel-image  - Delete hotel image
+```
+
+**Security**:
+- Requires HotelManager or Admin role
+- File type validation (JPG, PNG, WebP only)
+- File size limit (5MB maximum)
+- Unique filename generation (GUID)
+- Path traversal prevention
+
+**Storage**:
+- Location: `wwwroot/uploads/hotels/`
+- Served as static files
+- Excluded from git (.gitignore)
+
+### Frontend Implementation
+
+**File Upload UI**:
+- Drag-and-drop interface
+- Image preview before upload
+- File validation (client-side)
+- Progress indication
+- Remove uploaded image option
+
+**Integration**:
+- Manager Dashboard: Upload images when creating/editing hotels
+- Admin Dashboard: Full image management capabilities
+- Automatic URL generation and storage
+
+### Usage Example
+
+```typescript
+// Upload image
+const formData = new FormData();
+formData.append('file', selectedFile);
+
+const response = await fetch('/api/upload/hotel-image', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  },
+  body: formData
+});
+
+const result = await response.json();
+// result.imageUrl = "/uploads/hotels/guid.jpg"
+```
+
+## Room Availability Management
+
+### Automatic Room Count Updates
+
+**When Booking Created**:
+```csharp
+hotel.AvailableRooms--;  // Decrease by 1
+```
+
+**When Payment Fails**:
+```csharp
+hotel.AvailableRooms++;  // Restore room
+```
+
+**When Booking Cancelled**:
+```csharp
+hotel.AvailableRooms++;  // Restore room
+```
+
+**When Booking Deleted** (Admin only):
+```csharp
+if (booking.Status == BookingStatus.Confirmed)
+{
+    hotel.AvailableRooms++;  // Restore if was confirmed
+}
+```
+
+This ensures accurate room availability tracking throughout the booking lifecycle.
+
+## Hotel Distribution
+
+Hotels are evenly distributed between managers:
+- **Manager 2 (Jane Manager)**: 10 hotels (one per city)
+- **Manager 3 (Mike Wilson)**: 10 hotels (one per city)
+
+Cities covered:
+- Mumbai, Delhi, Bangalore, Goa, Jaipur
+- Hyderabad, Chennai, Kolkata, Pune
+
+## Recent Bug Fixes
+
+### 1. Hotel Edit 400 Error
+**Issue**: Missing required fields in update request
+**Fix**: Include imageUrl, images, and managerId in update payload
+
+### 2. Hotel Delete 500 Error
+**Issue**: Foreign key constraints with reviews and bookings
+**Fix**: Cascade delete reviews and non-active bookings before hotel deletion
+
+### 3. Uneven Hotel Distribution
+**Issue**: Hotels not evenly split between managers
+**Fix**: Updated DataSeeder to distribute hotels evenly (10 each)

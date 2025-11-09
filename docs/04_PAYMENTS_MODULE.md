@@ -220,3 +220,180 @@ Authorization: Bearer {token}
 - **Bookings Module**: Payment requirement and completion
 - **Loyalty Module**: Points awarded after successful payment
 - **Authentication Module**: User identification
+
+
+## Payment Status Enum Alignment
+
+### Backend (C#)
+```csharp
+public enum PaymentStatus
+{
+    Pending = 0,
+    Completed = 1,
+    Failed = 2,
+    Refunded = 3
+}
+```
+
+### Frontend (TypeScript)
+```typescript
+enum PaymentStatus {
+  Pending = 0,
+  Completed = 1,
+  Failed = 2,
+  Refunded = 3
+}
+```
+
+**Important**: Both frontend and backend use numeric enum values for consistency.
+
+## Payment Processing Flow
+
+```
+1. User initiates booking
+   ↓
+2. Booking created with Confirmed status
+   ↓
+3. Room reserved (AvailableRooms--)
+   ↓
+4. Payment processing initiated
+   ↓
+5a. Payment Success (90% chance in mock)
+    - Payment status: Completed
+    - Booking status: Confirmed
+    - Award loyalty points
+    - Room remains reserved
+   ↓
+5b. Payment Failure (10% chance in mock)
+    - Payment status: Failed
+    - Booking status: Cancelled
+    - Restore room (AvailableRooms++)
+    - No points awarded
+```
+
+## Mock Payment Service
+
+### Success Rate
+- **90%** success rate (simulates real-world scenarios)
+- **10%** failure rate for testing
+
+### Transaction ID Generation
+```csharp
+TransactionId = $"TXN{DateTime.UtcNow:yyyyMMddHHmmss}{new Random().Next(1000, 9999)}"
+// Example: TXN202411101234567890
+```
+
+### Processing Delay
+- Simulates real payment gateway delay
+- Helps test loading states in UI
+
+## Refund Processing
+
+### Refund Flow
+```
+1. User cancels confirmed booking
+   ↓
+2. Check for completed payment
+   ↓
+3. Process refund
+   - Create refund transaction
+   - Update payment status to Refunded
+   - Generate refund transaction ID
+   ↓
+4. Update booking status to Cancelled
+   ↓
+5. Restore room availability
+```
+
+### Refund Validation
+```csharp
+// Only refund completed payments
+if (payment.Status != PaymentStatus.Completed)
+{
+    return BadRequest("Cannot refund non-completed payment");
+}
+```
+
+## Payment Methods Supported
+
+```csharp
+public enum PaymentMethod
+{
+    CreditCard = 0,
+    DebitCard = 1,
+    PayPal = 2,
+    UPI = 3
+}
+```
+
+### Indian Payment Methods
+- Credit Card
+- Debit Card
+- UPI (Unified Payments Interface)
+- PayPal
+
+## Currency
+
+All payments in **Indian Rupees (₹)**:
+- Display: ₹ symbol throughout UI
+- Storage: Decimal values in database
+- Calculations: Precise decimal arithmetic
+
+## Payment Security
+
+### Validation
+- Amount validation (positive, reasonable range)
+- Payment method validation
+- Booking ownership verification
+- Duplicate payment prevention
+
+### Logging
+```csharp
+_logger.LogInformation("Payment {TransactionId} completed for booking {BookingId}", 
+    paymentResult.TransactionId, bookingId);
+
+_logger.LogWarning("Payment failed for booking {BookingId}: {ErrorMessage}", 
+    bookingId, paymentResult.ErrorMessage);
+```
+
+### Error Handling
+- Try-catch blocks for payment processing
+- Automatic room restoration on errors
+- User-friendly error messages
+- Detailed logging for debugging
+
+## Integration with Loyalty System
+
+### Points Earning
+```csharp
+// Award 10% of booking amount as points
+if (paymentResult.Status == PaymentStatus.Completed)
+{
+    await _loyaltyService.AwardPointsAsync(
+        userId, 
+        bookingId, 
+        booking.TotalAmount
+    );
+}
+```
+
+### Points Redemption
+```csharp
+// Apply discount before payment
+if (pointsToRedeem > 0)
+{
+    var redemption = await _loyaltyService.RedeemPointsAsync(userId, pointsToRedeem);
+    totalAmount -= redemption.DiscountAmount;
+}
+```
+
+## Future Enhancements
+
+- [ ] Real payment gateway integration (Stripe, Razorpay)
+- [ ] Partial refunds
+- [ ] Payment installments
+- [ ] Multiple payment methods per booking
+- [ ] Payment retry mechanism
+- [ ] Webhook handling for async payments
+- [ ] Payment receipts (PDF generation)
+- [ ] Payment history export

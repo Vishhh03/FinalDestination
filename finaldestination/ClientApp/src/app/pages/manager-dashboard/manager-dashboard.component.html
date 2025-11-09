@@ -121,7 +121,7 @@
               @if (imagePreview) {
                 <div class="image-preview">
                   <img [src]="imagePreview" alt="Hotel preview">
-                  <button type="button" class="btn-remove-image" (click)="imagePreview = ''; selectedFile = null; imageUrl = ''">
+                  <button type="button" class="btn-remove-image" (click)="removeImage()">
                     <i class="fas fa-times"></i>
                   </button>
                 </div>

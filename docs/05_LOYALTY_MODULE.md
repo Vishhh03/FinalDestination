@@ -254,3 +254,231 @@ Shows:
 - **Bookings Module**: Points earning and redemption
 - **Payments Module**: Points awarded after successful payment
 - **Authentication Module**: User identification (Guest role only)
+
+
+## Points Calculation
+
+### Earning Points
+**Formula**: 10% of booking amount
+```csharp
+int pointsEarned = (int)(bookingAmount * 0.10m);
+```
+
+**Example**:
+- Booking amount: ₹10,000
+- Points earned: 1,000 points
+
+### Redeeming Points
+**Conversion Rate**: 1 point = ₹1 discount
+```csharp
+decimal discountAmount = pointsRedeemed * 1.0m;
+```
+
+**Example**:
+- Points redeemed: 500
+- Discount applied: ₹500
+
+## Points Lifecycle
+
+```
+1. User completes booking with payment
+   ↓
+2. Payment status: Completed
+   ↓
+3. Award points (10% of amount)
+   ↓
+4. Create points transaction record
+   ↓
+5. Update loyalty account balance
+   ↓
+6. Points available for future bookings
+```
+
+## Loyalty Account Management
+
+### Account Creation
+- Automatically created on first booking
+- Initial balance: 0 points
+- Tracks total points earned
+
+### Account Structure
+```csharp
+public class LoyaltyAccount
+{
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public int PointsBalance { get; set; }
+    public int TotalPointsEarned { get; set; }
+    public DateTime LastUpdated { get; set; }
+}
+```
+
+### Points Transaction
+```csharp
+public class PointsTransaction
+{
+    public int Id { get; set; }
+    public int LoyaltyAccountId { get; set; }
+    public int? BookingId { get; set; }
+    public int PointsEarned { get; set; }
+    public string Description { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+```
+
+## Points Redemption Flow
+
+```
+1. User selects points to redeem during booking
+   ↓
+2. Validate points availability
+   ↓
+3. Calculate discount amount
+   ↓
+4. Deduct points from balance
+   ↓
+5. Apply discount to booking total
+   ↓
+6. Create redemption transaction (negative points)
+   ↓
+7. Process payment with discounted amount
+```
+
+## Validation Rules
+
+### Earning Points
+- Only for completed payments
+- Only for confirmed bookings
+- Calculated after payment success
+- Rounded to nearest integer
+
+### Redeeming Points
+```csharp
+// Check sufficient balance
+if (account.PointsBalance < pointsToRedeem)
+{
+    throw new InvalidOperationException("Insufficient points balance");
+}
+
+// Minimum redemption
+if (pointsToRedeem < 10)
+{
+    throw new InvalidOperationException("Minimum 10 points required");
+}
+
+// Maximum redemption (50% of booking)
+if (discountAmount > bookingAmount * 0.5m)
+{
+    throw new InvalidOperationException("Cannot redeem more than 50% of booking");
+}
+```
+
+## Integration with Bookings
+
+### Booking with Points
+```typescript
+const bookingData = {
+  hotelId: 1,
+  checkInDate: '2025-11-15',
+  checkOutDate: '2025-11-17',
+  numberOfGuests: 2,
+  pointsToRedeem: 500  // Optional
+};
+```
+
+### Booking Response
+```json
+{
+  "id": 123,
+  "totalAmount": 9500,
+  "loyaltyPointsRedeemed": 500,
+  "loyaltyDiscountAmount": 500,
+  "loyaltyPointsEarned": 950
+}
+```
+
+## Points Display
+
+### User Profile
+- Current points balance
+- Total points earned (lifetime)
+- Recent transactions
+- Points expiration (if implemented)
+
+### Booking History
+- Points earned per booking
+- Points redeemed per booking
+- Discount amount applied
+
+## Business Rules
+
+### Points Earning
+- ✅ Earn on completed bookings only
+- ✅ Earn after successful payment
+- ✅ 10% of booking amount
+- ✅ Rounded to nearest integer
+- ❌ No points on cancelled bookings
+- ❌ No points on refunded bookings
+
+### Points Redemption
+- ✅ Redeem during booking creation
+- ✅ 1 point = ₹1 discount
+- ✅ Maximum 50% of booking amount
+- ✅ Minimum 10 points
+- ❌ Cannot redeem after booking created
+- ❌ Cannot redeem on cancelled bookings
+
+## Loyalty Tiers (Future Enhancement)
+
+### Proposed Tiers
+```
+Bronze (0-999 points)
+- Standard earning rate (10%)
+- Standard redemption (1:1)
+
+Silver (1,000-4,999 points)
+- Enhanced earning rate (12%)
+- Better redemption (1:1.1)
+- Priority support
+
+Gold (5,000-9,999 points)
+- Premium earning rate (15%)
+- Premium redemption (1:1.2)
+- Free room upgrades
+- Late checkout
+
+Platinum (10,000+ points)
+- Elite earning rate (20%)
+- Elite redemption (1:1.5)
+- Complimentary services
+- Exclusive offers
+```
+
+## Analytics & Reporting
+
+### Metrics to Track
+- Total points issued
+- Total points redeemed
+- Average points per user
+- Redemption rate
+- Most active users
+- Points liability
+
+### Reports
+- Monthly points summary
+- User loyalty rankings
+- Points expiration forecast
+- Redemption patterns
+
+## Future Enhancements
+
+- [ ] Points expiration (e.g., 1 year)
+- [ ] Loyalty tiers (Bronze, Silver, Gold, Platinum)
+- [ ] Bonus points promotions
+- [ ] Points transfer between users
+- [ ] Points for reviews
+- [ ] Points for referrals
+- [ ] Birthday bonus points
+- [ ] Anniversary rewards
+- [ ] Points history export
+- [ ] Email notifications for points activity
