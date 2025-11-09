@@ -47,7 +47,7 @@
         <div class="info-grid">
           <div class="info-item">
             <span class="info-label">Price per Night</span>
-            <span class="info-value">${{ hotelData.pricePerNight.toFixed(2) }}</span>
+            <span class="info-value">₹{{ hotelData.pricePerNight.toFixed(2) }}</span>
           </div>
           <div class="info-item">
             <span class="info-label">Available Rooms</span>
@@ -239,7 +239,7 @@
               <span class="points-available">{{ availablePoints() }} points available</span>
             </div>
             <div class="form-group">
-              <label for="pointsToRedeem">Points to Redeem (100 points = $1)</label>
+              <label for="pointsToRedeem">Points to Redeem (100 points = ₹1)</label>
               <input 
                 type="number" 
                 id="pointsToRedeem"
@@ -263,18 +263,18 @@
           <div class="booking-summary">
             <h3>Booking Summary</h3>
             <div class="summary-row">
-              <span>{{ nights() }} night(s) × ${{ hotel()!.pricePerNight.toFixed(2) }}</span>
-              <strong>${{ totalAmount().toFixed(2) }}</strong>
+              <span>{{ nights() }} night(s) × ₹{{ hotel()!.pricePerNight.toFixed(2) }}</span>
+              <strong>₹{{ totalAmount().toFixed(2) }}</strong>
             </div>
             @if (discount() > 0) {
               <div class="summary-row">
                 <span>Loyalty Discount ({{ pointsToRedeem }} points)</span>
-                <strong class="discount">-${{ discount().toFixed(2) }}</strong>
+                <strong class="discount">-₹{{ discount().toFixed(2) }}</strong>
               </div>
             }
             <div class="summary-row total">
               <span>Total Amount</span>
-              <strong>${{ finalAmount().toFixed(2) }}</strong>
+              <strong>₹{{ finalAmount().toFixed(2) }}</strong>
             </div>
           </div>
         }

@@ -36,7 +36,6 @@
                 <div class="booking-header">
                     <div>
                         <h3>{{ booking.hotelName }}</h3>
-                        <span class="booking-id">Booking #{{ booking.id }}</span>
                     </div>
                     <span class="booking-status" [ngClass]="getStatusClass(booking.status)">
                         {{ getStatusText(booking.status) }}
@@ -81,7 +80,7 @@
                     @if (booking.loyaltyPointsRedeemed && booking.loyaltyDiscountAmount) {
                     <div class="loyalty-info">
                         <i class="fas fa-gift"></i>
-                        <span>{{ booking.loyaltyPointsRedeemed }} points redeemed for ${{ booking.loyaltyDiscountAmount.toFixed(2) }} discount</span>
+                        <span>{{ booking.loyaltyPointsRedeemed }} points redeemed for ₹{{ booking.loyaltyDiscountAmount.toFixed(2) }} discount</span>
                     </div>
                     }
 
@@ -94,7 +93,7 @@
 
                     <div class="booking-total">
                         <span class="total-label">Total Amount:</span>
-                        <span class="total-value">${{ booking.totalAmount.toFixed(2) }}</span>
+                        <span class="total-value">₹{{ booking.totalAmount.toFixed(2) }}</span>
                     </div>
                 </div>
                 
@@ -157,7 +156,7 @@
                 </div>
                 <div class="summary-item total">
                     <span>Total Amount:</span>
-                    <strong>${{ selectedBooking()!.totalAmount.toFixed(2) }}</strong>
+                    <strong>{{ selectedBooking()!.totalAmount.toFixed(2) }}</strong>
                 </div>
             </div>
 
@@ -242,7 +241,7 @@
                         @if (processingPayment()) {
                         <i class="fas fa-spinner fa-spin"></i> Processing...
                         } @else {
-                        <i class="fas fa-lock"></i> Pay ${{ selectedBooking()!.totalAmount.toFixed(2) }}
+                        <i class="fas fa-lock"></i> Pay ₹{{ selectedBooking()!.totalAmount.toFixed(2) }}
                         }
                     </button>
                 </div>
