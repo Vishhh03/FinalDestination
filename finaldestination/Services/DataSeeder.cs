@@ -150,10 +150,12 @@ public static class DataSeeder
                 Address = "123 Main St",
                 City = "New York",
                 PricePerNight = 1500.00m,
-                AvailableRooms = 48, // Reduced from 50 due to bookings
-                Rating = 0, // Will be calculated from reviews
+                AvailableRooms = 48,
+                Rating = 0,
                 ReviewCount = 0,
                 ManagerId = 2,
+                ImageUrl = "https://images.unsplash.com/photo-1566073771259-6a8506099945",
+                Images = "https://images.unsplash.com/photo-1566073771259-6a8506099945,https://images.unsplash.com/photo-1582719478250-c89cae4dc85b,https://images.unsplash.com/photo-1618773928121-c32242e63f39",
                 CreatedAt = DateTime.UtcNow.AddDays(-90)
             },
             new Hotel
@@ -163,10 +165,12 @@ public static class DataSeeder
                 Address = "456 Beach Ave",
                 City = "Miami",
                 PricePerNight = 2000.00m,
-                AvailableRooms = 28, // Reduced from 30 due to bookings
-                Rating = 0, // Will be calculated from reviews
+                AvailableRooms = 28,
+                Rating = 0,
                 ReviewCount = 0,
                 ManagerId = 2,
+                ImageUrl = "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb",
+                Images = "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb,https://images.unsplash.com/photo-1520250497591-112f2f40a3f4,https://images.unsplash.com/photo-1571896349842-33c89424de2d",
                 CreatedAt = DateTime.UtcNow.AddDays(-85)
             },
             new Hotel
@@ -176,10 +180,12 @@ public static class DataSeeder
                 Address = "789 Pine Rd",
                 City = "Denver",
                 PricePerNight = 1200.00m,
-                AvailableRooms = 24, // Reduced from 25 due to bookings
-                Rating = 0, // Will be calculated from reviews
+                AvailableRooms = 24,
+                Rating = 0,
                 ReviewCount = 0,
                 ManagerId = 3,
+                ImageUrl = "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa",
+                Images = "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa,https://images.unsplash.com/photo-1506905925346-21bda4d32df4,https://images.unsplash.com/photo-1631049307264-da0ec9d70304",
                 CreatedAt = DateTime.UtcNow.AddDays(-80)
             },
             new Hotel
@@ -190,9 +196,11 @@ public static class DataSeeder
                 City = "Chicago",
                 PricePerNight = 1800.00m,
                 AvailableRooms = 35,
-                Rating = 0, // Will be calculated from reviews
+                Rating = 0,
                 ReviewCount = 0,
                 ManagerId = 3,
+                ImageUrl = "https://images.unsplash.com/photo-1590490360182-c33d57733427",
+                Images = "https://images.unsplash.com/photo-1590490360182-c33d57733427,https://images.unsplash.com/photo-1611892440504-42a792e24d32,https://images.unsplash.com/photo-1584132967334-10e028bd69f7",
                 CreatedAt = DateTime.UtcNow.AddDays(-70)
             },
             new Hotel
@@ -203,9 +211,11 @@ public static class DataSeeder
                 City = "Los Angeles",
                 PricePerNight = 2500.00m,
                 AvailableRooms = 40,
-                Rating = 0, // Will be calculated from reviews
+                Rating = 0,
                 ReviewCount = 0,
                 ManagerId = 2,
+                ImageUrl = "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4",
+                Images = "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4,https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9,https://images.unsplash.com/photo-1582719478250-c89cae4dc85b",
                 CreatedAt = DateTime.UtcNow.AddDays(-65)
             },
             new Hotel
@@ -216,9 +226,11 @@ public static class DataSeeder
                 City = "Boston",
                 PricePerNight = 1300.00m, 
                 AvailableRooms = 20,
-                Rating = 0, // Will be calculated from reviews
+                Rating = 0,
                 ReviewCount = 0,
                 ManagerId = 3,
+                ImageUrl = "https://images.unsplash.com/photo-1564501049412-61c2a3083791",
+                Images = "https://images.unsplash.com/photo-1564501049412-61c2a3083791,https://images.unsplash.com/photo-1551882547-ff40c63fe5fa,https://images.unsplash.com/photo-1445019980597-93fa8acb246c",
                 CreatedAt = DateTime.UtcNow.AddDays(-60)
             }
         };

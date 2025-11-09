@@ -224,6 +224,8 @@ public class HotelsController : ControllerBase
             AvailableRooms = request.AvailableRooms,
             Rating = request.Rating,
             ManagerId = request.ManagerId,
+            ImageUrl = request.ImageUrl?.Trim(),
+            Images = request.Images?.Trim(),
             CreatedAt = DateTime.UtcNow
         };
 
@@ -290,6 +292,8 @@ public class HotelsController : ControllerBase
         existingHotel.AvailableRooms = request.AvailableRooms;
         existingHotel.Rating = request.Rating;
         existingHotel.ManagerId = request.ManagerId;
+        existingHotel.ImageUrl = request.ImageUrl?.Trim();
+        existingHotel.Images = request.Images?.Trim();
 
         try
         {
