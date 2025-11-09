@@ -14,7 +14,7 @@ import { filter } from 'rxjs/operators';
 export class NavbarComponent {
   authService = inject(AuthService);
   router = inject(Router);
-  isAuthPage = false;
+  isHomePage = false;
   
   // Helper for template debugging
   typeof(value: any): string {
@@ -45,29 +45,33 @@ export class NavbarComponent {
   }
 
   checkRoute(url: string) {
-    // Check if current route is login or register
-    this.isAuthPage = url.includes('/login') || url.includes('/register');
+    // Check if current route is homepage (exact match)
+    this.isHomePage = url === '/' || url === '';
     
     // Update navbar class immediately
     if (typeof document !== 'undefined') {
       const navbar = document.querySelector('.navbar');
       if (navbar) {
-        if (this.isAuthPage) {
-          navbar.classList.add('auth-page');
-          navbar.classList.add('scrolled');
-        } else {
-          navbar.classList.remove('auth-page');
+        if (this.isHomePage) {
+          // Homepage: transparent navbar that blends with hero
+          navbar.classList.add('home-page');
+          navbar.classList.remove('solid-page');
           if (window.scrollY <= 50) {
             navbar.classList.remove('scrolled');
           }
+        } else {
+          // Other pages: solid sticky navbar
+          navbar.classList.remove('home-page');
+          navbar.classList.add('solid-page');
+          navbar.classList.add('scrolled');
         }
       }
     }
   }
 
   onScroll() {
-    // Don't apply scroll effect on auth pages
-    if (this.isAuthPage) return;
+    // Only apply scroll effect on homepage
+    if (!this.isHomePage) return;
     
     const navbar = document.querySelector('.navbar');
     if (navbar) {

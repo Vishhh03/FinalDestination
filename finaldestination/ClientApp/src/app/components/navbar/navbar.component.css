@@ -1,28 +1,33 @@
+/* Base navbar styles */
 .navbar {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 1000;
-    background: transparent;
     padding: 1.5rem 0;
     transition: all 0.3s ease;
 }
 
-.navbar.scrolled {
+/* Homepage: Transparent navbar that blends with hero */
+.navbar.home-page {
+    position: fixed;
+    background: transparent;
+}
+
+.navbar.home-page.scrolled {
     background: rgba(30, 60, 114, 0.95);
     backdrop-filter: blur(10px);
     padding: 1rem 0;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Solid navbar for auth pages (login/register) */
-.navbar.auth-page {
+/* All other pages: Solid sticky navbar */
+.navbar.solid-page {
     position: sticky;
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #667eea 100%);
     padding: 1rem 0;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-    backdrop-filter: none;
 }
 
 .container {
