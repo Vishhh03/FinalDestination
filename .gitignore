@@ -165,15 +165,7 @@ pnpm-debug.log*
 *.env.local
 *.env.production
 
-# Application Settings (Contains Secrets)
-appsettings.Development.json
-appsettings.Production.json
-appsettings.Staging.json
-appsettings.*.json
-!appsettings.json
-!appsettings.Development.template.json
-
-# Secrets
+# Secrets (if you ever need them later)
 secrets.json
 connectionstrings.json
 *.secrets.json
