@@ -500,3 +500,16 @@ textarea.form-control {
     font-size: 1.75rem;
   }
 }
+
+/* Form Hints */
+.hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: #666;
+  font-style: italic;
+}
+
+.form-group .hint {
+  margin-top: 0.5rem;
+}

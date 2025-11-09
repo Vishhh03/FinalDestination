@@ -191,8 +191,10 @@
             name="checkInDate"
             class="form-control"
             [min]="today"
+            (change)="onCheckInChange()"
             required
           />
+          <small class="hint">Select today or any future date</small>
         </div>
         
         <div class="form-group">
@@ -203,9 +205,10 @@
             [(ngModel)]="checkOutDate"
             name="checkOutDate"
             class="form-control"
-            [min]="checkInDate || tomorrow"
+            [min]="minCheckOutDate()"
             required
           />
+          <small class="hint">Must be at least 1 day after check-in</small>
         </div>
         
         <div class="form-group">

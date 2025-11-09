@@ -34,6 +34,13 @@ export class HotelDetailComponent implements OnInit {
   numberOfGuests = 1;
   pointsToRedeem = 0;
   
+  minCheckOutDate = computed(() => {
+    if (!this.checkInDate) return this.tomorrow;
+    const checkIn = new Date(this.checkInDate);
+    checkIn.setDate(checkIn.getDate() + 1);
+    return checkIn.toISOString().split('T')[0];
+  });
+  
   rating = 5;
   comment = '';
 
@@ -110,14 +117,21 @@ export class HotelDetailComponent implements OnInit {
     this.error.set('');
   }
 
+  onCheckInChange() {
+    // If check-out is before or equal to new check-in, reset it
+    if (this.checkOutDate && this.checkOutDate <= this.checkInDate) {
+      this.checkOutDate = '';
+    }
+  }
+
   async bookHotel() {
     if (!this.checkInDate || !this.checkOutDate) {
       this.error.set('Please select check-in and check-out dates');
       return;
     }
 
-    const checkIn = new Date(this.checkInDate);
-    const checkOut = new Date(this.checkOutDate);
+    const checkIn = new Date(this.checkInDate + 'T00:00:00');
+    const checkOut = new Date(this.checkOutDate + 'T00:00:00');
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -128,6 +142,11 @@ export class HotelDetailComponent implements OnInit {
 
     if (checkOut <= checkIn) {
       this.error.set('Check-out date must be after check-in date');
+      return;
+    }
+
+    if (this.numberOfGuests < 1 || this.numberOfGuests > 10) {
+      this.error.set('Number of guests must be between 1 and 10');
       return;
     }
 

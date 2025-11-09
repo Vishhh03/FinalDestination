@@ -131,15 +131,17 @@ public class HotelsController : ControllerBase
     }
 
     /// <summary>
-    /// Searches hotels by city and/or maximum price with caching
+    /// Searches hotels by city, maximum price, and/or minimum rating with caching
     /// </summary>
     /// <param name="city">City to search in (optional)</param>
     /// <param name="maxPrice">Maximum price per night (optional)</param>
+    /// <param name="minRating">Minimum rating (optional, 1-5)</param>
     /// <returns>List of matching hotels</returns>
     [HttpGet("search")]
     public async Task<ActionResult<IEnumerable<Hotel>>> SearchHotels(
         [FromQuery] string? city = null, 
-        [FromQuery] decimal? maxPrice = null)
+        [FromQuery] decimal? maxPrice = null,
+        [FromQuery] decimal? minRating = null)
     {
         // Validate maxPrice if provided
         if (maxPrice.HasValue && maxPrice.Value < 0)
@@ -147,10 +149,17 @@ public class HotelsController : ControllerBase
             return BadRequest("Maximum price cannot be negative.");
         }
 
-        _logger.LogInformation("Searching hotels with city: {City}, maxPrice: {MaxPrice}", city, maxPrice);
+        // Validate minRating if provided
+        if (minRating.HasValue && (minRating.Value < 0 || minRating.Value > 5))
+        {
+            return BadRequest("Minimum rating must be between 0 and 5.");
+        }
+
+        _logger.LogInformation("Searching hotels with city: {City}, maxPrice: {MaxPrice}, minRating: {MinRating}", 
+            city, maxPrice, minRating);
 
         // Create cache key based on search parameters
-        var cacheKey = $"{SEARCH_CACHE_KEY_PREFIX}{city?.ToLower() ?? "all"}:{maxPrice?.ToString() ?? "any"}";
+        var cacheKey = $"{SEARCH_CACHE_KEY_PREFIX}{city?.ToLower() ?? "all"}:{maxPrice?.ToString() ?? "any"}:{minRating?.ToString() ?? "any"}";
         
         // Try to get from cache first
         var cachedResults = await _cache.GetAsync<List<Hotel>>(cacheKey);
@@ -173,6 +182,11 @@ public class HotelsController : ControllerBase
         if (maxPrice.HasValue)
         {
             query = query.Where(h => h.PricePerNight <= maxPrice.Value);
+        }
+
+        if (minRating.HasValue)
+        {
+            query = query.Where(h => h.Rating >= minRating.Value);
         }
 
         var results = await query.ToListAsync();
