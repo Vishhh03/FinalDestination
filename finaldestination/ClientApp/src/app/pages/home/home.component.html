@@ -1,9 +1,42 @@
 <app-navbar></app-navbar>
 
 <section class="hero">
+  <!-- Hero Slider Background -->
+  <div class="hero-slider">
+    @for (image of heroImages; track $index) {
+      <div class="hero-slide" 
+           [class.active]="currentSlide() === $index"
+           [style.background-image]="'url(' + image.url + ')'">
+        <div class="hero-slide-overlay"></div>
+      </div>
+    }
+  </div>
+
+  <!-- Slider Controls -->
+  <button class="slider-control prev" (click)="prevSlide()" aria-label="Previous slide">
+    <i class="fas fa-chevron-left"></i>
+  </button>
+  <button class="slider-control next" (click)="nextSlide()" aria-label="Next slide">
+    <i class="fas fa-chevron-right"></i>
+  </button>
+
+  <!-- Slider Indicators -->
+  <div class="slider-indicators">
+    @for (image of heroImages; track $index) {
+      <button 
+        class="indicator" 
+        [class.active]="currentSlide() === $index"
+        (click)="goToSlide($index)"
+        [attr.aria-label]="'Go to slide ' + ($index + 1)">
+      </button>
+    }
+  </div>
+
   <div class="hero-content">
-    <h1>Find Your Perfect Stay</h1>
-    <p>Discover amazing hotels at the best prices</p>
+    <div class="hero-text-animation">
+      <h1>{{ heroImages[currentSlide()].title }}</h1>
+      <p>{{ heroImages[currentSlide()].subtitle }}</p>
+    </div>
     
     <div class="search-box">
       <div class="search-field">

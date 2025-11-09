@@ -19,6 +19,32 @@ export class HomeComponent implements OnInit {
   maxPrice: number | null = null;
   minRating: number | null = null;
 
+  // Hero slider
+  heroImages = [
+    {
+      url: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920&q=80',
+      title: 'Luxury Hotels',
+      subtitle: 'Experience world-class comfort'
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1920&q=80',
+      title: 'Boutique Stays',
+      subtitle: 'Unique and memorable experiences'
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1920&q=80',
+      title: 'City Escapes',
+      subtitle: 'Urban adventures await'
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1920&q=80',
+      title: 'Beach Resorts',
+      subtitle: 'Paradise by the ocean'
+    }
+  ];
+  currentSlide = signal(0);
+  private slideInterval: any;
+
   constructor(
     private hotelService: HotelService,
     private router: Router
@@ -31,6 +57,41 @@ export class HomeComponent implements OnInit {
     } catch (err) {
       console.error('Error loading hotels:', err);
     }
+
+    // Start auto-slide
+    this.startAutoSlide();
+  }
+
+  ngOnDestroy() {
+    this.stopAutoSlide();
+  }
+
+  startAutoSlide() {
+    this.slideInterval = setInterval(() => {
+      this.nextSlide();
+    }, 5000); // Change slide every 5 seconds
+  }
+
+  stopAutoSlide() {
+    if (this.slideInterval) {
+      clearInterval(this.slideInterval);
+    }
+  }
+
+  nextSlide() {
+    this.currentSlide.set((this.currentSlide() + 1) % this.heroImages.length);
+  }
+
+  prevSlide() {
+    this.currentSlide.set(
+      this.currentSlide() === 0 ? this.heroImages.length - 1 : this.currentSlide() - 1
+    );
+  }
+
+  goToSlide(index: number) {
+    this.currentSlide.set(index);
+    this.stopAutoSlide();
+    this.startAutoSlide(); // Restart auto-slide after manual navigation
   }
 
   search() {
