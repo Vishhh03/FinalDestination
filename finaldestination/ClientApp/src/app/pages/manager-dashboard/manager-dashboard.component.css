@@ -3,6 +3,7 @@
   margin: 0 auto;
   padding: 2rem;
   min-height: calc(100vh - 80px);
+  background: #f8f9fa;
 }
 
 .dashboard-header {
@@ -85,7 +86,7 @@
 }
 
 .form-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #667eea 100%);
   color: white;
   padding: 1.5rem 2rem;
   display: flex;
@@ -185,13 +186,13 @@
 }
 
 .btn-primary {
-  background: #667eea;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #5568d3;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .btn-primary:disabled {
@@ -240,18 +241,18 @@
 .hotel-card {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hotel-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
 }
 
 .hotel-card-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #667eea 100%);
   color: white;
   padding: 1.5rem;
   display: flex;

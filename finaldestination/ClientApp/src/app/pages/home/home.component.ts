@@ -10,7 +10,8 @@ import { Hotel } from '../../models/hotel.model';
   selector: 'app-home',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, NavbarComponent],
-  templateUrl: './home.component.html'
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
   featuredHotels = signal<Hotel[]>([]);

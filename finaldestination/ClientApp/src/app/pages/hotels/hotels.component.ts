@@ -9,7 +9,8 @@ import { Hotel } from '../../models/hotel.model';
   selector: 'app-hotels',
   standalone: true,
   imports: [CommonModule, RouterLink, NavbarComponent],
-  templateUrl: './hotels.component.html'
+  templateUrl: './hotels.component.html',
+  styleUrls: ['./hotels.component.css']
 })
 export class HotelsComponent implements OnInit {
   hotels = signal<Hotel[]>([]);

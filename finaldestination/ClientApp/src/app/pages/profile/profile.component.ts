@@ -19,7 +19,8 @@ interface PointsTransaction {
   selector: 'app-profile',
   standalone: true,
   imports: [CommonModule, NavbarComponent],
-  templateUrl: './profile.component.html'
+  templateUrl: './profile.component.html',
+  styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
   loyaltyAccount = signal<LoyaltyAccount | null>(null);

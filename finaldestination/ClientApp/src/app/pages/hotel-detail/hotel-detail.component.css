@@ -103,16 +103,37 @@
 }
 
 .hotel-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #667eea 100%);
   color: white;
   padding: 3rem 2rem;
   border-radius: 12px;
   margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hotel-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.05)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,138.7C960,139,1056,117,1152,101.3C1248,85,1344,75,1392,69.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+  background-size: cover;
+  opacity: 0.3;
+}
+
+.hotel-header > * {
+  position: relative;
+  z-index: 1;
 }
 
 .hotel-header h1 {
   margin: 0 0 0.5rem 0;
   font-size: 2.5rem;
+  font-weight: 700;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
 .hotel-location {
@@ -161,8 +182,13 @@
 .hotel-info-card, .booking-card, .reviews-section {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   padding: 2rem;
+  transition: all 0.3s;
+}
+
+.hotel-info-card:hover, .booking-card:hover {
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
 }
 
 .info-grid {
@@ -197,19 +223,19 @@
 .btn-book {
   width: 100%;
   padding: 1rem;
-  background: #667eea;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   border-radius: 8px;
   font-size: 1.125rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s;
 }
 
 .btn-book:hover {
-  background: #5568d3;
   transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
 .reviews-section {
@@ -282,12 +308,13 @@ textarea.form-control {
 }
 
 .btn-primary {
-  background: #667eea;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .btn-primary:disabled {

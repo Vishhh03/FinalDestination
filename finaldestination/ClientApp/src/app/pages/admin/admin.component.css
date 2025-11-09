@@ -2,6 +2,8 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
+  background: #f8f9fa;
+  min-height: calc(100vh - 80px);
 }
 
 .admin-header {
@@ -9,14 +11,15 @@
 }
 
 .admin-header h1 {
-  font-size: 2rem;
+  font-size: 2.5rem;
   color: #333;
   margin-bottom: 0.5rem;
+  font-weight: 700;
 }
 
 .admin-header p {
   color: #666;
-  font-size: 1.1rem;
+  font-size: 1.125rem;
 }
 
 /* Tabs */
@@ -83,15 +86,15 @@
 
 .hotel-card {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hotel-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
 }
 
 .hotel-card-header {
@@ -99,7 +102,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #667eea 100%);
   color: white;
 }
 
@@ -150,8 +153,8 @@
 /* Users Table */
 .users-table {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   overflow: hidden;
 }
 
@@ -300,13 +303,13 @@ tr:hover {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #667eea 100%);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
 .btn-secondary {
