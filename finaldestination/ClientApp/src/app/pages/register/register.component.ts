@@ -16,6 +16,7 @@ export class RegisterComponent {
   name = '';
   email = '';
   password = '';
+  confirmPassword = '';
   contactNumber = '';
   error = signal('');
   loading = signal(false);
@@ -26,13 +27,18 @@ export class RegisterComponent {
   ) {}
 
   async register() {
-    if (!this.name || !this.email || !this.password) {
+    if (!this.name || !this.email || !this.password || !this.confirmPassword) {
       this.error.set('Please fill in all required fields');
       return;
     }
 
-    if (this.password.length < 8) {
-      this.error.set('Password must be at least 8 characters');
+    if (this.password !== this.confirmPassword) {
+      this.error.set('Passwords do not match');
+      return;
+    }
+
+    if (this.password.length < 6) {
+      this.error.set('Password must be at least 6 characters');
       return;
     }
 
