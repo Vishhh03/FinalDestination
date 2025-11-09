@@ -150,16 +150,39 @@ export class BookingsComponent implements OnInit {
     }
 
     getStatusClass(status: BookingStatus): string {
-        if (status === BookingStatus.Confirmed) return 'status-confirmed';
-        if (status === BookingStatus.Cancelled) return 'status-cancelled';
-        if (status === BookingStatus.Completed) return 'status-completed';
-        return '';
+        // Handle both numeric and enum values
+        const statusNum = Number(status);
+        switch (statusNum) {
+            case BookingStatus.Confirmed:
+            case 1:
+                return 'status-confirmed';
+            case BookingStatus.Cancelled:
+            case 2:
+                return 'status-cancelled';
+            case BookingStatus.Completed:
+            case 3:
+                return 'status-completed';
+            default:
+                return '';
+        }
     }
 
     getStatusText(status: BookingStatus): string {
-        if (status === BookingStatus.Confirmed) return 'Confirmed';
-        if (status === BookingStatus.Cancelled) return 'Cancelled';
-        if (status === BookingStatus.Completed) return 'Completed';
-        return 'Unknown';
+        // Handle both numeric and enum values
+        const statusNum = Number(status);
+        switch (statusNum) {
+            case BookingStatus.Confirmed:
+            case 1:
+                return 'Confirmed';
+            case BookingStatus.Cancelled:
+            case 2:
+                return 'Cancelled';
+            case BookingStatus.Completed:
+            case 3:
+                return 'Completed';
+            default:
+                console.warn('Unknown booking status:', status, 'Type:', typeof status);
+                return 'Unknown';
+        }
     }
 }
