@@ -314,12 +314,12 @@ public class HotelsController : ControllerBase
     }
 
     /// <summary>
-    /// Deletes a hotel (requires Admin role)
+    /// Deletes a hotel (requires Admin role or HotelManager who owns the hotel)
     /// </summary>
     /// <param name="id">Hotel ID</param>
     /// <returns>No content on success</returns>
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "HotelManager,Admin")]
     public async Task<IActionResult> DeleteHotel(int id)
     {
         if (id <= 0)
@@ -334,6 +334,25 @@ public class HotelsController : ControllerBase
         {
             _logger.LogWarning("Hotel with ID {HotelId} not found for deletion", id);
             return NotFound($"Hotel with ID {id} not found.");
+        }
+
+        // Get current user ID and role
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+        
+        // If user is HotelManager, verify they own this hotel
+        if (userRole == "HotelManager")
+        {
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return Unauthorized("Invalid token");
+            }
+            
+            if (hotel.ManagerId != userId)
+            {
+                _logger.LogWarning("HotelManager {UserId} attempted to delete hotel {HotelId} they don't own", userId, id);
+                return Forbid("You can only delete hotels you manage");
+            }
         }
 
         // Check if hotel has active bookings

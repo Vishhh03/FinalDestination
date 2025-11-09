@@ -9,8 +9,12 @@
             <li><a routerLink="/">Home</a></li>
             <li><a routerLink="/hotels">Hotels</a></li>
             
-            @if (authService.hasAnyRole(['HotelManager', 'Admin'])) {
+            @if (authService.hasRole('HotelManager')) {
             <li><a routerLink="/manager-dashboard" class="nav-link-highlight">Dashboard</a></li>
+            }
+            
+            @if (authService.hasRole('Admin')) {
+            <li><a routerLink="/admin" class="nav-link-highlight">Admin Panel</a></li>
             }
             
             @if (authService.isAuthenticated()) {

@@ -1,0 +1,263 @@
+<app-navbar></app-navbar>
+
+<div class="admin-container">
+  <div class="admin-header">
+    <h1>Admin Dashboard</h1>
+    <p>Manage hotels and users</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button 
+      class="tab" 
+      [class.active]="activeTab() === 'hotels'"
+      (click)="setActiveTab('hotels')">
+      <i class="fas fa-hotel"></i> Hotels Management
+    </button>
+    <button 
+      class="tab" 
+      [class.active]="activeTab() === 'users'"
+      (click)="setActiveTab('users')">
+      <i class="fas fa-users"></i> Users Management
+    </button>
+  </div>
+
+  <!-- Alerts -->
+  @if (error()) {
+    <div class="alert alert-error">
+      <i class="fas fa-exclamation-circle"></i> {{ error() }}
+      <button class="alert-close" (click)="error.set('')">&times;</button>
+    </div>
+  }
+
+  @if (success()) {
+    <div class="alert alert-success">
+      <i class="fas fa-check-circle"></i> {{ success() }}
+      <button class="alert-close" (click)="success.set('')">&times;</button>
+    </div>
+  }
+
+  <!-- Hotels Tab -->
+  @if (activeTab() === 'hotels') {
+    <div class="tab-content">
+      <div class="content-header">
+        <h2>All Hotels</h2>
+        <button class="btn-primary" (click)="showAddHotelForm()">
+          <i class="fas fa-plus"></i> Add Hotel
+        </button>
+      </div>
+
+      @if (loading() && hotels().length === 0) {
+        <div class="loading-spinner">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Loading hotels...</p>
+        </div>
+      }
+
+      <div class="hotels-grid">
+        @for (hotel of hotels(); track hotel.id) {
+          <div class="hotel-card">
+            <div class="hotel-card-header">
+              <h3>{{ hotel.name }}</h3>
+              <div class="hotel-actions">
+                <button class="btn-icon" (click)="editHotel(hotel)" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon btn-danger" (click)="deleteHotel(hotel)" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            <div class="hotel-card-body">
+              <p><i class="fas fa-map-marker-alt"></i> {{ hotel.city }}, {{ hotel.address }}</p>
+              <p><i class="fas fa-dollar-sign"></i> ${{ hotel.pricePerNight.toFixed(2) }} / night</p>
+              <p><i class="fas fa-door-open"></i> {{ hotel.availableRooms }} rooms available</p>
+              <p><i class="fas fa-star"></i> {{ hotel.rating.toFixed(1) }} rating</p>
+            </div>
+          </div>
+        }
+      </div>
+
+      @if (hotels().length === 0 && !loading()) {
+        <div class="no-data">
+          <i class="fas fa-hotel"></i>
+          <p>No hotels found</p>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Users Tab -->
+  @if (activeTab() === 'users') {
+    <div class="tab-content">
+      <div class="content-header">
+        <h2>All Users</h2>
+      </div>
+
+      @if (loading() && users().length === 0) {
+        <div class="loading-spinner">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Loading users...</p>
+        </div>
+      }
+
+      <div class="users-table">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Contact</th>
+              <th>Created</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users(); track user.id) {
+              <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                  <span class="role-badge" [class]="'role-' + user.role.toLowerCase()">
+                    {{ user.role }}
+                  </span>
+                </td>
+                <td>{{ user.contactNumber || 'N/A' }}</td>
+                <td>{{ user.createdAt | date:'short' }}</td>
+                <td>
+                  <span class="status-badge" [class.active]="user.isActive">
+                    {{ user.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td>
+                  <select 
+                    [value]="user.role" 
+                    (change)="updateUserRole(user, $any($event.target).value)"
+                    class="role-select">
+                    <option value="Guest">Guest</option>
+                    <option value="HotelManager">Hotel Manager</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (users().length === 0 && !loading()) {
+        <div class="no-data">
+          <i class="fas fa-users"></i>
+          <p>No users found</p>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Hotel Form Modal -->
+@if (showHotelForm()) {
+  <div class="modal-overlay" (click)="cancelHotelForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEditingHotel() ? 'Edit Hotel' : 'Add New Hotel' }}</h2>
+        <button class="modal-close" (click)="cancelHotelForm()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <form (ngSubmit)="saveHotel()">
+          <div class="form-group">
+            <label for="name">Hotel Name *</label>
+            <input 
+              type="text" 
+              id="name"
+              [(ngModel)]="hotelForm.name"
+              name="name"
+              class="form-control"
+              required>
+          </div>
+
+          <div class="form-group">
+            <label for="address">Address *</label>
+            <input 
+              type="text" 
+              id="address"
+              [(ngModel)]="hotelForm.address"
+              name="address"
+              class="form-control"
+              required>
+          </div>
+
+          <div class="form-group">
+            <label for="city">City *</label>
+            <input 
+              type="text" 
+              id="city"
+              [(ngModel)]="hotelForm.city"
+              name="city"
+              class="form-control"
+              required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="pricePerNight">Price per Night *</label>
+              <input 
+                type="number" 
+                id="pricePerNight"
+                [(ngModel)]="hotelForm.pricePerNight"
+                name="pricePerNight"
+                class="form-control"
+                min="1"
+                step="0.01"
+                required>
+            </div>
+
+            <div class="form-group">
+              <label for="availableRooms">Available Rooms *</label>
+              <input 
+                type="number" 
+                id="availableRooms"
+                [(ngModel)]="hotelForm.availableRooms"
+                name="availableRooms"
+                class="form-control"
+                min="1"
+                required>
+            </div>
+
+            <div class="form-group">
+              <label for="rating">Rating *</label>
+              <input 
+                type="number" 
+                id="rating"
+                [(ngModel)]="hotelForm.rating"
+                name="rating"
+                class="form-control"
+                min="0"
+                max="5"
+                step="0.1"
+                required>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="cancelHotelForm()" [disabled]="loading()">
+              Cancel
+            </button>
+            <button type="submit" class="btn-primary" [disabled]="loading()">
+              @if (loading()) {
+                <i class="fas fa-spinner fa-spin"></i> Saving...
+              } @else {
+                <i class="fas fa-save"></i> {{ isEditingHotel() ? 'Update' : 'Create' }}
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

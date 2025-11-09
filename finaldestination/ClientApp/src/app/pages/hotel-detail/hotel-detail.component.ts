@@ -46,7 +46,12 @@ export class HotelDetailComponent implements OnInit {
     const maxPointsForDiscount = Math.floor(total * 50);
     return Math.min(points, maxPointsForDiscount);
   });
-  discount = computed(() => this.pointsToRedeem / 100);
+  discount = computed(() => {
+    // 100 points = $1, so divide by 100 and floor to ensure minimum 100 points needed
+    const points = this.pointsToRedeem;
+    if (points < 100) return 0; // Need at least 100 points for any discount
+    return Math.floor(points / 100); // Only full dollars (e.g., 250 points = $2)
+  });
   finalAmount = computed(() => Math.max(0, this.totalAmount() - this.discount()));
 
   constructor(

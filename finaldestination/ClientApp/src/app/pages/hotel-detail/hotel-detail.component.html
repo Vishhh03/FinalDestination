@@ -216,7 +216,7 @@
           />
         </div>
         
-        @if (availablePoints() > 0) {
+        @if (availablePoints() >= 100) {
           <div class="loyalty-section">
             <div class="loyalty-header">
               <span><i class="fas fa-gift"></i> Redeem Loyalty Points</span>
@@ -234,7 +234,11 @@
                 [max]="maxRedeemablePoints()"
                 step="100"
               />
-              <small class="hint">Maximum {{ maxRedeemablePoints() }} points (50% of total)</small>
+              @if (maxRedeemablePoints() > 0) {
+                <small class="hint">Maximum {{ maxRedeemablePoints() }} points (50% of total)</small>
+              } @else {
+                <small class="hint">Booking total too low to redeem points</small>
+              }
             </div>
           </div>
         }

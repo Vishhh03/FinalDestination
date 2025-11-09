@@ -38,6 +38,11 @@ export const routes: Routes = [
     canActivate: [roleGuard(['HotelManager', 'Admin'])]
   },
   {
+    path: 'admin',
+    loadComponent: () => import('./pages/admin/admin.component').then(m => m.AdminComponent),
+    canActivate: [roleGuard(['Admin'])]
+  },
+  {
     path: '**',
     redirectTo: ''
   }
