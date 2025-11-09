@@ -72,12 +72,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "FinalDestination API",
         Version = "v1",
-        Description = "A comprehensive hotel booking API with JWT authentication",
-        Contact = new OpenApiContact
-        {
-            Name = "FinalDestination",
-            Email = "support@finaldestination.com"
-        }
+        Description = "A comprehensive hotel booking API with JWT authentication"
     });
 
     // Add JWT authentication to Swagger
