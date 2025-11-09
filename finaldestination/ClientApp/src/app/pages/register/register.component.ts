@@ -27,18 +27,40 @@ export class RegisterComponent {
   ) {}
 
   async register() {
+    // Validate required fields
     if (!this.name || !this.email || !this.password || !this.confirmPassword) {
       this.error.set('Please fill in all required fields');
       return;
     }
 
+    // Validate name length
+    if (this.name.length < 2 || this.name.length > 100) {
+      this.error.set('Name must be between 2 and 100 characters');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.email)) {
+      this.error.set('Please enter a valid email address');
+      return;
+    }
+
+    // Validate password match
     if (this.password !== this.confirmPassword) {
       this.error.set('Passwords do not match');
       return;
     }
 
+    // Validate password strength
     if (this.password.length < 6) {
       this.error.set('Password must be at least 6 characters');
+      return;
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/;
+    if (!passwordRegex.test(this.password)) {
+      this.error.set('Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character (@$!%*?&)');
       return;
     }
 
@@ -50,11 +72,13 @@ export class RegisterComponent {
         name: this.name,
         email: this.email,
         password: this.password,
+        confirmPassword: this.confirmPassword,
         contactNumber: this.contactNumber || undefined
       });
       this.router.navigate(['/']);
     } catch (err: any) {
-      this.error.set(err.error?.message || 'Registration failed');
+      const errorMessage = err.error?.message || err.error || 'Registration failed';
+      this.error.set(errorMessage);
     } finally {
       this.loading.set(false);
     }
