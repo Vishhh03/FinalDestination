@@ -2,6 +2,7 @@ using FinalDestinationAPI.Data;
 using FinalDestinationAPI.Interfaces;
 using FinalDestinationAPI.Models;
 using FinalDestinationAPI.DTOs;
+using FinalDestinationAPI.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinalDestinationAPI.Services;
@@ -19,14 +20,14 @@ public class MockPaymentService : IPaymentService
 
     public async Task<PaymentResult> ProcessPaymentAsync(PaymentRequest request)
     {
-        _logger.LogInformation("Processing payment for booking {BookingId} with amount {Amount}", 
-            request.BookingId, request.Amount);
+        _logger.LogInformation("💳 Processing payment for booking {BookingId} with amount {Amount} {Currency}", 
+            request.BookingId, request.Amount, request.Currency);
 
         // Simulate payment processing delay
         await Task.Delay(1000);
 
-        // Simulate 90% success rate
-        var isSuccess = Random.Shared.NextDouble() > 0.1;
+        // Simulate 100% success rate (changed from 90% for testing)
+        var isSuccess = true; // Random.Shared.NextDouble() > 0.1;
 
         var payment = new Payment
         {
@@ -36,7 +37,7 @@ public class MockPaymentService : IPaymentService
             PaymentMethod = request.PaymentMethod,
             Status = isSuccess ? PaymentStatus.Completed : PaymentStatus.Failed,
             TransactionId = GenerateTransactionId(),
-            ProcessedAt = DateTime.UtcNow
+            ProcessedAt = TimeHelper.GetIndianTime()
         };
 
         _context.Payments.Add(payment);
@@ -49,11 +50,11 @@ public class MockPaymentService : IPaymentService
             TransactionId = payment.TransactionId,
             Amount = payment.Amount,
             Currency = payment.Currency,
-            ProcessedAt = payment.ProcessedAt ?? DateTime.UtcNow,
+            ProcessedAt = payment.ProcessedAt ?? TimeHelper.GetIndianTime(),
             ErrorMessage = isSuccess ? null : "Payment processing failed - insufficient funds or card declined"
         };
 
-        _logger.LogInformation("Payment {TransactionId} processed with status {Status}", 
+        _logger.LogInformation("✅ Payment {TransactionId} processed successfully with status {Status}", 
             result.TransactionId, result.Status);
 
         return result;
@@ -104,7 +105,7 @@ public class MockPaymentService : IPaymentService
         if (isSuccess)
         {
             payment.Status = PaymentStatus.Refunded;
-            payment.ProcessedAt = DateTime.UtcNow;
+            payment.ProcessedAt = TimeHelper.GetIndianTime();
             await _context.SaveChangesAsync();
         }
 
@@ -115,7 +116,7 @@ public class MockPaymentService : IPaymentService
             TransactionId = payment.TransactionId,
             Amount = amount,
             Currency = payment.Currency,
-            ProcessedAt = DateTime.UtcNow,
+            ProcessedAt = TimeHelper.GetIndianTime(),
             ErrorMessage = isSuccess ? null : "Refund processing failed - please try again later"
         };
 

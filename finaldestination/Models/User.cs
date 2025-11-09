@@ -1,3 +1,5 @@
+using FinalDestinationAPI.Helpers;
+
 namespace FinalDestinationAPI.Models;
 
 public class User
@@ -8,7 +10,7 @@ public class User
     public string PasswordHash { get; set; } = string.Empty;
     public UserRole Role { get; set; }
     public string? ContactNumber { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = TimeHelper.GetIndianTime();
     public DateTime? LastLoginAt { get; set; }
     public bool IsActive { get; set; } = true;
     

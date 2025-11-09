@@ -1,3 +1,5 @@
+using FinalDestinationAPI.Helpers;
+
 namespace FinalDestinationAPI.Models;
 
 public class Payment
@@ -10,7 +12,7 @@ public class Payment
     public PaymentStatus Status { get; set; }
     public string TransactionId { get; set; } = string.Empty;
     public DateTime? ProcessedAt { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = TimeHelper.GetIndianTime();
     
     // Navigation Properties
     public Booking Booking { get; set; } = null!;

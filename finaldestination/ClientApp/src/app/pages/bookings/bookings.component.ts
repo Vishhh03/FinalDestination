@@ -41,20 +41,6 @@ export class BookingsComponent implements OnInit {
         this.loading.set(true);
         try {
             const bookings = await this.bookingService.getMyBookings();
-            console.log('=== BOOKINGS DEBUG ===');
-            console.log('Raw bookings from API:', JSON.stringify(bookings, null, 2));
-            bookings.forEach((booking, index) => {
-                console.log(`Booking ${index}:`, {
-                    id: booking.id,
-                    status: booking.status,
-                    statusType: typeof booking.status,
-                    statusValue: booking.status,
-                    statusAsNumber: Number(booking.status),
-                    statusText: this.getStatusText(booking.status)
-                });
-            });
-            console.log('BookingStatus enum:', BookingStatus);
-            console.log('=== END DEBUG ===');
             this.bookings.set(bookings);
         } catch (err: any) {
             this.error.set(err.message || 'Failed to load bookings');
@@ -107,6 +93,12 @@ export class BookingsComponent implements OnInit {
         this.processingPayment.set(true);
         this.error.set('');
 
+        console.log('💳 Processing payment:', {
+            bookingId: booking.id,
+            amount: booking.totalAmount,
+            cardNumber: this.cardNumber.substring(0, 4) + '****' + this.cardNumber.substring(12)
+        });
+
         try {
             const result = await this.bookingService.processPayment(booking.id, {
                 bookingId: booking.id,
@@ -120,7 +112,10 @@ export class BookingsComponent implements OnInit {
                 cvv: this.cvv
             });
 
+            console.log('💳 Payment result:', result);
+
             if (result && result.status === PaymentStatus.Completed) {
+                console.log('✅ Payment successful');
                 this.success.set(`Payment successful! Transaction ID: ${result.transactionId}`);
                 this.closePaymentModal();
                 setTimeout(() => {
@@ -128,10 +123,12 @@ export class BookingsComponent implements OnInit {
                     this.loadBookings();
                 }, 3000);
             } else {
+                console.error('❌ Payment failed:', result);
                 this.error.set(result?.errorMessage || 'Payment failed');
             }
         } catch (err: any) {
-            this.error.set(err.message || 'Payment processing failed');
+            console.error('❌ Payment error:', err);
+            this.error.set(err.error?.message || err.message || 'Payment processing failed');
         } finally {
             this.processingPayment.set(false);
         }

@@ -11,30 +11,95 @@
   <div class="container">
     <div class="profile-grid">
       <div class="profile-card">
-        <h2><i class="fas fa-user"></i> Account Information</h2>
-        @if (auth.currentUser(); as user) {
-          <div class="profile-info">
-            <div class="info-item">
-              <label>Name</label>
-              <p>{{ user.name }}</p>
-            </div>
-            <div class="info-item">
-              <label>Email</label>
-              <p>{{ user.email }}</p>
-            </div>
-            <div class="info-item">
-              <label>Contact Number</label>
-              <p>{{ user.contactNumber || 'Not provided' }}</p>
-            </div>
-            <div class="info-item">
-              <label>Role</label>
-              <p class="role-badge">{{ user.role }}</p>
-            </div>
-            <div class="info-item">
-              <label>Member Since</label>
-              <p>{{ user.createdAt | date:'mediumDate' }}</p>
-            </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2><i class="fas fa-user"></i> Account Information</h2>
+          @if (!editMode()) {
+            <button class="btn-edit" (click)="startEdit()">
+              <i class="fas fa-edit"></i> Edit Profile
+            </button>
+          }
+        </div>
+
+        @if (error()) {
+          <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i> {{ error() }}
+            <button class="alert-close" (click)="error.set('')">&times;</button>
           </div>
+        }
+
+        @if (success()) {
+          <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> {{ success() }}
+          </div>
+        }
+
+        @if (auth.currentUser(); as user) {
+          @if (!editMode()) {
+            <div class="profile-info">
+              <div class="info-item">
+                <label>Name</label>
+                <p>{{ user.name }}</p>
+              </div>
+              <div class="info-item">
+                <label>Email</label>
+                <p>{{ user.email }}</p>
+              </div>
+              <div class="info-item">
+                <label>Contact Number</label>
+                <p>{{ user.contactNumber || 'Not provided' }}</p>
+              </div>
+              <div class="info-item">
+                <label>Role</label>
+                <p class="role-badge">{{ user.role }}</p>
+              </div>
+              <div class="info-item">
+                <label>Member Since</label>
+                <p>{{ user.createdAt | date:'mediumDate' }}</p>
+              </div>
+            </div>
+          } @else {
+            <form (ngSubmit)="saveProfile()" class="edit-form">
+              <div class="form-group">
+                <label for="editName">Name *</label>
+                <input 
+                  type="text" 
+                  id="editName" 
+                  [(ngModel)]="editName"
+                  name="editName"
+                  class="form-control"
+                  required>
+              </div>
+
+              <div class="form-group">
+                <label for="editContactNumber">Contact Number</label>
+                <input 
+                  type="tel" 
+                  id="editContactNumber" 
+                  [(ngModel)]="editContactNumber"
+                  name="editContactNumber"
+                  class="form-control"
+                  placeholder="Optional">
+              </div>
+
+              <div class="info-item">
+                <label>Email</label>
+                <p style="color: #666;">{{ user.email }} (cannot be changed)</p>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn-secondary" (click)="cancelEdit()" [disabled]="loading()">
+                  Cancel
+                </button>
+                <button type="submit" class="btn-primary" [disabled]="loading()">
+                  @if (loading()) {
+                    <i class="fas fa-spinner fa-spin"></i> Saving...
+                  } @else {
+                    <i class="fas fa-save"></i> Save Changes
+                  }
+                </button>
+              </div>
+            </form>
+          }
         }
       </div>
       

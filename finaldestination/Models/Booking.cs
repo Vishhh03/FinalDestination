@@ -1,3 +1,5 @@
+using FinalDestinationAPI.Helpers;
+
 namespace FinalDestinationAPI.Models;
 
 public class Booking
@@ -14,7 +16,7 @@ public class Booking
     public int? LoyaltyPointsRedeemed { get; set; }
     public decimal? LoyaltyDiscountAmount { get; set; }
     public BookingStatus Status { get; set; } = BookingStatus.Confirmed;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = TimeHelper.GetIndianTime();
     
     // Navigation Properties
     public Hotel Hotel { get; set; } = null!;
