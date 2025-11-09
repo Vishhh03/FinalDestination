@@ -13,9 +13,13 @@
       @for (hotel of hotels(); track hotel.id) {
         <div class="hotel-card">
           <div class="hotel-image">
-            <div class="placeholder-image">
-              <i class="fas fa-hotel"></i>
-            </div>
+            @if (hotel.imageUrl) {
+              <img [src]="hotel.imageUrl" [alt]="hotel.name" />
+            } @else {
+              <div class="placeholder-image">
+                <i class="fas fa-hotel"></i>
+              </div>
+            }
             <div class="hotel-rating">
               <i class="fas fa-star"></i> {{ hotel.rating | number:'1.1-1' }}
             </div>

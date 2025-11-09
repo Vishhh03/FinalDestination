@@ -19,25 +19,12 @@ export class AuthService {
     const token = localStorage.getItem('token');
     const expiresAt = localStorage.getItem('expiresAt');
     
-    console.log('🔍 [AUTH] Loading user from storage:', {
-      hasUser: !!userStr,
-      hasToken: !!token,
-      expiresAt,
-      isExpired: expiresAt ? new Date(expiresAt) <= new Date() : 'N/A'
-    });
-    
     if (userStr && token && expiresAt && new Date(expiresAt) > new Date()) {
       const user = JSON.parse(userStr);
-      console.log('✅ [AUTH] User loaded from storage:', user);
-      console.log('🎭 [AUTH] User role:', user.role, 'Type:', typeof user.role);
-      
-      // WORKAROUND: Convert numeric role to string if needed
       const normalizedUser = this.normalizeUserRole(user);
-      
       this.currentUser.set(normalizedUser);
       this.refreshUserData();
     } else {
-      console.log('❌ [AUTH] No valid user in storage, clearing auth');
       this.clearAuth();
     }
   }
@@ -63,10 +50,7 @@ export class AuthService {
   }
 
   async login(email: string, password: string): Promise<void> {
-    console.log('🔐 [AUTH] Attempting login for:', email);
     const response = await this.http.post<AuthResponse>(`${this.apiUrl}/login`, { email, password }).toPromise();
-    console.log('📥 [AUTH] Login response received:', response);
-    console.log('🎭 [AUTH] User role from server:', response?.user?.role, 'Type:', typeof response?.user?.role);
     if (response) this.saveAuth(response);
   }
 
@@ -77,35 +61,23 @@ export class AuthService {
 
   async refreshUserData(): Promise<void> {
     try {
-      console.log('🔄 [AUTH] Refreshing user data from server...');
       const user = await this.http.get<User>(`${this.apiUrl}/me`).toPromise();
       if (user) {
-        console.log('📥 [AUTH] Refreshed user data:', user);
-        console.log('🎭 [AUTH] Refreshed user role:', user.role, 'Type:', typeof user.role);
-        
-        // WORKAROUND: Convert numeric role to string if needed
         const normalizedUser = this.normalizeUserRole(user);
-        
         localStorage.setItem('user', JSON.stringify(normalizedUser));
         this.currentUser.set(normalizedUser);
       }
     } catch (error: any) {
-      console.error('❌ [AUTH] Error refreshing user data:', error);
       if (error.status === 401) this.clearAuth();
     }
   }
 
   private saveAuth(response: AuthResponse): void {
-    console.log('💾 [AUTH] Saving auth to localStorage:', response.user);
-    
-    // WORKAROUND: Convert numeric role to string if needed
     const user = this.normalizeUserRole(response.user);
-    
     localStorage.setItem('token', response.token);
     localStorage.setItem('user', JSON.stringify(user));
     localStorage.setItem('expiresAt', response.expiresAt);
     this.currentUser.set(user);
-    console.log('✅ [AUTH] Auth saved, current user role:', user.role);
   }
 
   private clearAuth(): void {
@@ -141,35 +113,14 @@ export class AuthService {
   hasRole(role: string): boolean {
     const user = this.currentUser();
     if (!user) return false;
-    
-    // Ensure role is a string (it should be after normalization)
     const userRole = typeof user.role === 'string' ? user.role : String(user.role);
-    const result = userRole === role;
-    
-    console.log(`🔍 [AUTH] hasRole('${role}'):`, {
-      currentRole: userRole,
-      roleType: typeof userRole,
-      expectedRole: role,
-      expectedType: typeof role,
-      result
-    });
-    return result;
+    return userRole === role;
   }
 
   hasAnyRole(roles: string[]): boolean {
     const user = this.currentUser();
     if (!user) return false;
-    
-    // Ensure role is a string (it should be after normalization)
     const userRole = typeof user.role === 'string' ? user.role : String(user.role);
-    const result = roles.includes(userRole);
-    
-    console.log(`🔍 [AUTH] hasAnyRole([${roles.join(', ')}]):`, {
-      currentRole: userRole,
-      roleType: typeof userRole,
-      expectedRoles: roles,
-      result
-    });
-    return result;
+    return roles.includes(userRole);
   }
 }

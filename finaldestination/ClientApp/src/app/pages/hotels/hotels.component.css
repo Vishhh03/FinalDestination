@@ -77,6 +77,17 @@
   overflow: hidden;
 }
 
+.hotel-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.hotel-card:hover .hotel-image img {
+  transform: scale(1.05);
+}
+
 .placeholder-image {
   width: 100%;
   height: 100%;

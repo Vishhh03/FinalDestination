@@ -34,6 +34,12 @@
         <span>{{ hotelData.rating.toFixed(1) }} / 5.0</span>
       </div>
     </div>
+
+    @if (hotelData.imageUrl) {
+      <div class="hotel-main-image">
+        <img [src]="hotelData.imageUrl" [alt]="hotelData.name" />
+      </div>
+    }
     
     <div class="hotel-content">
       <div class="hotel-info-card">
