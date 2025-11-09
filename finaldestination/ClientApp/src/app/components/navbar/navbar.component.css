@@ -1,7 +1,19 @@
 .navbar {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: transparent;
+    padding: 1.5rem 0;
+    transition: all 0.3s ease;
+}
+
+.navbar.scrolled {
+    background: rgba(30, 60, 114, 0.95);
+    backdrop-filter: blur(10px);
     padding: 1rem 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .container {
@@ -138,7 +150,7 @@
     right: 0;
     margin-top: 0.5rem;
     background: white;
-    color: black
+    color: black;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     min-width: 180px;

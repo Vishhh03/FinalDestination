@@ -19,6 +19,26 @@ export class NavbarComponent {
   }
 
   ngOnInit() {
-    // Component initialized
+    // Add scroll listener for navbar background
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', this.onScroll.bind(this));
+    }
+  }
+
+  ngOnDestroy() {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('scroll', this.onScroll.bind(this));
+    }
+  }
+
+  onScroll() {
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    }
   }
 }
