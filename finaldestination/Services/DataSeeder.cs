@@ -154,8 +154,8 @@ public static class DataSeeder
                 Rating = 0,
                 ReviewCount = 0,
                 ManagerId = 2,
-                ImageUrl = "https://images.unsplash.com/photo-1566073771259-6a8506099945",
-                Images = "https://images.unsplash.com/photo-1566073771259-6a8506099945,https://images.unsplash.com/photo-1582719478250-c89cae4dc85b",
+                ImageUrl = "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80",
+                Images = "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80,https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80",
                 CreatedAt = DateTime.UtcNow.AddDays(-90)
             },
             // Mumbai Hotels - Manager 3

@@ -95,6 +95,19 @@ export class HotelsComponent implements OnInit {
     this.minRating = null;
     this.router.navigate(['/hotels']);
   }
+
+  onImageError(event: any) {
+    console.error('Image failed to load:', event.target.src);
+    // Replace with placeholder
+    event.target.style.display = 'none';
+    const placeholder = event.target.parentElement.querySelector('.placeholder-image');
+    if (!placeholder) {
+      const div = document.createElement('div');
+      div.className = 'placeholder-image';
+      div.innerHTML = '<i class="fas fa-hotel"></i><p>Image unavailable</p>';
+      event.target.parentElement.appendChild(div);
+    }
+  }
   
   goToPage(page: number) {
     if (page >= 1 && page <= this.totalPages()) {
