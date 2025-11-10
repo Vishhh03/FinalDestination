@@ -220,7 +220,12 @@ export class AdminComponent implements OnInit {
 
     try {
       // Determine final image URL
-      let finalImageUrl = this.selectedHotel()?.imageUrl || null;
+      let finalImageUrl: string | null = null;
+
+      // For editing: start with existing image
+      if (this.isEditingHotel() && this.selectedHotel()) {
+        finalImageUrl = this.selectedHotel()!.imageUrl || null;
+      }
 
       // If user removed the image, set to null
       if (this.imageRemoved) {
@@ -240,7 +245,7 @@ export class AdminComponent implements OnInit {
       const hotelData = {
         ...this.hotelForm,
         imageUrl: finalImageUrl,
-        images: this.selectedHotel()?.images || null
+        images: this.isEditingHotel() && this.selectedHotel() ? this.selectedHotel()!.images : null
       };
 
       if (this.isEditingHotel() && this.selectedHotel()) {
