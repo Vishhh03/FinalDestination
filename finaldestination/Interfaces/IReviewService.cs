@@ -10,7 +10,7 @@ public interface IReviewService
     Task<IEnumerable<ReviewResponse>> GetReviewsByHotelAsync(int hotelId, int page = 1, int pageSize = 10);
     Task<IEnumerable<ReviewResponse>> GetReviewsByUserAsync(int userId);
     Task<ReviewResponse?> UpdateReviewAsync(int id, int userId, UpdateReviewRequest request);
-    Task<bool> DeleteReviewAsync(int id, int userId);
+    Task<bool> DeleteReviewAsync(int id, int userId, bool isAdmin = false);
     Task<decimal> CalculateHotelRatingAsync(int hotelId);
     Task<int> GetReviewCountByHotelAsync(int hotelId);
 }

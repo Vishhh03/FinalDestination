@@ -188,13 +188,17 @@ public class ReviewsController : ControllerBase
         try
         {
             var userId = GetCurrentUserId();
-            var deleted = await _reviewService.DeleteReviewAsync(id, userId);
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var isAdmin = userRole == "Admin";
+            
+            var deleted = await _reviewService.DeleteReviewAsync(id, userId, isAdmin);
             
             if (!deleted)
             {
                 return NotFound(new { message = "Review not found" });
             }
 
+            _logger.LogInformation("Review {ReviewId} deleted by user {UserId} (Admin: {IsAdmin})", id, userId, isAdmin);
             return NoContent();
         }
         catch (UnauthorizedAccessException ex)

@@ -172,7 +172,7 @@ public class ReviewService : IReviewService
         return await GetReviewResponseAsync(id);
     }
 
-    public async Task<bool> DeleteReviewAsync(int id, int userId)
+    public async Task<bool> DeleteReviewAsync(int id, int userId, bool isAdmin = false)
     {
         var review = await _context.Reviews.FindAsync(id);
         if (review == null)
@@ -180,8 +180,8 @@ public class ReviewService : IReviewService
             return false;
         }
 
-        // Check if the review belongs to the user
-        if (review.UserId != userId)
+        // Check if the review belongs to the user (admins can delete any review)
+        if (!isAdmin && review.UserId != userId)
         {
             throw new UnauthorizedAccessException("You can only delete your own reviews");
         }

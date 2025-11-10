@@ -49,6 +49,11 @@ export class HotelDetailComponent implements OnInit {
   
   rating = 5;
   comment = '';
+  
+  // Edit review state
+  editingReviewId = signal<number | null>(null);
+  showDeleteModal = signal(false);
+  reviewToDelete = signal<number | null>(null);
 
   nights = computed(() => this.calculateNights());
   totalAmount = computed(() => this.calculateTotal());
@@ -269,21 +274,101 @@ export class HotelDetailComponent implements OnInit {
     };
 
     try {
-      const review = await this.reviewService.submit(reviewData);
-      if (review) {
-        const currentReviews = this.reviews();
-        this.reviews.set([review, ...currentReviews]);
-        this.rating = 5;
-        this.comment = '';
-        this.canReview.set(false); // User can't review again
-        this.success.set('Review submitted successfully!');
-        setTimeout(() => this.success.set(''), 3000);
+      if (this.editingReviewId()) {
+        // Update existing review
+        const updated = await this.reviewService.update(this.editingReviewId()!, reviewData);
+        if (updated) {
+          const currentReviews = this.reviews();
+          const index = currentReviews.findIndex((r: any) => r.id === this.editingReviewId());
+          if (index !== -1) {
+            currentReviews[index] = updated;
+            this.reviews.set([...currentReviews]);
+          }
+          this.success.set('Review updated successfully!');
+        }
+      } else {
+        // Create new review
+        const review = await this.reviewService.submit(reviewData);
+        if (review) {
+          const currentReviews = this.reviews();
+          this.reviews.set([review, ...currentReviews]);
+          this.canReview.set(false);
+          this.success.set('Review submitted successfully!');
+        }
       }
+      
+      this.rating = 5;
+      this.comment = '';
+      this.editingReviewId.set(null);
+      setTimeout(() => this.success.set(''), 3000);
     } catch (err: any) {
       this.error.set(err.error?.message || err.message || 'Failed to submit review');
     } finally {
       this.submittingReview.set(false);
     }
+  }
+
+  editReview(review: any) {
+    this.editingReviewId.set(review.id);
+    this.rating = review.rating;
+    this.comment = review.comment;
+    this.error.set('');
+    // Scroll to review form
+    setTimeout(() => {
+      document.querySelector('.review-form')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  }
+
+  cancelEdit() {
+    this.editingReviewId.set(null);
+    this.rating = 5;
+    this.comment = '';
+    this.error.set('');
+  }
+
+  confirmDeleteReview(reviewId: number) {
+    this.reviewToDelete.set(reviewId);
+    this.showDeleteModal.set(true);
+  }
+
+  cancelDeleteReview() {
+    this.showDeleteModal.set(false);
+    this.reviewToDelete.set(null);
+  }
+
+  async deleteReview() {
+    const reviewId = this.reviewToDelete();
+    if (!reviewId) return;
+
+    try {
+      await this.reviewService.delete(reviewId);
+      const currentReviews = this.reviews();
+      this.reviews.set(currentReviews.filter((r: any) => r.id !== reviewId));
+      this.success.set('Review deleted successfully!');
+      this.showDeleteModal.set(false);
+      this.reviewToDelete.set(null);
+      
+      // If user deleted their own review, they can review again
+      const deletedReview = currentReviews.find((r: any) => r.id === reviewId);
+      if (deletedReview && deletedReview.userId === this.auth.currentUser()?.id) {
+        await this.checkReviewEligibility(this.hotel()!.id);
+      }
+      
+      setTimeout(() => this.success.set(''), 3000);
+    } catch (err: any) {
+      this.error.set(err.error?.message || err.message || 'Failed to delete review');
+      this.showDeleteModal.set(false);
+    }
+  }
+
+  canEditReview(review: any): boolean {
+    const user = this.auth.currentUser();
+    return user?.id === review.userId;
+  }
+
+  canDeleteReview(review: any): boolean {
+    const user = this.auth.currentUser();
+    return user?.id === review.userId || user?.role === 'Admin';
   }
 
   calculateNights(): number {

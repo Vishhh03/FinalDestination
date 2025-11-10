@@ -17,4 +17,12 @@ export class ReviewService {
   async submit(review: any): Promise<Review | null> {
     return await this.http.post<Review>(this.apiUrl, review).toPromise() || null;
   }
+
+  async update(id: number, review: any): Promise<Review | null> {
+    return await this.http.put<Review>(`${this.apiUrl}/${id}`, review).toPromise() || null;
+  }
+
+  async delete(id: number): Promise<void> {
+    await this.http.delete(`${this.apiUrl}/${id}`).toPromise();
+  }
 }
