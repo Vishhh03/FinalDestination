@@ -65,10 +65,10 @@ export class HotelDetailComponent implements OnInit {
     return Math.min(points, maxPointsForDiscount);
   });
   discount = computed(() => {
-    // 100 points = $1, so divide by 100 and floor to ensure minimum 100 points needed
+    // 1 point = ₹1, so points directly equal discount amount
     const points = this.pointsToRedeem;
-    if (points < 100) return 0; // Need at least 100 points for any discount
-    return Math.floor(points / 100); // Only full dollars (e.g., 250 points = $2)
+    if (points < 1) return 0; // Need at least 1 point for any discount
+    return points; // Direct 1:1 conversion (e.g., 250 points = ₹250)
   });
   finalAmount = computed(() => Math.max(0, this.totalAmount() - this.discount()));
 

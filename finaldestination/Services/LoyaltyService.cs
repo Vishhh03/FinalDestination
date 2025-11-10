@@ -239,9 +239,9 @@ public class LoyaltyService : ILoyaltyService
 
     public Task<decimal> CalculateDiscountFromPointsAsync(int points)
     {
-        // Conversion rate: 1 point = ₹0.10
-        // So 100 points = ₹10 discount
-        var discount = points * 0.10m;
+        // Conversion rate: 1 point = ₹1
+        // Direct 1:1 conversion
+        var discount = points * 1.0m;
         return Task.FromResult(discount);
     }
 }
