@@ -35,6 +35,11 @@ export class HotelDetailComponent implements OnInit {
   numberOfGuests = 1;
   pointsToRedeem = 0;
   
+  // For Admin/Manager booking for guests
+  guestName = '';
+  guestEmail = '';
+  isBookingForGuest = signal(false);
+  
   minCheckOutDate = computed(() => {
     if (!this.checkInDate) return this.tomorrow;
     const checkIn = new Date(this.checkInDate);
@@ -129,6 +134,11 @@ export class HotelDetailComponent implements OnInit {
       return;
     }
 
+    const user = this.auth.currentUser();
+    this.guestName = user?.name || '';
+    this.guestEmail = user?.email || '';
+    this.isBookingForGuest.set(false);
+    
     this.showBookingModal.set(true);
     this.error.set('');
     this.success.set('');
@@ -140,12 +150,30 @@ export class HotelDetailComponent implements OnInit {
     this.checkOutDate = '';
     this.numberOfGuests = 1;
     this.pointsToRedeem = 0;
+    this.guestName = '';
+    this.guestEmail = '';
+    this.isBookingForGuest.set(false);
     this.error.set('');
   }
 
+  toggleBookingForGuest() {
+    this.isBookingForGuest.set(!this.isBookingForGuest());
+    if (!this.isBookingForGuest()) {
+      const user = this.auth.currentUser();
+      this.guestName = user?.name || '';
+      this.guestEmail = user?.email || '';
+    } else {
+      this.guestName = '';
+      this.guestEmail = '';
+    }
+  }
+
   onCheckInChange() {
-    // If check-out is before or equal to new check-in, reset it
-    if (this.checkOutDate && this.checkOutDate <= this.checkInDate) {
+    // Calculate minimum checkout date
+    const minCheckout = this.minCheckOutDate();
+    
+    // If check-out is before minimum date, reset it
+    if (this.checkOutDate && this.checkOutDate < minCheckout) {
       this.checkOutDate = '';
     }
   }
@@ -176,14 +204,24 @@ export class HotelDetailComponent implements OnInit {
       return;
     }
 
-    const user = this.auth.currentUser();
+    // Validate guest information
+    if (!this.guestName || !this.guestEmail) {
+      this.error.set('Guest name and email are required');
+      return;
+    }
+
+    if (!this.guestEmail.includes('@')) {
+      this.error.set('Please enter a valid email address');
+      return;
+    }
+
     const bookingData = {
       hotelId: this.hotel()!.id,
       checkInDate: this.checkInDate,
       checkOutDate: this.checkOutDate,
       numberOfGuests: this.numberOfGuests,
-      guestName: user?.name || '',
-      guestEmail: user?.email || '',
+      guestName: this.guestName,
+      guestEmail: this.guestEmail,
       pointsToRedeem: this.pointsToRedeem > 0 ? this.pointsToRedeem : null
     };
     
@@ -197,7 +235,14 @@ export class HotelDetailComponent implements OnInit {
         this.router.navigate(['/bookings']);
       }, 2000);
     } catch (err: any) {
-      this.error.set(err.message || 'Booking failed. Please try again.');
+      const errorMessage = err.message || 'Booking failed. Please try again.';
+      
+      // Check if it's a duplicate booking error
+      if (errorMessage.includes('overlaps') || errorMessage.includes('already have a booking')) {
+        this.error.set('⚠️ You already have a booking at this hotel for these dates. Please choose different dates or cancel your existing booking.');
+      } else {
+        this.error.set(errorMessage);
+      }
     } finally {
       this.submittingBooking.set(false);
     }
