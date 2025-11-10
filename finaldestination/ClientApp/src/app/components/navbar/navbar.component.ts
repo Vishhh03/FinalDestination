@@ -15,11 +15,6 @@ export class NavbarComponent {
   authService = inject(AuthService);
   router = inject(Router);
   isHomePage = false;
-  
-  // Helper for template debugging
-  typeof(value: any): string {
-    return typeof value;
-  }
 
   ngOnInit() {
     // Check initial route

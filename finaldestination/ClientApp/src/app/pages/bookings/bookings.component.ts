@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -31,10 +31,10 @@ export class BookingsComponent implements OnInit {
     expiryYear = '';
     cvv = '';
 
-    constructor(private bookingService: BookingService) {}
+    private readonly bookingService = inject(BookingService);
 
-    async ngOnInit() {
-        await this.loadBookings();
+    ngOnInit() {
+        this.loadBookings();
     }
 
     async loadBookings() {

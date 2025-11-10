@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -45,18 +45,11 @@ export class HomeComponent implements OnInit {
   currentSlide = signal(0);
   private slideInterval: any;
 
-  constructor(
-    private hotelService: HotelService,
-    private router: Router
-  ) {}
+    private readonly hotelService = inject(HotelService);
+    private readonly router = inject(Router);
 
-  async ngOnInit() {
-    try {
-      const hotels = await this.hotelService.getAll();
-      this.featuredHotels.set(hotels.slice(0, 6));
-    } catch (err) {
-      console.error('Error loading hotels:', err);
-    }
+  ngOnInit() {
+      this.loadHotels();
 
     // Start auto-slide
     this.startAutoSlide();
@@ -64,7 +57,16 @@ export class HomeComponent implements OnInit {
 
   ngOnDestroy() {
     this.stopAutoSlide();
-  }
+    }
+
+    async loadHotels() {
+        try {
+            const hotels = await this.hotelService.getAll();
+            this.featuredHotels.set(hotels.slice(0, 6));
+        } catch (err) {
+            console.error('Error loading hotels:', err);
+        }
+    }
   
   search() {
     const params: any = {};

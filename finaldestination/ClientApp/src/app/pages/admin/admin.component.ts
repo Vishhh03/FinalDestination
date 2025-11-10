@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -26,6 +26,12 @@ interface AdminUser {
   styleUrls: ['./admin.component.css']
 })
 export class AdminComponent implements OnInit {
+
+    private readonly http = inject(HttpClient);
+    private readonly hotelService = inject(HotelService);
+    private readonly auth = inject(AuthService);
+    private readonly router = inject(Router);
+
   // Tab management
   activeTab = signal<'hotels' | 'users'>('hotels');
   
@@ -59,21 +65,14 @@ export class AdminComponent implements OnInit {
   uploading = signal(false);
   imageRemoved = false;
 
-  constructor(
-    private http: HttpClient,
-    private hotelService: HotelService,
-    public auth: AuthService,
-    private router: Router
-  ) {}
-
-  async ngOnInit() {
+  ngOnInit() {
     if (!this.auth.hasRole('Admin')) {
       this.router.navigate(['/']);
       return;
     }
     
-    await this.loadHotels();
-    await this.loadUsers();
+    this.loadHotels();
+    this.loadUsers();
   }
 
   setActiveTab(tab: 'hotels' | 'users') {
