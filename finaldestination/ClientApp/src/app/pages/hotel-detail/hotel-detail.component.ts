@@ -177,12 +177,18 @@ export class HotelDetailComponent implements OnInit {
     // Calculate minimum checkout date (check-in + 1 day)
     const minCheckout = this.minCheckOutDate();
     
+    console.log('Check-in changed to:', this.checkInDate);
+    console.log('Minimum checkout should be:', minCheckout);
+    console.log('Current checkout:', this.checkOutDate);
+    
     // If check-out is before or equal to check-in, reset it
     if (this.checkOutDate && this.checkOutDate <= this.checkInDate) {
+      console.log('Clearing checkout: checkout <= checkin');
       this.checkOutDate = '';
     }
     // Also reset if checkout is before the computed minimum
     else if (this.checkOutDate && this.checkOutDate < minCheckout) {
+      console.log('Clearing checkout: checkout < minimum');
       this.checkOutDate = '';
     }
   }

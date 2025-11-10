@@ -56,7 +56,6 @@ export class AdminComponent implements OnInit {
     city: '',
     pricePerNight: 0,
     availableRooms: 0,
-    rating: 0,
     managerId: null as number | null
   };
   
@@ -103,7 +102,6 @@ export class AdminComponent implements OnInit {
       city: '',
       pricePerNight: 0,
       availableRooms: 0,
-      rating: 0,
       managerId: null
     };
     this.imagePreview = '';
@@ -122,7 +120,6 @@ export class AdminComponent implements OnInit {
       city: hotel.city,
       pricePerNight: hotel.pricePerNight,
       availableRooms: hotel.availableRooms,
-      rating: hotel.rating,
       managerId: hotel.managerId || null
     };
     this.imagePreview = hotel.imageUrl || '';
@@ -244,6 +241,7 @@ export class AdminComponent implements OnInit {
 
       const hotelData = {
         ...this.hotelForm,
+        rating: 0, // Always 0, will be calculated from reviews
         imageUrl: finalImageUrl,
         images: this.isEditingHotel() && this.selectedHotel() ? this.selectedHotel()!.images : null
       };

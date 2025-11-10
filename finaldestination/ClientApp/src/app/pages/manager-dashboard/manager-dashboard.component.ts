@@ -30,7 +30,6 @@ export class ManagerDashboardComponent implements OnInit {
   city = '';
   pricePerNight = 0;
   availableRooms = 0;
-  rating = 0;
   imageUrl = '';
   selectedFile: File | null = null;
   imagePreview = '';
@@ -71,7 +70,6 @@ export class ManagerDashboardComponent implements OnInit {
     this.city = '';
     this.pricePerNight = 0;
     this.availableRooms = 0;
-    this.rating = 0;
     this.imageUrl = '';
     this.imagePreview = '';
     this.selectedFile = null;
@@ -88,7 +86,6 @@ export class ManagerDashboardComponent implements OnInit {
     this.city = hotel.city;
     this.pricePerNight = hotel.pricePerNight;
     this.availableRooms = hotel.availableRooms;
-    this.rating = hotel.rating;
     this.imageUrl = hotel.imageUrl || '';
     this.imagePreview = hotel.imageUrl || '';
     this.selectedFile = null;
@@ -211,16 +208,19 @@ export class ManagerDashboardComponent implements OnInit {
         }
       }
 
+      // Get current user ID for manager assignment
+      const currentUserId = this.auth.currentUser()?.id;
+      
       const hotelData = {
         name: this.name,
         address: this.address,
         city: this.city,
         pricePerNight: this.pricePerNight,
         availableRooms: this.availableRooms,
-        rating: this.rating,
+        rating: 0, // Always 0, will be calculated from reviews
         imageUrl: finalImageUrl,
         images: this.isEditing() && this.selectedHotel() ? this.selectedHotel()!.images : null,
-        managerId: this.isEditing() && this.selectedHotel() ? this.selectedHotel()!.managerId : null
+        managerId: this.isEditing() && this.selectedHotel() ? this.selectedHotel()!.managerId : currentUserId
       };
 
       if (this.isEditing() && this.selectedHotel()) {
