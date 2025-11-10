@@ -269,6 +269,7 @@
             class="form-control"
             [min]="today"
             (change)="onCheckInChange()"
+            (input)="onCheckInChange()"
             required
           />
           <small class="hint">Select today or any future date</small>
@@ -283,6 +284,7 @@
             name="checkOutDate"
             class="form-control"
             [min]="minCheckOutDate()"
+            [disabled]="!checkInDate"
             required
           />
           @if (checkInDate) {

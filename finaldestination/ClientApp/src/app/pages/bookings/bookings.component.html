@@ -1,253 +1,127 @@
 <app-navbar></app-navbar>
 
 <div class="page-header">
-    <div class="container">
-        <h1>My Bookings</h1>
-        <p>Manage your hotel reservations</p>
-    </div>
+  <div class="container">
+    <h1>My Bookings</h1>
+    <p>Manage your hotel reservations</p>
+  </div>
 </div>
 
 <section class="bookings-section">
-    <div class="container">
-        @if (error()) {
-        <div class="alert alert-error">
-            <i class="fas fa-exclamation-circle"></i> {{ error() }}
-            <button class="alert-close" (click)="error.set('')">&times;</button>
-        </div>
-        }
+  <div class="container">
 
-        @if (success()) {
-        <div class="alert alert-success">
-            <i class="fas fa-check-circle"></i> {{ success() }}
-            <button class="alert-close" (click)="success.set('')">&times;</button>
-        </div>
-        }
+    <!-- Error & Success Alerts -->
+    @if (error()) {
+      <div class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i> {{ error() }}
+        <button class="alert-close" (click)="error.set('')">&times;</button>
+      </div>
+    }
 
-        @if (loading() && bookings().length === 0) {
-        <div class="loading-spinner">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Loading your bookings...</p>
-        </div>
-        }
+    @if (success()) {
+      <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i> {{ success() }}
+        <button class="alert-close" (click)="success.set('')">&times;</button>
+      </div>
+    }
 
-        <div class="bookings-list">
-            @for (booking of bookings(); track booking.id) {
-            <div class="booking-card">
-                <div class="booking-header">
-                    <div>
-                        <h3>{{ booking.hotelName }}</h3>
-                    </div>
-                    <span class="booking-status" [ngClass]="getStatusClass(booking.status)">
-                        {{ getStatusText(booking.status) }}
-                    </span>
-                </div>
-                
-                <div class="booking-details">
-                    <div class="detail-row">
-                        <div class="detail-item">
-                            <i class="fas fa-calendar-check"></i>
-                            <div>
-                                <span class="detail-label">Check-in</span>
-                                <span class="detail-value">{{ booking.checkInDate | date:'mediumDate' }}</span>
-                            </div>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-calendar-times"></i>
-                            <div>
-                                <span class="detail-label">Check-out</span>
-                                <span class="detail-value">{{ booking.checkOutDate | date:'mediumDate' }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="detail-row">
-                        <div class="detail-item">
-                            <i class="fas fa-users"></i>
-                            <div>
-                                <span class="detail-label">Guests</span>
-                                <span class="detail-value">{{ booking.numberOfGuests }}</span>
-                            </div>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-user"></i>
-                            <div>
-                                <span class="detail-label">Guest Name</span>
-                                <span class="detail-value">{{ booking.guestName }}</span>
-                            </div>
-                        </div>
-                    </div>
+    <!-- Loading -->
+    @if (loading() && bookings().length === 0) {
+      <div class="loading-spinner">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Loading your bookings...</p>
+      </div>
+    }
 
-                    @if (booking.loyaltyPointsRedeemed && booking.loyaltyDiscountAmount) {
-                    <div class="loyalty-info">
-                        <i class="fas fa-gift"></i>
-                        <span>{{ booking.loyaltyPointsRedeemed }} points redeemed for ₹{{ booking.loyaltyDiscountAmount.toFixed(2) }} discount</span>
-                    </div>
-                    }
-
-                    @if (booking.loyaltyPointsEarned) {
-                    <div class="loyalty-info earned">
-                        <i class="fas fa-star"></i>
-                        <span>Earned {{ booking.loyaltyPointsEarned }} loyalty points</span>
-                    </div>
-                    }
-
-                    <div class="booking-total">
-                        <span class="total-label">Total Amount:</span>
-                        <span class="total-value">₹{{ booking.totalAmount.toFixed(2) }}</span>
-                    </div>
-                </div>
-                
-                <div class="booking-actions">
-                    @if (booking.paymentRequired && booking.status === BookingStatus.Confirmed) {
-                    <button (click)="openPaymentModal(booking)" class="btn-pay">
-                        <i class="fas fa-credit-card"></i> Pay Now
-                    </button>
-                    }
-                    
-                    @if (booking.paymentId && booking.status === BookingStatus.Confirmed) {
-                    <span class="payment-badge">
-                        <i class="fas fa-check-circle"></i> Paid
-                    </span>
-                    }
-                    
-                    @if (booking.status === BookingStatus.Confirmed) {
-                    <button (click)="cancelBooking(booking)" class="btn-cancel">
-                        <i class="fas fa-times"></i> Cancel Booking
-                    </button>
-                    }
-                </div>
+    <!-- Booking List -->
+    <div class="bookings-list">
+      @for (booking of bookings(); track booking.id) {
+        <div class="booking-card">
+          <div class="booking-header">
+            <div>
+              <h3>{{ booking.hotelName }}</h3>
             </div>
-            }
-        </div>
+            <span class="booking-status" [ngClass]="getStatusClass(booking.status)">
+              {{ getStatusText(booking.status) }}
+            </span>
+          </div>
 
-        @if (bookings().length === 0 && !loading()) {
-        <div class="no-bookings">
-            <i class="fas fa-calendar-alt"></i>
-            <p>You don't have any bookings yet</p>
-            <a routerLink="/hotels" class="btn-primary">Browse Hotels</a>
+          <div class="booking-details">
+
+            <!-- Editable Date Section -->
+            <div class="detail-row">
+              <div class="detail-item">
+                <i class="fas fa-calendar-check"></i>
+                <div>
+                  <span class="detail-label">Check-in</span>
+                  <input
+                    type="date"
+                    [(ngModel)]="booking.checkInDate"
+                    name="checkInDate-{{booking.id}}"
+                    (change)="updateCheckoutMinDate(booking)"
+                    class="form-control"
+                  />
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <i class="fas fa-calendar-times"></i>
+                <div>
+                  <span class="detail-label">Check-out</span>
+                  <input
+                    type="date"
+                    [(ngModel)]="booking.checkOutDate"
+                    name="checkOutDate-{{booking.id}}"
+                    [min]="booking.minCheckoutDate"
+                    class="form-control"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="detail-row">
+              <div class="detail-item">
+                <i class="fas fa-users"></i>
+                <div>
+                  <span class="detail-label">Guests</span>
+                  <span class="detail-value">{{ booking.numberOfGuests }}</span>
+                </div>
+              </div>
+              <div class="detail-item">
+                <i class="fas fa-user"></i>
+                <div>
+                  <span class="detail-label">Guest Name</span>
+                  <span class="detail-value">{{ booking.guestName }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="booking-total">
+              <span class="total-label">Total Amount:</span>
+              <span class="total-value">₹{{ booking.totalAmount.toFixed(2) }}</span>
+            </div>
+          </div>
+
+          <!-- Booking Actions -->
+          <div class="booking-actions">
+            @if (booking.status === BookingStatus.Confirmed) {
+              <button (click)="cancelBooking(booking)" class="btn-cancel">
+                <i class="fas fa-times"></i> Cancel Booking
+              </button>
+            }
+          </div>
         </div>
-        }
+      }
     </div>
+
+    <!-- No Bookings -->
+    @if (bookings().length === 0 && !loading()) {
+      <div class="no-bookings">
+        <i class="fas fa-calendar-alt"></i>
+        <p>You don't have any bookings yet</p>
+        <a routerLink="/hotels" class="btn-primary">Browse Hotels</a>
+      </div>
+    }
+
+  </div>
 </section>
-
-@if (showPaymentModal()) {
-<div class="modal-overlay" (click)="closePaymentModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h2>Payment Details</h2>
-            <button class="modal-close" (click)="closePaymentModal()">&times;</button>
-        </div>
-
-        @if (selectedBooking()) {
-        <div class="modal-body">
-            <div class="booking-summary">
-                <h3>Booking Summary</h3>
-                <div class="summary-item">
-                    <span>Hotel:</span>
-                    <strong>{{ selectedBooking()!.hotelName }}</strong>
-                </div>
-                <div class="summary-item">
-                    <span>Check-in:</span>
-                    <strong>{{ selectedBooking()!.checkInDate | date:'mediumDate' }}</strong>
-                </div>
-                <div class="summary-item">
-                    <span>Check-out:</span>
-                    <strong>{{ selectedBooking()!.checkOutDate | date:'mediumDate' }}</strong>
-                </div>
-                <div class="summary-item total">
-                    <span>Total Amount:</span>
-                    <strong>{{ selectedBooking()!.totalAmount.toFixed(2) }}</strong>
-                </div>
-            </div>
-
-            @if (error()) {
-            <div class="alert alert-error">
-                <i class="fas fa-exclamation-circle"></i> {{ error() }}
-            </div>
-            }
-
-            <form (ngSubmit)="processPayment()">
-                <div class="form-group">
-                    <label for="cardHolderName">Card Holder Name *</label>
-                    <input 
-                        type="text" 
-                        id="cardHolderName" 
-                        [(ngModel)]="cardHolderName"
-                        name="cardHolderName"
-                        class="form-control"
-                        placeholder="John Doe"
-                        required>
-                </div>
-
-                <div class="form-group">
-                    <label for="cardNumber">Card Number *</label>
-                    <input 
-                        type="text" 
-                        id="cardNumber" 
-                        [(ngModel)]="cardNumber"
-                        name="cardNumber"
-                        class="form-control"
-                        placeholder="1234567890123456"
-                        maxlength="16"
-                        required>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="expiryMonth">Month *</label>
-                        <input 
-                            type="text" 
-                            id="expiryMonth" 
-                            [(ngModel)]="expiryMonth"
-                            name="expiryMonth"
-                            class="form-control"
-                            placeholder="MM"
-                            maxlength="2"
-                            required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="expiryYear">Year *</label>
-                        <input 
-                            type="text" 
-                            id="expiryYear" 
-                            [(ngModel)]="expiryYear"
-                            name="expiryYear"
-                            class="form-control"
-                            placeholder="YY"
-                            maxlength="2"
-                            required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="cvv">CVV *</label>
-                        <input 
-                            type="text" 
-                            id="cvv" 
-                            [(ngModel)]="cvv"
-                            name="cvv"
-                            class="form-control"
-                            placeholder="123"
-                            maxlength="4"
-                            required>
-                    </div>
-                </div>
-
-                <div class="modal-actions">
-                    <button type="button" class="btn-secondary" (click)="closePaymentModal()" [disabled]="processingPayment()">
-                        Cancel
-                    </button>
-                    <button type="submit" class="btn-primary" [disabled]="processingPayment()">
-                        @if (processingPayment()) {
-                        <i class="fas fa-spinner fa-spin"></i> Processing...
-                        } @else {
-                        <i class="fas fa-lock"></i> Pay ₹{{ selectedBooking()!.totalAmount.toFixed(2) }}
-                        }
-                    </button>
-                </div>
-            </form>
-        </div>
-        }
-    </div>
-</div>
-}
