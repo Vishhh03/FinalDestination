@@ -7,7 +7,7 @@ import { AuthResponse, User } from '../models/hotel.model';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = '/api/auth';
+  private apiUrl = 'https://localhost:5001/api/auth';
   currentUser = signal<User | null>(null);
 
   constructor(private http: HttpClient, private router: Router) {

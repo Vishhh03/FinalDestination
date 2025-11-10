@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "npx ng serve --open --port 4200 --proxy-config proxy.conf.json",
+    "start": "npx ng serve --open --port 4200",
     "build": "npx ng build",
     "watch": "npx ng build --watch --configuration development"
   },

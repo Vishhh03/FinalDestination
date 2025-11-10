@@ -6,7 +6,7 @@ import { Booking, PaymentRequest, PaymentResult } from '../models/hotel.model';
   providedIn: 'root'
 })
 export class BookingService {
-  private apiUrl = '/api/bookings';
+  private apiUrl = 'https://localhost:5001/api/bookings';
 
   constructor(private http: HttpClient) {}
 

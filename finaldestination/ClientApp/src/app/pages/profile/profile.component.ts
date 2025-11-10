@@ -48,7 +48,7 @@ export class ProfileComponent implements OnInit {
     this.error.set('');
 
     try {
-      const account = await this.http.get<LoyaltyAccount>('/api/loyalty/account').toPromise();
+      const account = await this.http.get<LoyaltyAccount>('https://localhost:5001/api/loyalty/account').toPromise();
       if (account) this.loyaltyAccount.set(account);
     } catch (err) {
       console.error('Failed to load loyalty account:', err);
@@ -56,7 +56,7 @@ export class ProfileComponent implements OnInit {
     }
     
     try {
-      const transactions = await this.http.get<PointsTransaction[]>('/api/loyalty/transactions').toPromise();
+      const transactions = await this.http.get<PointsTransaction[]>('https://localhost:5001/api/loyalty/transactions').toPromise();
       if (transactions) this.transactions.set(transactions);
     } catch (err) {
       console.error('Failed to load transactions:', err);
@@ -96,7 +96,7 @@ export class ProfileComponent implements OnInit {
     this.error.set('');
 
     try {
-      await this.http.put('/api/users/profile', {
+      await this.http.put('https://localhost:5001/api/users/profile', {
         name: this.editName,
         contactNumber: this.editContactNumber || null
       }).toPromise();

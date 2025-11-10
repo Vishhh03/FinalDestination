@@ -6,7 +6,7 @@ import { Hotel } from '../models/hotel.model';
     providedIn: 'root'
 })
 export class HotelService {
-    private apiUrl = '/api/Hotels';
+    private apiUrl = 'https://localhost:5001/api/Hotels';
 
     constructor(private http: HttpClient) { }
 

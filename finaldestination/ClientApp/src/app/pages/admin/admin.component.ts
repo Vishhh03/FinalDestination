@@ -178,7 +178,7 @@ export class AdminComponent implements OnInit {
     formData.append('file', this.selectedFile);
 
     try {
-      const response = await fetch('/api/upload/hotel-image', {
+      const response = await fetch('https://localhost:5001/api/upload/hotel-image', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -285,7 +285,7 @@ export class AdminComponent implements OnInit {
   async loadUsers() {
     this.loading.set(true);
     try {
-      const users = await this.http.get<AdminUser[]>('/api/admin/users').toPromise();
+      const users = await this.http.get<AdminUser[]>('https://localhost:5001/api/admin/users').toPromise();
       if (users) this.users.set(users);
     } catch (err: any) {
       this.error.set('Failed to load users');
@@ -301,7 +301,7 @@ export class AdminComponent implements OnInit {
     }
 
     try {
-      await this.http.put(`/api/admin/users/${user.id}/role`, { role: newRole }).toPromise();
+      await this.http.put(`https://localhost:5001/api/admin/users/${user.id}/role`, { role: newRole }).toPromise();
       this.success.set(`Updated ${user.name}'s role to ${newRole}`);
       await this.loadUsers();
       setTimeout(() => this.success.set(''), 3000);
