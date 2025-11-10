@@ -579,3 +579,144 @@ textarea.form-control {
   flex-shrink: 0;
   margin-top: 2px;
 }
+
+
+/* Review Actions */
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.review-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.review-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.btn-icon.btn-edit {
+  color: #3b82f6;
+}
+
+.btn-icon.btn-edit:hover {
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+.btn-icon.btn-delete {
+  color: #dc2626;
+}
+
+.btn-icon.btn-delete:hover {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Editing Notice */
+.editing-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  color: #92400e;
+}
+
+.editing-notice i {
+  color: #f59e0b;
+  font-size: 1.1rem;
+}
+
+.btn-cancel-edit {
+  margin-left: auto;
+  padding: 0.5rem 1rem;
+  background: #fff;
+  border: 1px solid #d97706;
+  color: #92400e;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-cancel-edit:hover {
+  background: #fef3c7;
+  border-color: #b45309;
+}
+
+/* Delete Modal */
+.delete-modal {
+  max-width: 450px;
+}
+
+.warning-icon {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.warning-icon i {
+  font-size: 3rem;
+  color: #f59e0b;
+}
+
+.warning-text {
+  color: #dc2626;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: #6b7280;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #4b5563;
+}
