@@ -45,33 +45,44 @@ public class ValidationService : IValidationService
             errors.Add("No rooms are currently available at this hotel.");
         }
 
-        // Check for overlapping bookings by the same user
-        var existingBooking = await _context.Bookings
-            .Where(b => b.UserId == userId && 
-                       b.HotelId == request.HotelId &&
-                       b.Status != BookingStatus.Cancelled &&
-                       ((b.CheckInDate <= request.CheckInDate && b.CheckOutDate > request.CheckInDate) ||
-                        (b.CheckInDate < request.CheckOutDate && b.CheckOutDate >= request.CheckOutDate) ||
-                        (b.CheckInDate >= request.CheckInDate && b.CheckOutDate <= request.CheckOutDate)))
-            .FirstOrDefaultAsync();
+        // Get user role to determine if they're booking for themselves or others
+        var user = await _context.Users.FindAsync(userId);
+        var isAdminOrManager = user?.Role == UserRole.Admin || user?.Role == UserRole.HotelManager;
 
-        if (existingBooking != null)
+        // Check for overlapping bookings by the same user (only for guests booking themselves)
+        // Admin and Managers can book for different guests without this restriction
+        if (!isAdminOrManager)
         {
-            errors.Add("You already have a booking at this hotel that overlaps with the requested dates.");
+            var existingBooking = await _context.Bookings
+                .Where(b => b.UserId == userId && 
+                           b.HotelId == request.HotelId &&
+                           b.Status != BookingStatus.Cancelled &&
+                           ((b.CheckInDate <= request.CheckInDate && b.CheckOutDate > request.CheckInDate) ||
+                            (b.CheckInDate < request.CheckOutDate && b.CheckOutDate >= request.CheckOutDate) ||
+                            (b.CheckInDate >= request.CheckInDate && b.CheckOutDate <= request.CheckOutDate)))
+                .FirstOrDefaultAsync();
+
+            if (existingBooking != null)
+            {
+                errors.Add("You already have a booking at this hotel that overlaps with the requested dates. Please choose different dates or cancel your existing booking first.");
+            }
         }
 
-        // Check booking duration (max 30 days for regular users)
+        // Check booking duration (max 30 days for regular users, unlimited for admin/manager)
         var duration = (request.CheckOutDate - request.CheckInDate).Days;
-        if (duration > 30)
+        if (!isAdminOrManager && duration > 30)
         {
             errors.Add("Booking duration cannot exceed 30 days.");
         }
 
-        // Check advance booking limit (max 1 year in advance)
-        var maxAdvanceDate = DateTime.Today.AddYears(1);
-        if (request.CheckInDate > maxAdvanceDate)
+        // Check advance booking limit (max 1 year in advance for regular users)
+        if (!isAdminOrManager)
         {
-            errors.Add("Bookings cannot be made more than 1 year in advance.");
+            var maxAdvanceDate = DateTime.Today.AddYears(1);
+            if (request.CheckInDate > maxAdvanceDate)
+            {
+                errors.Add("Bookings cannot be made more than 1 year in advance.");
+            }
         }
 
         return new ValidationResult { IsValid = errors.Count == 0, Errors = errors };
