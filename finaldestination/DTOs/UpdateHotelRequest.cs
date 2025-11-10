@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using FinalDestinationAPI.Attributes;
 
 namespace FinalDestinationAPI.DTOs;
 
@@ -34,6 +35,7 @@ public class UpdateHotelRequest
     [Range(1, int.MaxValue, ErrorMessage = "Manager ID must be a positive number")]
     public int? ManagerId { get; set; }
 
+    [UrlOrRelativePath(ErrorMessage = "Image URL must be a valid URL or path")]
     [StringLength(1000, ErrorMessage = "Image URL cannot exceed 1000 characters")]
     public string? ImageUrl { get; set; }
 

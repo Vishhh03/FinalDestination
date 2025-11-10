@@ -285,7 +285,11 @@
             [min]="minCheckOutDate()"
             required
           />
-          <small class="hint">Must be at least 1 day after check-in</small>
+          @if (checkInDate) {
+            <small class="hint">Minimum checkout: {{ minCheckOutDate() }} (1 day after check-in)</small>
+          } @else {
+            <small class="hint">Please select check-in date first</small>
+          }
         </div>
         
         <div class="form-group">
