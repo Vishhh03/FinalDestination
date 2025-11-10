@@ -34,7 +34,6 @@ public class CreateHotelRequest
     [Range(1, int.MaxValue, ErrorMessage = "Manager ID must be a positive number")]
     public int? ManagerId { get; set; }
 
-    [Url(ErrorMessage = "Image URL must be a valid URL")]
     [StringLength(1000, ErrorMessage = "Image URL cannot exceed 1000 characters")]
     public string? ImageUrl { get; set; }
 
