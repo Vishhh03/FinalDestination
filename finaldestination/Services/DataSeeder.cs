@@ -442,7 +442,7 @@ public static class DataSeeder
                 CheckInDate = DateTime.UtcNow.AddDays(-30),
                 CheckOutDate = DateTime.UtcNow.AddDays(-28),
                 NumberOfGuests = 2,
-                TotalAmount = 300.00m, // 2 nights * $150
+                TotalAmount = 30000.00m, // 2 nights * ₹15000
                 Status = BookingStatus.Completed,
                 CreatedAt = DateTime.UtcNow.AddDays(-35)
             },
@@ -456,7 +456,7 @@ public static class DataSeeder
                 CheckInDate = DateTime.UtcNow.AddDays(-25),
                 CheckOutDate = DateTime.UtcNow.AddDays(-22),
                 NumberOfGuests = 1,
-                TotalAmount = 600.00m, // 3 nights * $200
+                TotalAmount = 25500.00m, // 3 nights * ₹8500
                 Status = BookingStatus.Completed,
                 CreatedAt = DateTime.UtcNow.AddDays(-30)
             },
@@ -470,7 +470,7 @@ public static class DataSeeder
                 CheckInDate = DateTime.UtcNow.AddDays(-20),
                 CheckOutDate = DateTime.UtcNow.AddDays(-19),
                 NumberOfGuests = 2,
-                TotalAmount = 120.00m, // 1 night * $120
+                TotalAmount = 12000.00m, // 1 night * ₹12000
                 Status = BookingStatus.Completed,
                 CreatedAt = DateTime.UtcNow.AddDays(-25)
             },
@@ -484,7 +484,7 @@ public static class DataSeeder
                 CheckInDate = DateTime.UtcNow.AddDays(-15),
                 CheckOutDate = DateTime.UtcNow.AddDays(-12),
                 NumberOfGuests = 1,
-                TotalAmount = 450.00m, // 3 nights * $150
+                TotalAmount = 45000.00m, // 3 nights * ₹15000
                 Status = BookingStatus.Completed,
                 CreatedAt = DateTime.UtcNow.AddDays(-20)
             },
@@ -498,7 +498,7 @@ public static class DataSeeder
                 CheckInDate = DateTime.UtcNow.AddDays(-10),
                 CheckOutDate = DateTime.UtcNow.AddDays(-8),
                 NumberOfGuests = 2,
-                TotalAmount = 400.00m, // 2 nights * $200
+                TotalAmount = 17000.00m, // 2 nights * ₹8500
                 Status = BookingStatus.Completed,
                 CreatedAt = DateTime.UtcNow.AddDays(-15)
             },
@@ -514,7 +514,7 @@ public static class DataSeeder
                 CheckInDate = DateTime.UtcNow.AddDays(5),
                 CheckOutDate = DateTime.UtcNow.AddDays(7),
                 NumberOfGuests = 1,
-                TotalAmount = 360.00m, // 2 nights * $180
+                TotalAmount = 36000.00m, // 2 nights * ₹18000
                 Status = BookingStatus.Confirmed,
                 CreatedAt = DateTime.UtcNow.AddDays(-5)
             },
@@ -528,7 +528,7 @@ public static class DataSeeder
                 CheckInDate = DateTime.UtcNow.AddDays(10),
                 CheckOutDate = DateTime.UtcNow.AddDays(14),
                 NumberOfGuests = 2,
-                TotalAmount = 1000.00m, // 4 nights * $250
+                TotalAmount = 38000.00m, // 4 nights * ₹9500
                 Status = BookingStatus.Confirmed,
                 CreatedAt = DateTime.UtcNow.AddDays(-2)
             },
@@ -544,7 +544,7 @@ public static class DataSeeder
                 CheckInDate = DateTime.UtcNow.AddDays(15),
                 CheckOutDate = DateTime.UtcNow.AddDays(17),
                 NumberOfGuests = 1,
-                TotalAmount = 260.00m, // 2 nights * $130
+                TotalAmount = 22000.00m, // 2 nights * ₹11000
                 Status = BookingStatus.Cancelled,
                 CreatedAt = DateTime.UtcNow.AddDays(-3)
             }
@@ -673,40 +673,40 @@ public static class DataSeeder
             {
                // Id = 1,
                 UserId = 4, // Bob Guest
-                PointsBalance = 75, // 30 + 45 from bookings
-                TotalPointsEarned = 75,
+                PointsBalance = 3000, // 3000 from booking 1
+                TotalPointsEarned = 3000,
                 LastUpdated = DateTime.UtcNow.AddDays(-10)
             },
             new LoyaltyAccount
             {
                // Id = 2,
                 UserId = 5, // Alice Johnson
-                PointsBalance = 96, // 60 + 40 - 4 (used some points)
-                TotalPointsEarned = 100,
+                PointsBalance = 6150, // 2550 + 3600 from bookings
+                TotalPointsEarned = 6150,
                 LastUpdated = DateTime.UtcNow.AddDays(-5)
             },
             new LoyaltyAccount
             {
                // Id = 3,
                 UserId = 6, // Charlie Brown
-                PointsBalance = 112, // 12 + 100 from bookings
-                TotalPointsEarned = 112,
+                PointsBalance = 5000, // 1200 + 3800 from bookings
+                TotalPointsEarned = 5000,
                 LastUpdated = DateTime.UtcNow.AddDays(-2)
             },
             new LoyaltyAccount
             {
               //  Id = 4,
                 UserId = 7, // Diana Prince
-                PointsBalance = 45, // 45 from one booking
-                TotalPointsEarned = 45,
+                PointsBalance = 4500, // 4500 from booking 4
+                TotalPointsEarned = 4500,
                 LastUpdated = DateTime.UtcNow.AddDays(-10)
             },
             new LoyaltyAccount
             {
                // Id = 5,
                 UserId = 8, // Edward Smith
-                PointsBalance = 40, // 40 from one booking
-                TotalPointsEarned = 40,
+                PointsBalance = 1700, // 1700 from booking 5
+                TotalPointsEarned = 1700,
                 LastUpdated = DateTime.UtcNow.AddDays(-6)
             }
         };
@@ -723,8 +723,8 @@ public static class DataSeeder
             {
                 //Id = 1,
                 BookingId = 1,
-                Amount = 300.00m,
-                Currency = "USD",
+                Amount = 30000.00m,
+                Currency = "INR",
                 PaymentMethod = PaymentMethod.CreditCard,
                 Status = PaymentStatus.Completed,
                 TransactionId = "TXN001234567",
@@ -735,8 +735,8 @@ public static class DataSeeder
             {
                // Id = 2,
                 BookingId = 2,
-                Amount = 600.00m,
-                Currency = "USD",
+                Amount = 25500.00m,
+                Currency = "INR",
                 PaymentMethod = PaymentMethod.DebitCard,
                 Status = PaymentStatus.Completed,
                 TransactionId = "TXN002345678",
@@ -747,8 +747,8 @@ public static class DataSeeder
             {
               //  Id = 3,
                 BookingId = 3,
-                Amount = 120.00m,
-                Currency = "USD",
+                Amount = 12000.00m,
+                Currency = "INR",
                 PaymentMethod = PaymentMethod.PayPal,
                 Status = PaymentStatus.Completed,
                 TransactionId = "TXN003456789",
@@ -759,8 +759,8 @@ public static class DataSeeder
             {
                // Id = 4,
                 BookingId = 4,
-                Amount = 450.00m,
-                Currency = "USD",
+                Amount = 45000.00m,
+                Currency = "INR",
                 PaymentMethod = PaymentMethod.CreditCard,
                 Status = PaymentStatus.Completed,
                 TransactionId = "TXN004567890",
@@ -771,8 +771,8 @@ public static class DataSeeder
             {
                // Id = 5,
                 BookingId = 5,
-                Amount = 400.00m,
-                Currency = "USD",
+                Amount = 17000.00m,
+                Currency = "INR",
                 PaymentMethod = PaymentMethod.CreditCard,
                 Status = PaymentStatus.Completed,
                 TransactionId = "TXN005678901",
@@ -783,8 +783,8 @@ public static class DataSeeder
             {
                // Id = 6,
                 BookingId = 6,
-                Amount = 360.00m,
-                Currency = "USD",
+                Amount = 36000.00m,
+                Currency = "INR",
                 PaymentMethod = PaymentMethod.DebitCard,
                 Status = PaymentStatus.Completed,
                 TransactionId = "TXN006789012",
@@ -795,8 +795,8 @@ public static class DataSeeder
             {
                // Id = 7,
                 BookingId = 7,
-                Amount = 1000.00m,
-                Currency = "USD",
+                Amount = 38000.00m,
+                Currency = "INR",
                 PaymentMethod = PaymentMethod.CreditCard,
                 Status = PaymentStatus.Completed,
                 TransactionId = "TXN007890123",
@@ -808,8 +808,8 @@ public static class DataSeeder
             {
               //  Id = 8,
                 BookingId = 8,
-                Amount = 260.00m,
-                Currency = "USD",
+                Amount = 22000.00m,
+                Currency = "INR",
                 PaymentMethod = PaymentMethod.CreditCard,
                 Status = PaymentStatus.Refunded,
                 TransactionId = "TXN008901234",
@@ -832,88 +832,70 @@ public static class DataSeeder
               //  Id = 1,
                 LoyaltyAccountId = 1,
                 BookingId = 1,
-                PointsEarned = 30, // 10% of $300
-                Description = "Points earned from booking at Grand Plaza Hotel",
+                PointsEarned = 3000, // 10% of ₹30000
+                Description = "Points earned from booking at Taj Mahal Palace Mumbai",
                 CreatedAt = DateTime.UtcNow.AddDays(-28)
-            },
-            new PointsTransaction
-            {
-              //  Id = 2,
-                LoyaltyAccountId = 1,
-                BookingId = 4,
-                PointsEarned = 45, // 10% of $450
-                Description = "Points earned from booking at Grand Plaza Hotel",
-                CreatedAt = DateTime.UtcNow.AddDays(-12)
             },
             
             // Alice Johnson transactions
             new PointsTransaction
             {
-              //  Id = 3,
+              //  Id = 2,
                 LoyaltyAccountId = 2,
                 BookingId = 2,
-                PointsEarned = 60, // 10% of $600
-                Description = "Points earned from booking at Ocean View Resort",
+                PointsEarned = 2550, // 10% of ₹25500
+                Description = "Points earned from booking at Marine Plaza Hotel",
                 CreatedAt = DateTime.UtcNow.AddDays(-22)
             },
             new PointsTransaction
             {
-              //  Id = 4,
+              //  Id = 3,
                 LoyaltyAccountId = 2,
                 BookingId = 6,
-                PointsEarned = 36, // 10% of $360
-                Description = "Points earned from booking at Downtown Business Hotel",
+                PointsEarned = 3600, // 10% of ₹36000
+                Description = "Points earned from booking at Leela Palace Delhi",
                 CreatedAt = DateTime.UtcNow.AddDays(-5)
-            },
-            new PointsTransaction
-            {
-              //  Id = 5,
-                LoyaltyAccountId = 2,
-                BookingId = null,
-                PointsEarned = 4, // Bonus points
-                Description = "Bonus points for being a loyal customer",
-                CreatedAt = DateTime.UtcNow.AddDays(-10)
             },
             
             // Charlie Brown transactions
             new PointsTransaction
             {
-               // Id = 6,
+               // Id = 4,
                 LoyaltyAccountId = 3,
                 BookingId = 3,
-                PointsEarned = 12, // 10% of $120
-                Description = "Points earned from booking at Mountain Lodge",
+                PointsEarned = 1200, // 10% of ₹12000
+                Description = "Points earned from booking at The Imperial New Delhi",
                 CreatedAt = DateTime.UtcNow.AddDays(-19)
             },
             new PointsTransaction
             {
-              //  Id = 7,
+              //  Id = 5,
                 LoyaltyAccountId = 3,
                 BookingId = 7,
-                PointsEarned = 100, // 10% of $1000
-                Description = "Points earned from booking at Sunset Beach Resort",
+                PointsEarned = 3800, // 10% of ₹38000
+                Description = "Points earned from booking at ITC Gardenia Bangalore",
                 CreatedAt = DateTime.UtcNow.AddDays(-2)
             },
             
             // Diana Prince transactions
             new PointsTransaction
             {
-               // Id = 8,
+               // Id = 6,
                 LoyaltyAccountId = 4,
                 BookingId = 4,
-                PointsEarned = 45, // 10% of $450
-                Description = "Points earned from booking at Grand Plaza Hotel",
+                PointsEarned = 4500, // 10% of ₹45000
+                Description = "Points earned from booking at Taj Mahal Palace Mumbai",
                 CreatedAt = DateTime.UtcNow.AddDays(-12)
             },
             
             // Edward Smith transactions
             new PointsTransaction
             {
-              //  Id = 9,
+              //  Id = 7,
                 LoyaltyAccountId = 5,
                 BookingId = 5,
-                PointsEarned = 40, // 10% of $400
-                Description = "Points earned from booking at Ocean View Resort",
+                PointsEarned = 1700, // 10% of ₹17000
+                Description = "Points earned from booking at Marine Plaza Hotel",
                 CreatedAt = DateTime.UtcNow.AddDays(-8)
             }
         };
