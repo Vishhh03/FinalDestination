@@ -27,6 +27,7 @@ interface AdminUser {
   styleUrls: ['./admin.component.css']
 })
 export class AdminComponent implements OnInit {
+  Math = Math;
 
     private readonly http = inject(HttpClient);
     private readonly hotelService = inject(HotelService);
@@ -41,6 +42,10 @@ export class AdminComponent implements OnInit {
   selectedHotel = signal<Hotel | null>(null);
   showHotelForm = signal(false);
   isEditingHotel = signal(false);
+  
+  // Pagination
+  currentPage = signal(1);
+  itemsPerPage = 6;
   
   // Users management
   users = signal<AdminUser[]>([]);
@@ -383,5 +388,34 @@ export class AdminComponent implements OnInit {
     if (!imageUrl) return '';
     if (imageUrl.startsWith('http')) return imageUrl;
     return `https://localhost:5001${imageUrl}`;
+  }
+
+  getPaginatedHotels() {
+    const start = (this.currentPage() - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    return this.hotels().slice(start, end);
+  }
+
+  getTotalPages() {
+    return Math.ceil(this.hotels().length / this.itemsPerPage);
+  }
+
+  goToPage(page: number) {
+    this.currentPage.set(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  nextPage() {
+    if (this.currentPage() < this.getTotalPages()) {
+      this.currentPage.update(p => p + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage() > 1) {
+      this.currentPage.update(p => p - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 }

@@ -181,7 +181,7 @@
       }
 
       <div class="hotels-grid">
-        @for (hotel of hotels(); track hotel.id) {
+        @for (hotel of getPaginatedHotels(); track hotel.id) {
           <app-hotel-card 
             [hotel]="hotel" 
             mode="admin"
@@ -195,6 +195,28 @@
         <div class="no-data">
           <i class="fas fa-hotel"></i>
           <p>No hotels found</p>
+        </div>
+      }
+
+      @if (hotels().length > itemsPerPage) {
+        <div class="pagination">
+          <button class="page-btn" (click)="prevPage()" [disabled]="currentPage() === 1">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          @for (page of [].constructor(getTotalPages()); track $index) {
+            <button 
+              class="page-btn" 
+              [class.active]="currentPage() === $index + 1"
+              (click)="goToPage($index + 1)">
+              {{ $index + 1 }}
+            </button>
+          }
+          <button class="page-btn" (click)="nextPage()" [disabled]="currentPage() === getTotalPages()">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <div class="pagination-info">
+          Showing {{ (currentPage() - 1) * itemsPerPage + 1 }} - {{ Math.min(currentPage() * itemsPerPage, hotels().length) }} of {{ hotels().length }} hotels
         </div>
       }
     </div>

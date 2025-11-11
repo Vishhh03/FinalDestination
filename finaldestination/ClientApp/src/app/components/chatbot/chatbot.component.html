@@ -1,0 +1,30 @@
+<button class="chatbot-button" (click)="toggleChat()">
+  <i class="fas fa-comments"></i>
+</button>
+
+@if (showChat()) {
+  <div class="chatbot-popup">
+    <div class="chatbot-header">
+      <h3>Chat Support</h3>
+      <button class="chatbot-close" (click)="toggleChat()">&times;</button>
+    </div>
+    <div class="chatbot-body">
+      @for (msg of chatMessages(); track $index) {
+        <div class="chatbot-message" [class.bot]="msg.isBot" [class.user]="!msg.isBot">
+          {{ msg.text }}
+        </div>
+      }
+    </div>
+    <div class="chatbot-footer">
+      <input 
+        type="text" 
+        class="chatbot-input" 
+        [(ngModel)]="chatInput"
+        (keyup.enter)="sendMessage()"
+        placeholder="Type a message...">
+      <button class="chatbot-send" (click)="sendMessage()">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+}
