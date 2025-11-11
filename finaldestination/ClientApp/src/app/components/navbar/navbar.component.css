@@ -142,6 +142,7 @@
   text-align: left;
   cursor: pointer;
   font-weight: 600;
+  font-size: 0.95rem;
 }
 
 .dropdown-item:hover {
@@ -150,8 +151,9 @@
 }
 
 .dropdown-item i {
-  width: 20px;
+  width: 18px;
   text-align: center;
+  font-size: 0.95rem;
 }
 
 .logout-btn {
@@ -164,7 +166,7 @@
 }
 
 .btn-login, .btn-register {
-  padding: 0.5rem 1.25rem;
+  padding: 0.625rem 2rem;
   border-radius: var(--radius-md);
   font-weight: 600;
   text-decoration: none;
