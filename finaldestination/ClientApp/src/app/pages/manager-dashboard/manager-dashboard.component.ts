@@ -272,4 +272,10 @@ export class ManagerDashboardComponent implements OnInit {
       this.loading.set(false);
     }
   }
+
+  getImageUrl(imageUrl: string): string {
+    if (!imageUrl) return '';
+    if (imageUrl.startsWith('http')) return imageUrl;
+    return `https://localhost:5001${imageUrl}`;
+  }
 }

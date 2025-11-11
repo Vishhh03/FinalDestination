@@ -370,4 +370,10 @@ export class AdminComponent implements OnInit {
       await this.loadUsers();
     }
   }
+
+  getImageUrl(imageUrl: string): string {
+    if (!imageUrl) return '';
+    if (imageUrl.startsWith('http')) return imageUrl;
+    return `https://localhost:5001${imageUrl}`;
+  }
 }
