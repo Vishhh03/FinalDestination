@@ -45,28 +45,28 @@ export class HomeComponent implements OnInit {
   currentSlide = signal(0);
   private slideInterval: any;
 
-    private readonly hotelService = inject(HotelService);
-    private readonly router = inject(Router);
+
+
+  private readonly hotelService = inject(HotelService);
+  private readonly router = inject(Router);
 
   ngOnInit() {
-      this.loadHotels();
-
-    // Start auto-slide
+    this.loadHotels();
     this.startAutoSlide();
   }
 
   ngOnDestroy() {
     this.stopAutoSlide();
-    }
+  }
 
-    async loadHotels() {
-        try {
-            const hotels = await this.hotelService.getAll();
-            this.featuredHotels.set(hotels.slice(0, 6));
-        } catch (err) {
-            console.error('Error loading hotels:', err);
-        }
+  async loadHotels() {
+    try {
+      const hotels = await this.hotelService.getAll();
+      this.featuredHotels.set(hotels.slice(0, 6));
+    } catch (err) {
+      console.error('Error loading hotels:', err);
     }
+  }
   
   search() {
     const params: any = {};
@@ -80,7 +80,7 @@ export class HomeComponent implements OnInit {
   startAutoSlide() {
     this.slideInterval = setInterval(() => {
       this.nextSlide();
-    }, 5000); // Change slide every 5 seconds
+    }, 5000);
   }
 
   stopAutoSlide() {
@@ -102,7 +102,7 @@ export class HomeComponent implements OnInit {
   goToSlide(index: number) {
     this.currentSlide.set(index);
     this.stopAutoSlide();
-    this.startAutoSlide(); // Restart auto-slide after manual navigation
+    this.startAutoSlide();
   }
 
   getImageUrl(imageUrl: string): string {
@@ -121,5 +121,7 @@ export class HomeComponent implements OnInit {
       event.target.parentElement.appendChild(div);
     }
   }
+
+
 
 }
