@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -72,14 +72,12 @@ export class HotelDetailComponent implements OnInit {
   });
   finalAmount = computed(() => Math.max(0, this.totalAmount() - this.discount()));
 
-  constructor(
-    private hotelService: HotelService,
-    private bookingService: BookingService,
-    private reviewService: ReviewService,
-    public auth: AuthService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) {}
+  private readonly hotelService = inject(HotelService);
+  private readonly bookingService = inject(BookingService);
+  private readonly reviewService = inject(ReviewService);
+  readonly auth = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   async ngOnInit() {
     const id = +this.route.snapshot.params['id'];

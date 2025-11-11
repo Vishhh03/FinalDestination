@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -36,11 +36,9 @@ export class ManagerDashboardComponent implements OnInit {
   uploading = signal(false);
   imageRemoved = false;
 
-  constructor(
-    private hotelService: HotelService,
-    private auth: AuthService,
-    private router: Router
-  ) {}
+  private readonly hotelService = inject(HotelService);
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   async ngOnInit() {
     if (!this.auth.hasAnyRole(['HotelManager', 'Admin'])) {

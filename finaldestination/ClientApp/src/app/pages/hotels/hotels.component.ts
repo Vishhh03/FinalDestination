@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
@@ -42,14 +42,12 @@ export class HotelsComponent implements OnInit {
     return this.allHotels().slice(start, end);
   }
 
-  constructor(
-    private hotelService: HotelService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) {}
+  private readonly hotelService = inject(HotelService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   async ngOnInit() {
-    this.route.queryParams.subscribe(async params => {
+    this.route.queryParams.subscribe(async (params: any) => {
       this.loading.set(true);
       this.currentPage.set(1); // Reset to first page on new search
       
