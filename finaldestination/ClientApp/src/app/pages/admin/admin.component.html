@@ -10,15 +10,21 @@
   <div class="tabs">
     <button 
       class="tab" 
+      [class.active]="activeTab() === 'dashboard'"
+      (click)="setActiveTab('dashboard')">
+      <i class="fas fa-chart-line"></i> Dashboard
+    </button>
+    <button 
+      class="tab" 
       [class.active]="activeTab() === 'hotels'"
       (click)="setActiveTab('hotels')">
-      <i class="fas fa-hotel"></i> Hotels Management
+      <i class="fas fa-hotel"></i> Hotels
     </button>
     <button 
       class="tab" 
       [class.active]="activeTab() === 'users'"
       (click)="setActiveTab('users')">
-      <i class="fas fa-users"></i> Users Management
+      <i class="fas fa-users"></i> Users
     </button>
   </div>
 
@@ -34,6 +40,126 @@
     <div class="alert alert-success">
       <i class="fas fa-check-circle"></i> {{ success() }}
       <button class="alert-close" (click)="success.set('')">&times;</button>
+    </div>
+  }
+
+  <!-- Dashboard Tab -->
+  @if (activeTab() === 'dashboard') {
+    <div class="tab-content">
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <i class="fas fa-hotel"></i>
+          </div>
+          <div class="kpi-content">
+            <h3>{{ hotels().length }}</h3>
+            <p>Total Hotels</p>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="kpi-content">
+            <h3>{{ users().length }}</h3>
+            <p>Total Users</p>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <i class="fas fa-user-tie"></i>
+          </div>
+          <div class="kpi-content">
+            <h3>{{ getManagerCount() }}</h3>
+            <p>Hotel Managers</p>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+            <i class="fas fa-user-check"></i>
+          </div>
+          <div class="kpi-content">
+            <h3>{{ getActiveUserCount() }}</h3>
+            <p>Active Users</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3><i class="fas fa-chart-pie"></i> User Distribution</h3>
+          <div class="chart-content">
+            <div class="pie-chart" [ngStyle]="getPieChartStyle()"></div>
+            <div class="chart-legend">
+              <div class="legend-item">
+                <span class="legend-color" style="background: #667eea;"></span>
+                <span>Guests ({{ getGuestCount() }})</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-color" style="background: #f5576c;"></span>
+                <span>Managers ({{ getManagerCount() }})</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-color" style="background: #4facfe;"></span>
+                <span>Admins ({{ getAdminCount() }})</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h3><i class="fas fa-chart-bar"></i> Hotels by City</h3>
+          <div class="chart-content">
+            @for (city of getTopCities(); track city.name) {
+              <div class="bar-item">
+                <span class="bar-label">{{ city.name }}</span>
+                <div class="bar-container">
+                  <div class="bar-fill" [style.width.%]="(city.count / hotels().length * 100)"></div>
+                  <span class="bar-value">{{ city.count }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Table -->
+      <div class="stats-card">
+        <h3><i class="fas fa-star"></i> Top Rated Hotels</h3>
+        <div class="stats-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Hotel Name</th>
+                <th>City</th>
+                <th>Rating</th>
+                <th>Price/Night</th>
+                <th>Available Rooms</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (hotel of getTopRatedHotels(); track hotel.id) {
+                <tr>
+                  <td><strong>{{ hotel.name }}</strong></td>
+                  <td>{{ hotel.city }}</td>
+                  <td>
+                    <span class="rating-badge">
+                      <i class="fas fa-star"></i> {{ hotel.rating.toFixed(1) }}
+                    </span>
+                  </td>
+                  <td>₹{{ hotel.pricePerNight.toFixed(2) }}</td>
+                  <td>{{ hotel.availableRooms }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   }
 
