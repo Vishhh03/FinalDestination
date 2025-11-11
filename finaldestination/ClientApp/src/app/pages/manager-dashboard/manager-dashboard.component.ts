@@ -147,7 +147,7 @@ export class ManagerDashboardComponent implements OnInit {
     formData.append('file', this.selectedFile);
 
     try {
-      const response = await fetch('/api/upload/hotel-image', {
+      const response = await fetch('https://localhost:5001/api/upload/hotel-image', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
