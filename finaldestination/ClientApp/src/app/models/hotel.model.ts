@@ -30,6 +30,7 @@ export interface Booking {
   createdAt: string;
   paymentRequired?: boolean;
   paymentId?: number;
+  minCheckoutDate?: string;
 }
 
 export enum BookingStatus {
