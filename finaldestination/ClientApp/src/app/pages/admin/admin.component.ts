@@ -33,7 +33,7 @@ export class AdminComponent implements OnInit {
     private readonly router = inject(Router);
 
   // Tab management
-  activeTab = signal<'hotels' | 'users'>('hotels');
+  activeTab = signal<'dashboard' | 'hotels' | 'users'>('dashboard');
   
   // Hotels management
   hotels = signal<Hotel[]>([]);
@@ -74,10 +74,69 @@ export class AdminComponent implements OnInit {
     this.loadUsers();
   }
 
-  setActiveTab(tab: 'hotels' | 'users') {
+  setActiveTab(tab: 'dashboard' | 'hotels' | 'users') {
     this.activeTab.set(tab);
     this.error.set('');
     this.success.set('');
+  }
+
+  getTopCities() {
+    const cityCount = this.hotels().reduce((acc, hotel) => {
+      acc[hotel.city] = (acc[hotel.city] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(cityCount)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  }
+
+  getTopRatedHotels() {
+    return [...this.hotels()]
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 5);
+  }
+
+  getGuestCount() {
+    return this.users().filter(u => u.role === 'Guest').length;
+  }
+
+  getManagerCount() {
+    return this.users().filter(u => u.role === 'HotelManager').length;
+  }
+
+  getAdminCount() {
+    return this.users().filter(u => u.role === 'Admin').length;
+  }
+
+  getGuestPercentage() {
+    const total = this.users().length;
+    return total > 0 ? (this.getGuestCount() / total * 100) : 0;
+  }
+
+  getActiveUserCount() {
+    return this.users().filter(u => u.isActive).length;
+  }
+
+  getPieChartStyle() {
+    const guestPct = this.getGuestPercentage();
+    const managerPct = this.getManagerPercentage();
+    const guestEnd = guestPct;
+    const managerEnd = guestEnd + managerPct;
+    
+    return {
+      background: `conic-gradient(
+        #667eea 0% ${guestEnd}%,
+        #f5576c ${guestEnd}% ${managerEnd}%,
+        #4facfe ${managerEnd}% 100%
+      )`
+    };
+  }
+
+  getManagerPercentage() {
+    const total = this.users().length;
+    return total > 0 ? (this.getManagerCount() / total * 100) : 0;
   }
 
   // Hotels Management
