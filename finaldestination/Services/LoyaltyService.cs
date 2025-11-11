@@ -244,6 +244,85 @@ public class LoyaltyService : ILoyaltyService
         var discount = points * 1.0m;
         return Task.FromResult(discount);
     }
+
+    public async Task RefundRedeemedPointsAsync(int userId, int bookingId, int pointsToRefund)
+    {
+        if (pointsToRefund <= 0)
+        {
+            throw new ArgumentException("Points to refund must be greater than zero", nameof(pointsToRefund));
+        }
+
+        var loyaltyAccount = await _context.LoyaltyAccounts
+            .FirstOrDefaultAsync(la => la.UserId == userId);
+
+        if (loyaltyAccount == null)
+        {
+            throw new InvalidOperationException("Loyalty account not found");
+        }
+
+        // Add points back to balance
+        loyaltyAccount.PointsBalance += pointsToRefund;
+        loyaltyAccount.LastUpdated = DateTime.UtcNow;
+
+        // Create refund transaction
+        var transaction = new PointsTransaction
+        {
+            LoyaltyAccountId = loyaltyAccount.Id,
+            BookingId = bookingId,
+            PointsEarned = pointsToRefund,
+            Description = $"Refund of {pointsToRefund} points from cancelled booking #{bookingId}",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.PointsTransactions.Add(transaction);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Refunded {Points} points to user {UserId} for cancelled booking {BookingId}",
+            pointsToRefund, userId, bookingId);
+    }
+
+    public async Task RevokeEarnedPointsAsync(int userId, int bookingId)
+    {
+        var loyaltyAccount = await _context.LoyaltyAccounts
+            .Include(la => la.Transactions)
+            .FirstOrDefaultAsync(la => la.UserId == userId);
+
+        if (loyaltyAccount == null)
+        {
+            return;
+        }
+
+        // Find the earned points transaction for this booking
+        var earnedTransaction = loyaltyAccount.Transactions
+            .FirstOrDefault(t => t.BookingId == bookingId && t.PointsEarned > 0);
+
+        if (earnedTransaction == null)
+        {
+            return;
+        }
+
+        var pointsToRevoke = earnedTransaction.PointsEarned;
+
+        // Deduct points from balance
+        loyaltyAccount.PointsBalance -= pointsToRevoke;
+        loyaltyAccount.LastUpdated = DateTime.UtcNow;
+
+        // Create revocation transaction
+        var transaction = new PointsTransaction
+        {
+            LoyaltyAccountId = loyaltyAccount.Id,
+            BookingId = bookingId,
+            PointsEarned = -pointsToRevoke,
+            Description = $"Revoked {pointsToRevoke} points from cancelled booking #{bookingId}",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.PointsTransactions.Add(transaction);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Revoked {Points} earned points from user {UserId} for cancelled booking {BookingId}",
+            pointsToRevoke, userId, bookingId);
+    }
 }
 
 
