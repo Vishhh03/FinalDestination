@@ -312,12 +312,16 @@ export class AdminComponent implements OnInit {
         }
       }
 
-      const hotelData = {
+      const hotelData: any = {
         ...this.hotelForm,
-        rating: 0, // Always 0, will be calculated from reviews
-        imageUrl: finalImageUrl,
-        images: this.isEditingHotel() && this.selectedHotel() ? this.selectedHotel()!.images : null
+        rating: 0,
+        imageUrl: finalImageUrl
       };
+      
+      // Only include images field when editing
+      if (this.isEditingHotel() && this.selectedHotel()) {
+        hotelData.images = this.selectedHotel()!.images;
+      }
 
       if (this.isEditingHotel() && this.selectedHotel()) {
         await this.hotelService.update(this.selectedHotel()!.id, hotelData);
