@@ -1,0 +1,52 @@
+<div class="hotel-card">
+  <!-- Image Section -->
+  <div class="hotel-image">
+    @if (hotel.imageUrl) {
+      <img [src]="getImageUrl(hotel.imageUrl)" [alt]="hotel.name" (error)="onImageError($event)" loading="lazy" />
+    } @else {
+      <div class="placeholder-image">
+        <i class="fas fa-hotel"></i>
+        <p>No Image</p>
+      </div>
+    }
+    <div class="hotel-rating">
+      <i class="fas fa-star"></i> {{ hotel.rating | number:'1.1-1' }}
+    </div>
+  </div>
+
+  <!-- Info Section -->
+  <div class="hotel-info">
+    <div class="hotel-header">
+      <h3>{{ hotel.name }}</h3>
+      @if (mode === 'admin' || mode === 'manager') {
+        <div class="hotel-actions">
+          <button class="btn-icon" (click)="onEdit()" title="Edit">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn-icon btn-danger" (click)="onDelete()" title="Delete">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      }
+    </div>
+
+    <p class="hotel-location">
+      <i class="fas fa-map-marker-alt"></i> {{ hotel.city }}
+    </p>
+    <p class="hotel-address">{{ hotel.address }}</p>
+    <p class="hotel-rooms">
+      <i class="fas fa-door-open"></i> {{ hotel.availableRooms }} rooms available
+    </p>
+
+    <!-- Footer -->
+    <div class="hotel-footer">
+      <div class="hotel-price">
+        <span class="price">{{ hotel.pricePerNight | currency:'INR':'symbol':'1.0-0' }}</span>
+        <span class="per-night">/night</span>
+      </div>
+      @if (mode === 'view') {
+        <a [routerLink]="['/hotels', hotel.id]" class="btn-view">View Details</a>
+      }
+    </div>
+  </div>
+</div>

@@ -182,30 +182,12 @@
 
       <div class="hotels-grid">
         @for (hotel of hotels(); track hotel.id) {
-          <div class="hotel-card">
-            @if (hotel.imageUrl) {
-              <div class="hotel-card-image">
-                <img [src]="getImageUrl(hotel.imageUrl)" [alt]="hotel.name">
-              </div>
-            }
-            <div class="hotel-card-header">
-              <h3>{{ hotel.name }}</h3>
-              <div class="hotel-actions">
-                <button class="btn-icon" (click)="editHotel(hotel)" title="Edit">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn-icon btn-danger" (click)="deleteHotel(hotel)" title="Delete">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </div>
-            <div class="hotel-card-body">
-              <p><i class="fas fa-map-marker-alt"></i> {{ hotel.city }}, {{ hotel.address }}</p>
-              <p><i class="fas fa-indian-rupee-sign"></i> ₹{{ hotel.pricePerNight.toFixed(2) }} / night</p>
-              <p><i class="fas fa-door-open"></i> {{ hotel.availableRooms }} rooms available</p>
-              <p><i class="fas fa-star"></i> {{ hotel.rating.toFixed(1) }} rating</p>
-            </div>
-          </div>
+          <app-hotel-card 
+            [hotel]="hotel" 
+            mode="admin"
+            (edit)="editHotel($event)"
+            (delete)="deleteHotel($event)">
+          </app-hotel-card>
         }
       </div>
 
