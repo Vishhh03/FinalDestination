@@ -233,12 +233,10 @@ a:hover { color: var(--primary-hover); }
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   padding: 2rem;
-  transition: all var(--transition-base);
 }
 
 .card:hover {
-  box-shadow: var(--shadow-lg);
-  border-color: var(--border-hover);
+  border-color: var(--primary);
 }
 
 /* Loading */
