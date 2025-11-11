@@ -4,13 +4,10 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-md);
-  transition: all var(--transition-base);
 }
 
 .hotel-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--border-hover);
+  border-color: var(--primary);
 }
 
 .hotel-image {
@@ -24,11 +21,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.hotel-card:hover .hotel-image img {
-  transform: scale(1.05);
 }
 
 .placeholder-image {

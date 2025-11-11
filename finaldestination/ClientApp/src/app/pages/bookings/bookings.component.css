@@ -70,13 +70,10 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  transition: all var(--transition-base);
 }
 
 .booking-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--border-hover);
+  border-color: var(--primary);
 }
 
 .booking-header {
