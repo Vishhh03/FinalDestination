@@ -286,6 +286,25 @@ public class HotelsController : ControllerBase
             return NotFound($"Hotel with ID {id} not found.");
         }
 
+        // Get current user role and ID
+        var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        
+        // If user is HotelManager, verify they own this hotel
+        if (userRole == "HotelManager")
+        {
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return Unauthorized("Invalid token");
+            }
+            
+            if (existingHotel.ManagerId != userId)
+            {
+                _logger.LogWarning("HotelManager {UserId} attempted to update hotel {HotelId} they don't own", userId, id);
+                return Forbid("You can only update hotels you manage");
+            }
+        }
+
         // Check if manager exists if ManagerId is provided
         if (request.ManagerId.HasValue)
         {
