@@ -144,6 +144,12 @@
   margin-top: 2rem;
 }
 
+.form-actions .btn-primary,
+.form-actions .btn-secondary {
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+}
+
 .hotels-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -249,6 +255,11 @@
   color: var(--text-primary);
 }
 
+.stat:first-child .stat-value::before {
+  content: '₹';
+  margin-right: 0.25rem;
+}
+
 .hotel-meta {
   padding-top: 1rem;
   border-top: 1px solid var(--border-color);
@@ -272,10 +283,11 @@
 
 .btn-edit, .btn-delete {
   flex: 1;
-  padding: 0.75rem;
+  padding: 1rem 1.5rem;
   border: none;
   border-radius: var(--radius-md);
   font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
   display: flex;
   align-items: center;
