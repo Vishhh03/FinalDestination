@@ -61,7 +61,7 @@ export class HotelDetailComponent implements OnInit {
   maxRedeemablePoints = computed(() => {
     const points = this.availablePoints();
     const total = this.totalAmount();
-    const maxPointsForDiscount = Math.floor(total * 50);
+    const maxPointsForDiscount = Math.floor(total * 0.5); // 50% of total
     return Math.min(points, maxPointsForDiscount);
   });
   discount = computed(() => {
