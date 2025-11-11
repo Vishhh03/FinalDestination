@@ -261,14 +261,26 @@
 }
 
 .hotel-card-header h3 {
-  margin: 0 0 0.25rem 0;
+  margin: 0;
   font-size: 1.25rem;
+  color: white;
 }
 
-.hotel-id {
-  margin: 0;
-  font-size: 0.875rem;
-  opacity: 0.9;
+.hotel-card-image {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+}
+
+.hotel-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.hotel-card:hover .hotel-card-image img {
+  transform: scale(1.05);
 }
 
 .rating {

@@ -127,6 +127,7 @@ export class AdminComponent implements OnInit {
     this.imageRemoved = false;
     this.showHotelForm.set(true);
     this.error.set('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   cancelHotelForm() {
