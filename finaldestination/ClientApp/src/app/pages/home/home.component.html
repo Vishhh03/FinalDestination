@@ -102,7 +102,7 @@
         <div class="hotel-card">
           <div class="hotel-image">
             @if (hotel.imageUrl) {
-              <img [src]="hotel.imageUrl" [alt]="hotel.name" />
+              <img [src]="getImageUrl(hotel.imageUrl)" [alt]="hotel.name" (error)="onImageError($event)" />
             } @else {
               <div class="placeholder-image">
                 <i class="fas fa-hotel"></i>
