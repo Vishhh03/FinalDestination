@@ -48,19 +48,12 @@
 
           <div class="booking-details">
 
-            <!-- Editable Date Section -->
             <div class="detail-row">
               <div class="detail-item">
                 <i class="fas fa-calendar-check"></i>
                 <div>
                   <span class="detail-label">Check-in</span>
-                  <input
-                    type="date"
-                    [(ngModel)]="booking.checkInDate"
-                    name="checkInDate-{{booking.id}}"
-                    (change)="updateCheckoutMinDate(booking)"
-                    class="form-control"
-                  />
+                  <span class="detail-value">{{ booking.checkInDate | date:'mediumDate' }}</span>
                 </div>
               </div>
 
@@ -68,13 +61,7 @@
                 <i class="fas fa-calendar-times"></i>
                 <div>
                   <span class="detail-label">Check-out</span>
-                  <input
-                    type="date"
-                    [(ngModel)]="booking.checkOutDate"
-                    name="checkOutDate-{{booking.id}}"
-                    [min]="booking.minCheckoutDate"
-                    class="form-control"
-                  />
+                  <span class="detail-value">{{ booking.checkOutDate | date:'mediumDate' }}</span>
                 </div>
               </div>
             </div>
@@ -104,6 +91,11 @@
 
           <!-- Booking Actions -->
           <div class="booking-actions">
+            @if (booking.status === BookingStatus.Confirmed && !booking.paymentId) {
+              <button (click)="openPaymentModal(booking)" class="btn-primary">
+                <i class="fas fa-credit-card"></i> Pay Now
+              </button>
+            }
             @if (booking.status === BookingStatus.Confirmed) {
               <button (click)="cancelBooking(booking)" class="btn-cancel">
                 <i class="fas fa-times"></i> Cancel Booking
@@ -125,3 +117,66 @@
 
   </div>
 </section>
+
+<!-- Payment Modal -->
+@if (showPaymentModal()) {
+  <div class="modal-overlay" (click)="closePaymentModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Payment Details</h2>
+        <button class="modal-close" (click)="closePaymentModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        @if (selectedBooking()) {
+          <div class="payment-summary">
+            <h3>{{ selectedBooking()!.hotelName }}</h3>
+            <p>Amount to pay: <strong>₹{{ selectedBooking()!.totalAmount.toFixed(2) }}</strong></p>
+          </div>
+
+          <form class="payment-form">
+            <div class="form-group">
+              <label>Card Number</label>
+              <input type="text" [(ngModel)]="cardNumber" name="cardNumber" maxlength="16" placeholder="1234567890123456" class="form-control" />
+            </div>
+
+            <div class="form-group">
+              <label>Card Holder Name</label>
+              <input type="text" [(ngModel)]="cardHolderName" name="cardHolderName" placeholder="John Doe" class="form-control" />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Expiry Month</label>
+                <input type="text" [(ngModel)]="expiryMonth" name="expiryMonth" maxlength="2" placeholder="MM" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label>Expiry Year</label>
+                <input type="text" [(ngModel)]="expiryYear" name="expiryYear" maxlength="2" placeholder="YY" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label>CVV</label>
+                <input type="text" [(ngModel)]="cvv" name="cvv" maxlength="3" placeholder="123" class="form-control" />
+              </div>
+            </div>
+
+            @if (error()) {
+              <div class="alert alert-error">{{ error() }}</div>
+            }
+          </form>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="closePaymentModal()" class="btn-secondary" [disabled]="processingPayment()">Cancel</button>
+        <button (click)="processPayment()" class="btn-primary" [disabled]="processingPayment()">
+          @if (processingPayment()) {
+            <i class="fas fa-spinner fa-spin"></i> Processing...
+          } @else {
+            <i class="fas fa-credit-card"></i> Pay Now
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
