@@ -304,7 +304,6 @@ public class HotelsController : ControllerBase
         existingHotel.City = request.City.Trim();
         existingHotel.PricePerNight = request.PricePerNight;
         existingHotel.AvailableRooms = request.AvailableRooms;
-        existingHotel.Rating = request.Rating;
         existingHotel.ManagerId = request.ManagerId;
         existingHotel.ImageUrl = request.ImageUrl?.Trim();
         existingHotel.Images = request.Images?.Trim();
