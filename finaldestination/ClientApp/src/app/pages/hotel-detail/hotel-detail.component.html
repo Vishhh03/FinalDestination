@@ -264,12 +264,11 @@
           <input 
             type="date" 
             id="checkInDate"
-            [(ngModel)]="checkInDate"
+            [ngModel]="checkInDate()"
+            (ngModelChange)="checkInDate.set($event); onCheckInChange()"
             name="checkInDate"
             class="form-control"
             [min]="today"
-            (change)="onCheckInChange()"
-            (input)="onCheckInChange()"
             required
           />
           <small class="hint">Select today or any future date</small>
@@ -284,11 +283,11 @@
             name="checkOutDate"
             class="form-control"
             [min]="minCheckOutDate()"
-            [disabled]="!checkInDate"
+            [disabled]="!checkInDate()"
             required
           />
-          @if (checkInDate) {
-            <small class="hint">Minimum checkout: {{ minCheckOutDate() }} (1 day after check-in)</small>
+          @if (checkInDate()) {
+            <small class="hint">Minimum checkout: {{ minCheckOutDateDisplay() }} (1 day after check-in)</small>
           } @else {
             <small class="hint">Please select check-in date first</small>
           }

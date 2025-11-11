@@ -28,9 +28,8 @@ export class HotelDetailComponent implements OnInit {
   canReview = signal(false);
 
   today = new Date().toISOString().split('T')[0];
-  tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
   
-  checkInDate = '';
+  checkInDate = signal('');
   checkOutDate = '';
   numberOfGuests = 1;
   pointsToRedeem = 0;
@@ -41,10 +40,22 @@ export class HotelDetailComponent implements OnInit {
   isBookingForGuest = signal(false);
   
   minCheckOutDate = computed(() => {
-    if (!this.checkInDate) return this.tomorrow;
-    const checkIn = new Date(this.checkInDate);
+    if (!this.checkInDate()) {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return tomorrow.toISOString().split('T')[0];
+    }
+    const checkIn = new Date(this.checkInDate());
     checkIn.setDate(checkIn.getDate() + 1);
     return checkIn.toISOString().split('T')[0];
+  });
+
+  minCheckOutDateDisplay = computed(() => {
+    const date = new Date(this.minCheckOutDate());
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
   });
   
   rating = 5;
@@ -149,7 +160,7 @@ export class HotelDetailComponent implements OnInit {
 
   closeBookingModal() {
     this.showBookingModal.set(false);
-    this.checkInDate = '';
+    this.checkInDate.set('');
     this.checkOutDate = '';
     this.numberOfGuests = 1;
     this.pointsToRedeem = 0;
@@ -172,32 +183,28 @@ export class HotelDetailComponent implements OnInit {
   }
 
   onCheckInChange() {
-    // Calculate minimum checkout date (check-in + 1 day)
-    const minCheckout = this.minCheckOutDate();
-    
-    console.log('Check-in changed to:', this.checkInDate);
-    console.log('Minimum checkout should be:', minCheckout);
-    console.log('Current checkout:', this.checkOutDate);
-    
-    // If check-out is before or equal to check-in, reset it
-    if (this.checkOutDate && this.checkOutDate <= this.checkInDate) {
-      console.log('Clearing checkout: checkout <= checkin');
+    if (!this.checkInDate()) {
       this.checkOutDate = '';
+      return;
     }
-    // Also reset if checkout is before the computed minimum
-    else if (this.checkOutDate && this.checkOutDate < minCheckout) {
-      console.log('Clearing checkout: checkout < minimum');
+    
+    const checkInDate = new Date(this.checkInDate());
+    const minCheckout = new Date(checkInDate);
+    minCheckout.setDate(minCheckout.getDate() + 1);
+    const minCheckoutStr = minCheckout.toISOString().split('T')[0];
+    
+    if (this.checkOutDate && this.checkOutDate <= this.checkInDate()) {
       this.checkOutDate = '';
     }
   }
 
   async bookHotel() {
-    if (!this.checkInDate || !this.checkOutDate) {
+    if (!this.checkInDate() || !this.checkOutDate) {
       this.error.set('Please select check-in and check-out dates');
       return;
     }
 
-    const checkIn = new Date(this.checkInDate + 'T00:00:00');
+    const checkIn = new Date(this.checkInDate() + 'T00:00:00');
     const checkOut = new Date(this.checkOutDate + 'T00:00:00');
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -230,7 +237,7 @@ export class HotelDetailComponent implements OnInit {
 
     const bookingData = {
       hotelId: this.hotel()!.id,
-      checkInDate: this.checkInDate,
+      checkInDate: this.checkInDate(),
       checkOutDate: this.checkOutDate,
       numberOfGuests: this.numberOfGuests,
       guestName: this.guestName,
@@ -380,9 +387,9 @@ export class HotelDetailComponent implements OnInit {
   }
 
   calculateNights(): number {
-    if (!this.checkInDate || !this.checkOutDate) return 0;
+    if (!this.checkInDate() || !this.checkOutDate) return 0;
     
-    const checkIn = new Date(this.checkInDate);
+    const checkIn = new Date(this.checkInDate());
     const checkOut = new Date(this.checkOutDate);
     const diffTime = checkOut.getTime() - checkIn.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
