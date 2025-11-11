@@ -56,7 +56,7 @@ export class ProfileComponent implements OnInit {
     }
     
     try {
-      const transactions = await this.http.get<PointsTransaction[]>('https://localhost:5001/api/loyalty/transactions').toPromise();
+      const transactions = await this.http.get<PointsTransaction[]>('https://localhost:5001/api/loyalty/history').toPromise();
       if (transactions) this.transactions.set(transactions);
     } catch (err) {
       console.error('Failed to load transactions:', err);
