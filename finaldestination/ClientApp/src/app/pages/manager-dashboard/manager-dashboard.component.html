@@ -148,11 +148,13 @@
 
     @for (hotel of hotels(); track hotel.id) {
       <div class="hotel-card">
-        <div class="hotel-card-header">
-          <div>
-            <h3>{{ hotel.name }}</h3>
-            <p class="hotel-id">ID: #{{ hotel.id }}</p>
+        @if (hotel.imageUrl) {
+          <div class="hotel-card-image">
+            <img [src]="hotel.imageUrl" [alt]="hotel.name">
           </div>
+        }
+        <div class="hotel-card-header">
+          <h3>{{ hotel.name }}</h3>
           <span class="rating">
             <i class="fas fa-star"></i> {{ hotel.rating.toFixed(1) }}
           </span>

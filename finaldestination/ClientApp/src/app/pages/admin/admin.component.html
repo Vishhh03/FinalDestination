@@ -57,6 +57,11 @@
       <div class="hotels-grid">
         @for (hotel of hotels(); track hotel.id) {
           <div class="hotel-card">
+            @if (hotel.imageUrl) {
+              <div class="hotel-card-image">
+                <img [src]="hotel.imageUrl" [alt]="hotel.name">
+              </div>
+            }
             <div class="hotel-card-header">
               <h3>{{ hotel.name }}</h3>
               <div class="hotel-actions">
