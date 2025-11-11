@@ -153,8 +153,10 @@
               <div class="transaction-points">
                 @if (transaction.pointsEarned > 0) {
                   <span class="earned">+{{ transaction.pointsEarned }} pts</span>
-                } @else {
+                } @else if (transaction.pointsRedeemed > 0) {
                   <span class="redeemed">-{{ transaction.pointsRedeemed }} pts</span>
+                } @else {
+                  <span class="redeemed">{{ transaction.pointsEarned }} pts</span>
                 }
               </div>
             </div>

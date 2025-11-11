@@ -30,6 +30,11 @@
   margin: 0;
 }
 
+.dashboard-header .btn-primary {
+  padding: 1.25rem 2.5rem;
+  font-size: 1.25rem;
+}
+
 .hotel-form-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);

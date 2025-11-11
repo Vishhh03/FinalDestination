@@ -150,10 +150,11 @@
 }
 
 .btn-primary, .btn-cancel {
-  padding: 0.75rem 1.5rem;
+  padding: 1rem 2rem;
   border: none;
   border-radius: var(--radius-md);
   font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
   transition: all var(--transition-base);
   display: inline-flex;
@@ -229,10 +230,40 @@
   background: var(--bg-elevated);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .btn-secondary:hover:not(:disabled) {
   background: var(--bg-tertiary);
+}
+
+.modal-footer .btn-primary {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+}
+
+.form-control.error {
+  border-color: var(--accent-red);
+  animation: shake 0.3s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.alert.pulse {
+  animation: pulse 0.5s;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
 }
 
 @media (max-width: 768px) {

@@ -33,6 +33,7 @@ export class ProfileComponent implements OnInit {
   
   editName = '';
   editContactNumber = '';
+  Math = Math;
 
   readonly auth = inject(AuthService);
   private readonly http = inject(HttpClient);

@@ -42,4 +42,8 @@ export class HotelService {
     async delete(id: number): Promise<any> {
         return await this.http.delete(`${this.apiUrl}/${id}`).toPromise();
     }
+
+    clearCache(): void {
+        // No cache to clear - method exists for compatibility
+    }
 }

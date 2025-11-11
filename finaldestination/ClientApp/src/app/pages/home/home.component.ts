@@ -9,7 +9,7 @@ import { Hotel } from '../../models/hotel.model';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NavbarComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, RouterLink],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
