@@ -63,7 +63,7 @@
 
 .search-field {
   flex: 1;
-  min-width: 200px;
+  min-width: 180px;
   position: relative;
   display: flex;
   align-items: center;
