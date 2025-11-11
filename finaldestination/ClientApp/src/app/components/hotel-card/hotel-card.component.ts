@@ -22,7 +22,14 @@ export class HotelCardComponent {
   }
 
   onImageError(event: any): void {
-    event.target.src = 'assets/placeholder-hotel.jpg';
+    event.target.style.display = 'none';
+    const placeholder = event.target.parentElement.querySelector('.placeholder-image');
+    if (!placeholder) {
+      const div = document.createElement('div');
+      div.className = 'placeholder-image';
+      div.innerHTML = '<i class="fas fa-hotel"></i><p>No Image</p>';
+      event.target.parentElement.appendChild(div);
+    }
   }
 
   onEdit(): void {
