@@ -150,7 +150,7 @@
       <div class="hotel-card">
         @if (hotel.imageUrl) {
           <div class="hotel-card-image">
-            <img [src]="hotel.imageUrl" [alt]="hotel.name">
+            <img [src]="getImageUrl(hotel.imageUrl)" [alt]="hotel.name">
           </div>
         }
         <div class="hotel-card-header">
