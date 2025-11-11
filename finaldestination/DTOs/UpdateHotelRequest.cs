@@ -29,9 +29,6 @@ public class UpdateHotelRequest
     [Range(0, 1000, ErrorMessage = "Available rooms must be between 0 and 1000")]
     public int AvailableRooms { get; set; }
 
-    [Range(0.0, 5.0, ErrorMessage = "Rating must be between 0.0 and 5.0")]
-    public decimal Rating { get; set; }
-
     [Range(1, int.MaxValue, ErrorMessage = "Manager ID must be a positive number")]
     public int? ManagerId { get; set; }
 

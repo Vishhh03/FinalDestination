@@ -211,17 +211,21 @@ export class ManagerDashboardComponent implements OnInit {
       // Get current user ID for manager assignment
       const currentUserId = this.auth.currentUser()?.id;
       
-      const hotelData = {
+      const hotelData: any = {
         name: this.name,
         address: this.address,
         city: this.city,
         pricePerNight: this.pricePerNight,
         availableRooms: this.availableRooms,
-        rating: 0, // Always 0, will be calculated from reviews
         imageUrl: finalImageUrl,
         images: this.isEditing() && this.selectedHotel() ? this.selectedHotel()!.images : null,
         managerId: this.isEditing() && this.selectedHotel() ? this.selectedHotel()!.managerId : currentUserId
       };
+
+      // Only include rating for create, not update
+      if (!this.isEditing()) {
+        hotelData.rating = 0;
+      }
 
       if (this.isEditing() && this.selectedHotel()) {
         await this.hotelService.update(this.selectedHotel()!.id, hotelData);
