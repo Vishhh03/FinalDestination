@@ -29,7 +29,7 @@
   background-position: center;
   opacity: 0;
   transition: opacity 1.5s ease-in-out;
-  filter: brightness(0.7);
+  filter: brightness(0.85);
 }
 
 .hero-slide.active {
@@ -48,7 +48,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(10, 10, 10, 0.7) 0%, rgba(20, 20, 20, 0.6) 50%, rgba(102, 126, 234, 0.3) 100%);
+  background: linear-gradient(135deg, rgba(10, 10, 10, 0.5) 0%, rgba(20, 20, 20, 0.4) 50%, rgba(102, 126, 234, 0.25) 100%);
 }
 
 .slider-control {
@@ -138,16 +138,14 @@
   border-radius: 20px;
   padding: 1.75rem;
   box-shadow: var(--shadow-xl);
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
   gap: 1rem;
   align-items: center;
-  flex-wrap: wrap;
   border: 1px solid var(--border-color);
 }
 
 .search-field {
-  flex: 1;
-  min-width: 200px;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -181,7 +179,7 @@
 }
 
 .btn-search {
-  padding: 1rem 2.5rem;
+  padding: 1rem 2rem;
   background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   color: var(--text-primary);
   border: none;
@@ -192,6 +190,8 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  white-space: nowrap;
+  height: fit-content;
 }
 
 .btn-search:hover {
@@ -425,8 +425,7 @@
 @media (max-width: 768px) {
   .hero h1 { font-size: 2.75rem; }
   .hero p { font-size: 1.125rem; }
-  .search-box { flex-direction: column; }
-  .search-field { width: 100%; }
+  .search-box { grid-template-columns: 1fr; }
   .btn-search { width: 100%; justify-content: center; }
   .hotels-grid { grid-template-columns: 1fr; }
 }
