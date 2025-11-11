@@ -7,6 +7,7 @@ using FinalDestinationAPI.DTOs;
 using FinalDestinationAPI.Interfaces;
 using FinalDestinationAPI.Services;
 using FinalDestinationAPI.Extensions;
+using FinalDestinationAPI.Helpers;
 using System.Security.Claims;
 
 namespace FinalDestinationAPI.Controllers;
@@ -136,10 +137,13 @@ public class BookingsController : ControllerBase
         // Get hotel (validation already confirmed it exists)
         var hotel = await _context.Hotels.FindAsync(request.HotelId);
 
-        // Calculate total price
+        // Calculate total price (prices stored in INR)
         var nights = (request.CheckOutDate - request.CheckInDate).Days;
-        var baseAmount = hotel.PricePerNight * nights;
+        var baseAmount = hotel.PricePerNight * nights; // Already in INR
         var totalAmount = baseAmount;
+        
+        _logger.LogInformation("Booking calculation: {Nights} nights × {PricePerNight} = {BaseAmount}",
+            nights, CurrencyHelper.FormatInr(hotel.PricePerNight), CurrencyHelper.FormatInr(baseAmount));
         
         int? pointsRedeemed = null;
         decimal? discountAmount = null;
@@ -182,8 +186,8 @@ public class BookingsController : ControllerBase
             TotalAmount = totalAmount,
             LoyaltyPointsRedeemed = pointsRedeemed,
             LoyaltyDiscountAmount = discountAmount,
-            Status = BookingStatus.Confirmed, // Will be updated after payment
-            CreatedAt = DateTime.UtcNow
+            Status = BookingStatus.Confirmed,
+            CreatedAt = TimeZoneHelper.GetIstNow() // Use IST time
         };
 
         _context.Bookings.Add(booking);
@@ -453,7 +457,7 @@ public class BookingsController : ControllerBase
             LoyaltyPointsRedeemed = booking.LoyaltyPointsRedeemed,
             LoyaltyDiscountAmount = booking.LoyaltyDiscountAmount,
             Status = booking.Status,
-            CreatedAt = booking.CreatedAt,
+            CreatedAt = TimeZoneHelper.ToIst(booking.CreatedAt), // Convert to IST for display
             PaymentRequired = !hasPayment && booking.Status != BookingStatus.Cancelled,
             PaymentId = payment?.Id,
             LoyaltyPointsEarned = loyaltyPointsEarned
