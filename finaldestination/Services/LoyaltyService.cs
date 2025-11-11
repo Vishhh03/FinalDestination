@@ -3,25 +3,28 @@ using FinalDestinationAPI.Data;
 using FinalDestinationAPI.DTOs;
 using FinalDestinationAPI.Interfaces;
 using FinalDestinationAPI.Models;
+using FinalDestinationAPI.Repositories;
 
 namespace FinalDestinationAPI.Services;
 
 public class LoyaltyService : ILoyaltyService
 {
-    private readonly HotelContext _context;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<LoyaltyService> _logger;
 
-    public LoyaltyService(HotelContext context, ILogger<LoyaltyService> logger)
+    public LoyaltyService(IUnitOfWork unitOfWork, ILogger<LoyaltyService> logger)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
     public async Task<LoyaltyAccountResponse?> GetLoyaltyAccountAsync(int userId)
     {
-        var loyaltyAccount = await _context.LoyaltyAccounts
-            .Include(la => la.Transactions.OrderByDescending(t => t.CreatedAt).Take(10))
-            .FirstOrDefaultAsync(la => la.UserId == userId);
+        var loyaltyAccount = await _unitOfWork.LoyaltyAccounts.GetByUserIdAsync(userId);
+        if (loyaltyAccount != null)
+        {
+            var transactions = (await _unitOfWork.PointsTransactions.GetTransactionsByUserAsync(userId)).Take(10).ToList();
+        }
 
         if (loyaltyAccount == null)
         {
@@ -49,15 +52,14 @@ public class LoyaltyService : ILoyaltyService
     public async Task<LoyaltyAccountResponse> CreateLoyaltyAccountAsync(int userId)
     {
         // Check if user exists
-        var user = await _context.Users.FindAsync(userId);
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
         if (user == null)
         {
             throw new ArgumentException("User not found", nameof(userId));
         }
 
         // Check if loyalty account already exists
-        var existingAccount = await _context.LoyaltyAccounts
-            .FirstOrDefaultAsync(la => la.UserId == userId);
+        var existingAccount = await _unitOfWork.LoyaltyAccounts.GetByUserIdAsync(userId);
         
         if (existingAccount != null)
         {
@@ -72,8 +74,8 @@ public class LoyaltyService : ILoyaltyService
             LastUpdated = DateTime.UtcNow
         };
 
-        _context.LoyaltyAccounts.Add(loyaltyAccount);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.LoyaltyAccounts.AddAsync(loyaltyAccount);
+        await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Created loyalty account for user {UserId}", userId);
 
@@ -91,25 +93,20 @@ public class LoyaltyService : ILoyaltyService
     public async Task<LoyaltyAccountResponse> AwardPointsAsync(int userId, int bookingId, decimal bookingAmount)
     {
         // Get or create loyalty account
-        var loyaltyAccount = await _context.LoyaltyAccounts
-            .Include(la => la.Transactions)
-            .FirstOrDefaultAsync(la => la.UserId == userId);
+        var loyaltyAccount = await _unitOfWork.LoyaltyAccounts.GetByUserIdAsync(userId);
 
         if (loyaltyAccount == null)
         {
             // Create loyalty account if it doesn't exist
             await CreateLoyaltyAccountAsync(userId);
-            loyaltyAccount = await _context.LoyaltyAccounts
-                .Include(la => la.Transactions)
-                .FirstOrDefaultAsync(la => la.UserId == userId);
+            loyaltyAccount = await _unitOfWork.LoyaltyAccounts.GetByUserIdAsync(userId);
         }
 
         // Calculate points (10% of booking amount, rounded)
         var pointsToAward = await CalculatePointsAsync(bookingAmount);
 
         // Check if points have already been awarded for this booking
-        var existingTransaction = loyaltyAccount!.Transactions
-            .FirstOrDefault(t => t.BookingId == bookingId);
+        var existingTransaction = await _unitOfWork.PointsTransactions.GetEarnedPointsTransactionByBookingAsync(bookingId);
 
         if (existingTransaction != null)
         {
@@ -132,8 +129,9 @@ public class LoyaltyService : ILoyaltyService
         loyaltyAccount.TotalPointsEarned += pointsToAward;
         loyaltyAccount.LastUpdated = DateTime.UtcNow;
 
-        _context.PointsTransactions.Add(transaction);
-        await _context.SaveChangesAsync();
+        _unitOfWork.LoyaltyAccounts.Update(loyaltyAccount);
+        await _unitOfWork.PointsTransactions.AddAsync(transaction);
+        await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Awarded {Points} points to user {UserId} for booking {BookingId}", 
             pointsToAward, userId, bookingId);
@@ -143,17 +141,14 @@ public class LoyaltyService : ILoyaltyService
 
     public async Task<List<PointsTransactionResponse>> GetPointsHistoryAsync(int userId, int pageNumber = 1, int pageSize = 10)
     {
-        var loyaltyAccount = await _context.LoyaltyAccounts
-            .FirstOrDefaultAsync(la => la.UserId == userId);
+        var loyaltyAccount = await _unitOfWork.LoyaltyAccounts.GetByUserIdAsync(userId);
 
         if (loyaltyAccount == null)
         {
             return new List<PointsTransactionResponse>();
         }
 
-        var transactions = await _context.PointsTransactions
-            .Where(t => t.LoyaltyAccountId == loyaltyAccount.Id)
-            .OrderByDescending(t => t.CreatedAt)
+        var transactions = (await _unitOfWork.PointsTransactions.GetTransactionsByUserAsync(userId))
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .Select(t => new PointsTransactionResponse
@@ -164,7 +159,7 @@ public class LoyaltyService : ILoyaltyService
                 CreatedAt = t.CreatedAt,
                 BookingId = t.BookingId
             })
-            .ToListAsync();
+            .ToList();
 
         return transactions;
     }
@@ -178,8 +173,7 @@ public class LoyaltyService : ILoyaltyService
 
     public async Task<bool> HasLoyaltyAccountAsync(int userId)
     {
-        return await _context.LoyaltyAccounts
-            .AnyAsync(la => la.UserId == userId);
+        return await _unitOfWork.LoyaltyAccounts.AnyAsync(la => la.UserId == userId);
     }
 
     public async Task<RedeemPointsResponse> RedeemPointsAsync(int userId, int pointsToRedeem)
@@ -190,8 +184,7 @@ public class LoyaltyService : ILoyaltyService
         }
 
         // Get loyalty account
-        var loyaltyAccount = await _context.LoyaltyAccounts
-            .FirstOrDefaultAsync(la => la.UserId == userId);
+        var loyaltyAccount = await _unitOfWork.LoyaltyAccounts.GetByUserIdAsync(userId);
 
         if (loyaltyAccount == null)
         {
@@ -212,6 +205,8 @@ public class LoyaltyService : ILoyaltyService
         loyaltyAccount.PointsBalance -= pointsToRedeem;
         loyaltyAccount.LastUpdated = DateTime.UtcNow;
 
+        _unitOfWork.LoyaltyAccounts.Update(loyaltyAccount);
+
         // Create redemption transaction (negative points)
         var transaction = new PointsTransaction
         {
@@ -222,8 +217,8 @@ public class LoyaltyService : ILoyaltyService
             CreatedAt = DateTime.UtcNow
         };
 
-        _context.PointsTransactions.Add(transaction);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.PointsTransactions.AddAsync(transaction);
+        await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("User {UserId} redeemed {Points} points for ${Discount:F2} discount",
             userId, pointsToRedeem, discountAmount);
@@ -252,8 +247,7 @@ public class LoyaltyService : ILoyaltyService
             throw new ArgumentException("Points to refund must be greater than zero", nameof(pointsToRefund));
         }
 
-        var loyaltyAccount = await _context.LoyaltyAccounts
-            .FirstOrDefaultAsync(la => la.UserId == userId);
+        var loyaltyAccount = await _unitOfWork.LoyaltyAccounts.GetByUserIdAsync(userId);
 
         if (loyaltyAccount == null)
         {
@@ -263,6 +257,8 @@ public class LoyaltyService : ILoyaltyService
         // Add points back to balance
         loyaltyAccount.PointsBalance += pointsToRefund;
         loyaltyAccount.LastUpdated = DateTime.UtcNow;
+
+        _unitOfWork.LoyaltyAccounts.Update(loyaltyAccount);
 
         // Create refund transaction
         var transaction = new PointsTransaction
@@ -274,8 +270,8 @@ public class LoyaltyService : ILoyaltyService
             CreatedAt = DateTime.UtcNow
         };
 
-        _context.PointsTransactions.Add(transaction);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.PointsTransactions.AddAsync(transaction);
+        await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Refunded {Points} points to user {UserId} for cancelled booking {BookingId}",
             pointsToRefund, userId, bookingId);
@@ -283,9 +279,7 @@ public class LoyaltyService : ILoyaltyService
 
     public async Task RevokeEarnedPointsAsync(int userId, int bookingId)
     {
-        var loyaltyAccount = await _context.LoyaltyAccounts
-            .Include(la => la.Transactions)
-            .FirstOrDefaultAsync(la => la.UserId == userId);
+        var loyaltyAccount = await _unitOfWork.LoyaltyAccounts.GetByUserIdAsync(userId);
 
         if (loyaltyAccount == null)
         {
@@ -293,8 +287,7 @@ public class LoyaltyService : ILoyaltyService
         }
 
         // Find the earned points transaction for this booking
-        var earnedTransaction = loyaltyAccount.Transactions
-            .FirstOrDefault(t => t.BookingId == bookingId && t.PointsEarned > 0);
+        var earnedTransaction = await _unitOfWork.PointsTransactions.GetEarnedPointsTransactionByBookingAsync(bookingId);
 
         if (earnedTransaction == null)
         {
@@ -307,6 +300,8 @@ public class LoyaltyService : ILoyaltyService
         loyaltyAccount.PointsBalance -= pointsToRevoke;
         loyaltyAccount.LastUpdated = DateTime.UtcNow;
 
+        _unitOfWork.LoyaltyAccounts.Update(loyaltyAccount);
+
         // Create revocation transaction
         var transaction = new PointsTransaction
         {
@@ -317,8 +312,8 @@ public class LoyaltyService : ILoyaltyService
             CreatedAt = DateTime.UtcNow
         };
 
-        _context.PointsTransactions.Add(transaction);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.PointsTransactions.AddAsync(transaction);
+        await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Revoked {Points} earned points from user {UserId} for cancelled booking {BookingId}",
             pointsToRevoke, userId, bookingId);

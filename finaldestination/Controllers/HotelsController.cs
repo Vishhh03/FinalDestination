@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using FinalDestinationAPI.Data;
 using FinalDestinationAPI.DTOs;
 using FinalDestinationAPI.Interfaces;
 using FinalDestinationAPI.Models;
@@ -12,20 +10,12 @@ namespace FinalDestinationAPI.Controllers;
 [Route("api/[controller]")]
 public class HotelsController : ControllerBase
 {
-    private readonly HotelContext _context;
-    private readonly ICacheService _cache;
+    private readonly IHotelService _hotelService;
     private readonly ILogger<HotelsController> _logger;
 
-    // Cache keys and expiration settings
-    private const string HOTELS_CACHE_KEY = "hotels:all";
-    private const string HOTEL_CACHE_KEY_PREFIX = "hotel:";
-    private const string SEARCH_CACHE_KEY_PREFIX = "hotels:search:";
-    private static readonly TimeSpan CacheExpiration = TimeSpan.FromMinutes(10);
-
-    public HotelsController(HotelContext context, ICacheService cache, ILogger<HotelsController> logger)
+    public HotelsController(IHotelService hotelService, ILogger<HotelsController> logger)
     {
-        _context = context;
-        _cache = cache;
+        _hotelService = hotelService;
         _logger = logger;
     }
 
@@ -36,25 +26,7 @@ public class HotelsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Hotel>>> GetHotels()
     {
-        _logger.LogInformation("Retrieving all hotels");
-
-        // Try to get from cache first
-        var cachedHotels = await _cache.GetAsync<List<Hotel>>(HOTELS_CACHE_KEY);
-        if (cachedHotels != null)
-        {
-            _logger.LogInformation("Hotels retrieved from cache");
-            return Ok(cachedHotels);
-        }
-
-        // If not in cache, get from database
-        var hotels = await _context.Hotels
-            .Include(h => h.Manager)
-            .ToListAsync();
-
-        // Cache the results
-        await _cache.SetAsync(HOTELS_CACHE_KEY, hotels, CacheExpiration);
-        _logger.LogInformation("Hotels retrieved from database and cached");
-
+        var hotels = await _hotelService.GetAllHotelsAsync();
         return Ok(hotels);
     }
 
@@ -71,32 +43,12 @@ public class HotelsController : ControllerBase
             return BadRequest("Hotel ID must be a positive number.");
         }
 
-        _logger.LogInformation("Retrieving hotel with ID: {HotelId}", id);
-
-        var cacheKey = $"{HOTEL_CACHE_KEY_PREFIX}{id}";
+        var hotel = await _hotelService.GetHotelByIdAsync(id);
         
-        // Try to get from cache first
-        var cachedHotel = await _cache.GetAsync<Hotel>(cacheKey);
-        if (cachedHotel != null)
-        {
-            _logger.LogInformation("Hotel {HotelId} retrieved from cache", id);
-            return Ok(cachedHotel);
-        }
-
-        // If not in cache, get from database
-        var hotel = await _context.Hotels
-            .Include(h => h.Manager)
-            .FirstOrDefaultAsync(h => h.Id == id);
-
         if (hotel == null)
         {
-            _logger.LogWarning("Hotel with ID {HotelId} not found", id);
             return NotFound($"Hotel with ID {id} not found.");
         }
-
-        // Cache the result
-        await _cache.SetAsync(cacheKey, hotel, CacheExpiration);
-        _logger.LogInformation("Hotel {HotelId} retrieved from database and cached", id);
 
         return Ok(hotel);
     }
@@ -109,24 +61,13 @@ public class HotelsController : ControllerBase
     [Authorize(Roles = "HotelManager,Admin")]
     public async Task<ActionResult<IEnumerable<Hotel>>> GetMyHotels()
     {
-        // Get user ID from JWT token claims
         var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
         {
-            _logger.LogWarning("Unable to extract user ID from token");
             return Unauthorized("Invalid token");
         }
 
-        _logger.LogInformation("Retrieving hotels for manager with ID: {UserId}", userId);
-
-        // Get hotels where the current user is the manager
-        var hotels = await _context.Hotels
-            .Include(h => h.Manager)
-            .Where(h => h.ManagerId == userId)
-            .ToListAsync();
-
-        _logger.LogInformation("Found {Count} hotels for manager {UserId}", hotels.Count, userId);
-
+        var hotels = await _hotelService.GetMyHotelsAsync(userId);
         return Ok(hotels);
     }
 
@@ -143,58 +84,17 @@ public class HotelsController : ControllerBase
         [FromQuery] decimal? maxPrice = null,
         [FromQuery] decimal? minRating = null)
     {
-        // Validate maxPrice if provided
         if (maxPrice.HasValue && maxPrice.Value < 0)
         {
             return BadRequest("Maximum price cannot be negative.");
         }
 
-        // Validate minRating if provided
         if (minRating.HasValue && (minRating.Value < 0 || minRating.Value > 5))
         {
             return BadRequest("Minimum rating must be between 0 and 5.");
         }
 
-        _logger.LogInformation("Searching hotels with city: {City}, maxPrice: {MaxPrice}, minRating: {MinRating}", 
-            city, maxPrice, minRating);
-
-        // Create cache key based on search parameters
-        var cacheKey = $"{SEARCH_CACHE_KEY_PREFIX}{city?.ToLower() ?? "all"}:{maxPrice?.ToString() ?? "any"}:{minRating?.ToString() ?? "any"}";
-        
-        // Try to get from cache first
-        var cachedResults = await _cache.GetAsync<List<Hotel>>(cacheKey);
-        if (cachedResults != null)
-        {
-            _logger.LogInformation("Search results retrieved from cache");
-            return Ok(cachedResults);
-        }
-
-        // If not in cache, search in database
-        var query = _context.Hotels
-            .Include(h => h.Manager)
-            .AsQueryable();
-
-        if (!string.IsNullOrEmpty(city))
-        {
-            query = query.Where(h => h.City.ToLower().Contains(city.ToLower()));
-        }
-
-        if (maxPrice.HasValue)
-        {
-            query = query.Where(h => h.PricePerNight <= maxPrice.Value);
-        }
-
-        if (minRating.HasValue)
-        {
-            query = query.Where(h => h.Rating >= minRating.Value);
-        }
-
-        var results = await query.ToListAsync();
-
-        // Cache the search results
-        await _cache.SetAsync(cacheKey, results, CacheExpiration);
-        _logger.LogInformation("Search completed, {Count} hotels found and cached", results.Count);
-
+        var results = await _hotelService.SearchHotelsAsync(city, maxPrice, minRating);
         return Ok(results);
     }
 
@@ -209,49 +109,18 @@ public class HotelsController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            _logger.LogWarning("Invalid model state for hotel creation: {Errors}", 
-                string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             return BadRequest(ModelState);
         }
 
-        _logger.LogInformation("Creating new hotel: {HotelName} in {City}", request.Name, request.City);
-
-        // Check if manager exists if ManagerId is provided
-        if (request.ManagerId.HasValue)
+        try
         {
-            var managerExists = await _context.Users
-                .AnyAsync(u => u.Id == request.ManagerId.Value && u.Role == UserRole.HotelManager);
-            
-            if (!managerExists)
-            {
-                return BadRequest($"Manager with ID {request.ManagerId} not found or is not a HotelManager.");
-            }
+            var hotel = await _hotelService.CreateHotelAsync(request);
+            return CreatedAtAction(nameof(GetHotel), new { id = hotel.Id }, hotel);
         }
-
-        // Create hotel entity from request
-        var hotel = new Hotel
+        catch (InvalidOperationException ex)
         {
-            Name = request.Name.Trim(),
-            Address = request.Address.Trim(),
-            City = request.City.Trim(),
-            PricePerNight = request.PricePerNight,
-            AvailableRooms = request.AvailableRooms,
-            Rating = request.Rating,
-            ManagerId = request.ManagerId,
-            ImageUrl = request.ImageUrl?.Trim(),
-            Images = request.Images?.Trim(),
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _context.Hotels.Add(hotel);
-        await _context.SaveChangesAsync();
-
-        // Invalidate relevant caches
-        await InvalidateHotelCaches();
-
-        _logger.LogInformation("Hotel created successfully with ID: {HotelId}", hotel.Id);
-
-        return CreatedAtAction(nameof(GetHotel), new { id = hotel.Id }, hotel);
+            return BadRequest(ex.Message);
+        }
     }
 
     /// <summary>
@@ -271,82 +140,34 @@ public class HotelsController : ControllerBase
 
         if (!ModelState.IsValid)
         {
-            _logger.LogWarning("Invalid model state for hotel update: {Errors}", 
-                string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             return BadRequest(ModelState);
         }
 
-        _logger.LogInformation("Updating hotel with ID: {HotelId}", id);
-
-        // Check if hotel exists
-        var existingHotel = await _context.Hotels.FindAsync(id);
-        if (existingHotel == null)
-        {
-            _logger.LogWarning("Hotel with ID {HotelId} not found for update", id);
-            return NotFound($"Hotel with ID {id} not found.");
-        }
-
-        // Get current user role and ID
-        var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+        var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
         var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
         
-        // If user is HotelManager, verify they own this hotel
-        if (userRole == "HotelManager")
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
         {
-            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
-            {
-                return Unauthorized("Invalid token");
-            }
-            
-            if (existingHotel.ManagerId != userId)
-            {
-                _logger.LogWarning("HotelManager {UserId} attempted to update hotel {HotelId} they don't own", userId, id);
-                return Forbid("You can only update hotels you manage");
-            }
+            return Unauthorized("Invalid token");
         }
-
-        // Check if manager exists if ManagerId is provided
-        if (request.ManagerId.HasValue)
-        {
-            var managerExists = await _context.Users
-                .AnyAsync(u => u.Id == request.ManagerId.Value && u.Role == UserRole.HotelManager);
-            
-            if (!managerExists)
-            {
-                return BadRequest($"Manager with ID {request.ManagerId} not found or is not a HotelManager.");
-            }
-        }
-
-        // Update hotel properties
-        existingHotel.Name = request.Name.Trim();
-        existingHotel.Address = request.Address.Trim();
-        existingHotel.City = request.City.Trim();
-        existingHotel.PricePerNight = request.PricePerNight;
-        existingHotel.AvailableRooms = request.AvailableRooms;
-        existingHotel.ManagerId = request.ManagerId;
-        existingHotel.ImageUrl = request.ImageUrl?.Trim();
-        existingHotel.Images = request.Images?.Trim();
 
         try
         {
-            await _context.SaveChangesAsync();
-            
-            // Invalidate relevant caches
-            await InvalidateHotelCaches();
-            await _cache.RemoveAsync($"{HOTEL_CACHE_KEY_PREFIX}{id}");
-
-            _logger.LogInformation("Hotel {HotelId} updated successfully", id);
+            await _hotelService.UpdateHotelAsync(id, request, userId, userRole);
+            return NoContent();
         }
-        catch (DbUpdateConcurrencyException)
+        catch (KeyNotFoundException ex)
         {
-            if (!await HotelExistsAsync(id))
-            {
-                return NotFound($"Hotel with ID {id} not found.");
-            }
-            throw;
+            return NotFound(ex.Message);
         }
-
-        return NoContent();
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     /// <summary>
@@ -363,75 +184,30 @@ public class HotelsController : ControllerBase
             return BadRequest("Hotel ID must be a positive number.");
         }
 
-        _logger.LogInformation("Attempting to delete hotel with ID: {HotelId}", id);
-
-        var hotel = await _context.Hotels
-            .Include(h => h.Reviews)
-            .Include(h => h.Bookings)
-            .FirstOrDefaultAsync(h => h.Id == id);
-            
-        if (hotel == null)
-        {
-            _logger.LogWarning("Hotel with ID {HotelId} not found for deletion", id);
-            return NotFound($"Hotel with ID {id} not found.");
-        }
-
-        // Get current user ID and role
         var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-        var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+        var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
         
-        // If user is HotelManager, verify they own this hotel
-        if (userRole == "HotelManager")
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
         {
-            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
-            {
-                return Unauthorized("Invalid token");
-            }
-            
-            if (hotel.ManagerId != userId)
-            {
-                _logger.LogWarning("HotelManager {UserId} attempted to delete hotel {HotelId} they don't own", userId, id);
-                return Forbid("You can only delete hotels you manage");
-            }
-        }
-
-        // Check if hotel has active bookings
-        var hasActiveBookings = hotel.Bookings.Any(b => b.Status == BookingStatus.Confirmed);
-
-        if (hasActiveBookings)
-        {
-            _logger.LogWarning("Cannot delete hotel {HotelId} - has active bookings", id);
-            return BadRequest("Cannot delete hotel with active bookings. Please cancel all bookings first.");
+            return Unauthorized("Invalid token");
         }
 
         try
         {
-            // Delete related reviews first
-            if (hotel.Reviews.Any())
-            {
-                _context.Reviews.RemoveRange(hotel.Reviews);
-                _logger.LogInformation("Deleted {Count} reviews for hotel {HotelId}", hotel.Reviews.Count, id);
-            }
-
-            // Delete related bookings (only completed/cancelled ones)
-            var bookingsToDelete = hotel.Bookings.Where(b => b.Status != BookingStatus.Confirmed).ToList();
-            if (bookingsToDelete.Any())
-            {
-                _context.Bookings.RemoveRange(bookingsToDelete);
-                _logger.LogInformation("Deleted {Count} bookings for hotel {HotelId}", bookingsToDelete.Count, id);
-            }
-
-            // Finally delete the hotel
-            _context.Hotels.Remove(hotel);
-            await _context.SaveChangesAsync();
-
-            // Invalidate relevant caches
-            await InvalidateHotelCaches();
-            await _cache.RemoveAsync($"{HOTEL_CACHE_KEY_PREFIX}{id}");
-
-            _logger.LogInformation("Hotel {HotelId} deleted successfully", id);
-
+            await _hotelService.DeleteHotelAsync(id, userId, userRole);
             return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
         }
         catch (Exception ex)
         {
@@ -440,25 +216,7 @@ public class HotelsController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Invalidates all hotel-related caches
-    /// </summary>
-    private async Task InvalidateHotelCaches()
-    {
-        await _cache.RemoveAsync(HOTELS_CACHE_KEY);
-        await _cache.RemoveByPatternAsync($"{SEARCH_CACHE_KEY_PREFIX}*");
-        _logger.LogInformation("Hotel caches invalidated");
-    }
 
-    /// <summary>
-    /// Checks if a hotel exists asynchronously
-    /// </summary>
-    /// <param name="id">Hotel ID</param>
-    /// <returns>True if hotel exists, false otherwise</returns>
-    private async Task<bool> HotelExistsAsync(int id)
-    {
-        return await _context.Hotels.AnyAsync(e => e.Id == id);
-    }
 }
 
 

@@ -52,6 +52,9 @@ builder.Services.AddMemoryCache();
 // AutoMapper for object mapping
 builder.Services.AddAutoMapper(typeof(Program));
 
+// Register Unit of Work and Repositories
+builder.Services.AddScoped<FinalDestinationAPI.Repositories.IUnitOfWork, FinalDestinationAPI.Repositories.UnitOfWork>();
+
 // Register application services
 builder.Services.AddScoped<FinalDestinationAPI.Interfaces.IJwtService, FinalDestinationAPI.Services.JwtService>();
 builder.Services.AddScoped<FinalDestinationAPI.Interfaces.ICacheService, FinalDestinationAPI.Services.CacheService>();
@@ -59,6 +62,9 @@ builder.Services.AddScoped<FinalDestinationAPI.Interfaces.IPaymentService, Final
 builder.Services.AddScoped<FinalDestinationAPI.Interfaces.IReviewService, FinalDestinationAPI.Services.ReviewService>();
 builder.Services.AddScoped<FinalDestinationAPI.Interfaces.ILoyaltyService, FinalDestinationAPI.Services.LoyaltyService>();
 builder.Services.AddScoped<FinalDestinationAPI.Services.IValidationService, FinalDestinationAPI.Services.ValidationService>();
+builder.Services.AddScoped<FinalDestinationAPI.Interfaces.IAuthService, FinalDestinationAPI.Services.AuthService>();
+builder.Services.AddScoped<FinalDestinationAPI.Interfaces.IHotelService, FinalDestinationAPI.Services.HotelService>();
+builder.Services.AddScoped<FinalDestinationAPI.Interfaces.IBookingService, FinalDestinationAPI.Services.BookingService>();
 
 // Swagger Configuration with JWT Authentication
 builder.Services.AddEndpointsApiExplorer();
