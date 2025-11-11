@@ -224,7 +224,7 @@ public class BookingsController : ControllerBase
         var validationResult = await _validationService.ValidatePaymentRequestAsync(request, currentUserId.Value);
         if (!validationResult.IsValid)
         {
-            return this.ValidationError(validationResult);
+            return BadRequest(new { message = validationResult.Errors.FirstOrDefault() ?? "Payment validation failed" });
         }
 
         // Get booking (validation already confirmed it exists and user has access)

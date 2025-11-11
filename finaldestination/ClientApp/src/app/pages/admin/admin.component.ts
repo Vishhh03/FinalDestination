@@ -330,6 +330,7 @@ export class AdminComponent implements OnInit {
         await this.hotelService.create(hotelData);
         this.success.set('Hotel created successfully');
       }
+      this.hotelService.clearCache();
       this.showHotelForm.set(false);
       await this.loadHotels();
       setTimeout(() => this.success.set(''), 3000);
@@ -348,6 +349,7 @@ export class AdminComponent implements OnInit {
     this.loading.set(true);
     try {
       await this.hotelService.delete(hotel.id);
+      this.hotelService.clearCache();
       this.success.set('Hotel deleted successfully');
       await this.loadHotels();
       setTimeout(() => this.success.set(''), 3000);

@@ -30,6 +30,7 @@ export class BookingsComponent implements OnInit {
     expiryMonth = '';
     expiryYear = '';
     cvv = '';
+    showError = signal(false);
 
     private readonly bookingService = inject(BookingService);
 
@@ -70,34 +71,44 @@ export class BookingsComponent implements OnInit {
         const booking = this.selectedBooking();
         if (!booking) return;
 
-        if (!this.cardNumber || !this.cardHolderName || !this.expiryMonth || !this.expiryYear || !this.cvv) {
-            this.error.set('Please fill in all payment fields');
-            return;
-        }
+        this.showError.set(false);
+        this.error.set('');
 
-        if (this.cardNumber.length !== 16) {
+        if (!this.cardNumber || this.cardNumber.length !== 16) {
             this.error.set('Card number must be 16 digits');
+            this.showError.set(true);
             return;
         }
 
+        if (!this.cardHolderName || this.cardHolderName.trim().length < 3) {
+            this.error.set('Cardholder name must be at least 3 characters');
+            this.showError.set(true);
+            return;
+        }
+
+        const month = parseInt(this.expiryMonth);
+        if (!this.expiryMonth || month < 1 || month > 12) {
+            this.error.set('Invalid expiry month');
+            this.showError.set(true);
+            return;
+        }
+
+        const year = parseInt(this.expiryYear);
         const currentYear = new Date().getFullYear() % 100;
         const currentMonth = new Date().getMonth() + 1;
-        const expYear = parseInt(this.expiryYear);
-        const expMonth = parseInt(this.expiryMonth);
-
-        if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
+        if (!this.expiryYear || year < currentYear || (year === currentYear && month < currentMonth)) {
             this.error.set('Card has expired');
+            this.showError.set(true);
+            return;
+        }
+
+        if (!this.cvv || this.cvv.length !== 3) {
+            this.error.set('CVV must be 3 digits');
+            this.showError.set(true);
             return;
         }
 
         this.processingPayment.set(true);
-        this.error.set('');
-
-        console.log('💳 Processing payment:', {
-            bookingId: booking.id,
-            amount: booking.totalAmount,
-            cardNumber: this.cardNumber.substring(0, 4) + '****' + this.cardNumber.substring(12)
-        });
 
         try {
             const result = await this.bookingService.processPayment(booking.id, {
@@ -112,10 +123,7 @@ export class BookingsComponent implements OnInit {
                 cvv: this.cvv
             });
 
-            console.log('💳 Payment result:', result);
-
-            if (result && result.status === PaymentStatus.Completed) {
-                console.log('✅ Payment successful');
+            if (result?.status === PaymentStatus.Completed) {
                 this.success.set(`Payment successful! Transaction ID: ${result.transactionId}`);
                 this.closePaymentModal();
                 setTimeout(() => {
@@ -123,12 +131,13 @@ export class BookingsComponent implements OnInit {
                     this.loadBookings();
                 }, 3000);
             } else {
-                console.error('❌ Payment failed:', result);
                 this.error.set(result?.errorMessage || 'Payment failed');
+                this.showError.set(true);
             }
         } catch (err: any) {
-            console.error('❌ Payment error:', err);
-            this.error.set(err.error?.message || err.message || 'Payment processing failed');
+            const errorMsg = err.error?.message || err.error?.title || err.message || 'Payment failed';
+            this.error.set(errorMsg);
+            this.showError.set(true);
         } finally {
             this.processingPayment.set(false);
         }
@@ -195,6 +204,35 @@ export class BookingsComponent implements OnInit {
         }
         
         return 'Unknown';
+    }
+
+    validateCardNumber(value: string) {
+        this.cardNumber = value.replace(/\D/g, '').slice(0, 16);
+    }
+
+    validateCardHolder(value: string) {
+        this.cardHolderName = value.replace(/[^a-zA-Z\s]/g, '');
+    }
+
+    validateMonth(value: string) {
+        const digits = value.replace(/\D/g, '').slice(0, 2);
+        const num = parseInt(digits);
+        this.expiryMonth = (num > 12) ? '12' : digits;
+    }
+
+    validateYear(value: string) {
+        this.expiryYear = value.replace(/\D/g, '').slice(0, 2);
+    }
+
+    validateCvv(value: string) {
+        this.cvv = value.replace(/\D/g, '').slice(0, 3);
+    }
+
+    blockNonNumeric(event: KeyboardEvent) {
+        const key = event.key;
+        if (!/^[0-9]$/.test(key) && !['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(key)) {
+            event.preventDefault();
+        }
     }
 
 }
