@@ -105,4 +105,21 @@ export class HomeComponent implements OnInit {
     this.startAutoSlide(); // Restart auto-slide after manual navigation
   }
 
+  getImageUrl(imageUrl: string): string {
+    if (!imageUrl) return '';
+    if (imageUrl.startsWith('http')) return imageUrl;
+    return `https://localhost:5001${imageUrl}`;
+  }
+
+  onImageError(event: any) {
+    event.target.style.display = 'none';
+    const placeholder = event.target.parentElement.querySelector('.placeholder-image');
+    if (!placeholder) {
+      const div = document.createElement('div');
+      div.className = 'placeholder-image';
+      div.innerHTML = '<i class="fas fa-hotel"></i>';
+      event.target.parentElement.appendChild(div);
+    }
+  }
+
 }
