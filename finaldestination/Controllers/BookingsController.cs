@@ -358,6 +358,39 @@ public class BookingsController : ControllerBase
             }
         }
 
+        // Handle loyalty points for cancellation
+        if (booking.UserId.HasValue)
+        {
+            // Refund redeemed loyalty points if any
+            if (booking.LoyaltyPointsRedeemed.HasValue && booking.LoyaltyPointsRedeemed.Value > 0)
+            {
+                try
+                {
+                    await _loyaltyService.RefundRedeemedPointsAsync(booking.UserId.Value, booking.Id, booking.LoyaltyPointsRedeemed.Value);
+                    _logger.LogInformation("Refunded {Points} redeemed loyalty points for cancelled booking {BookingId}", 
+                        booking.LoyaltyPointsRedeemed.Value, id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to refund redeemed loyalty points for booking {BookingId}", id);
+                }
+            }
+
+            // Revoke earned points if booking was paid
+            if (payment != null)
+            {
+                try
+                {
+                    await _loyaltyService.RevokeEarnedPointsAsync(booking.UserId.Value, booking.Id);
+                    _logger.LogInformation("Revoked earned loyalty points for cancelled booking {BookingId}", id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to revoke earned loyalty points for booking {BookingId}", id);
+                }
+            }
+        }
+
         // Cancel the booking
         booking.Status = BookingStatus.Cancelled;
         
