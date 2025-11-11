@@ -219,9 +219,9 @@
             <label class="toggle-label">
               <input 
                 type="checkbox" 
-                [(ngModel)]="isBookingForGuest"
+                [ngModel]="isBookingForGuest()"
+                (ngModelChange)="toggleBookingForGuest()"
                 name="isBookingForGuest"
-                (change)="toggleBookingForGuest()"
               />
               <span>Book for another guest</span>
             </label>
