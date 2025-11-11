@@ -197,9 +197,4 @@ export class BookingsComponent implements OnInit {
         return 'Unknown';
     }
 
-    updateCheckoutMinDate(booking: Booking) {
-        const checkIn = new Date(booking.checkInDate);
-        checkIn.setDate(checkIn.getDate() + 1);
-        booking.minCheckoutDate = checkIn.toISOString().split('T')[0];
-    }
 }
