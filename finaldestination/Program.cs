@@ -4,8 +4,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Reflection;
-using System.Globalization;
-using Microsoft.AspNetCore.Localization;
 using FinalDestinationAPI.Data;
 using FinalDestinationAPI.Services;
 using FinalDestinationAPI.Middleware;
@@ -47,31 +45,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
-
-// Localization Configuration
-builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
-
-builder.Services.Configure<RequestLocalizationOptions>(options =>
-{
-    var supportedCultures = new[]
-    {
-        new CultureInfo("en-US"),
-        new CultureInfo("es-ES"),
-        new CultureInfo("fr-FR"),
-        new CultureInfo("de-DE"),
-        new CultureInfo("hi-IN")
-    };
-
-    options.DefaultRequestCulture = new RequestCulture("en-US");
-    options.SupportedCultures = supportedCultures;
-    options.SupportedUICultures = supportedCultures;
-    options.RequestCultureProviders = new List<IRequestCultureProvider>
-    {
-        new QueryStringRequestCultureProvider(),
-        new CookieRequestCultureProvider(),
-        new AcceptLanguageHeaderRequestCultureProvider()
-    };
-});
 
 // Memory Cache for simple caching
 builder.Services.AddMemoryCache();
@@ -161,9 +134,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-// Localization middleware
-app.UseRequestLocalization();
 
 // Serve static files from wwwroot
 app.UseStaticFiles();
