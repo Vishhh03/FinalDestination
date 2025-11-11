@@ -60,7 +60,7 @@
   font-weight: 600;
   text-decoration: none;
   transition: color var(--transition-base);
-  padding: 0.5rem 0;
+  padding: 0.5rem 1rem ;
 }
 
 .nav-menu a:hover {
@@ -181,17 +181,20 @@
 }
 
 .btn-login, .btn-register {
-  padding: 0.625rem 2rem;
+  padding: 0.75rem 1.75rem;
   border-radius: var(--radius-md);
   font-weight: 600;
   text-decoration: none;
   transition: all var(--transition-base);
+  display: inline-block;
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
 .btn-login {
   background: var(--bg-elevated);
   color: var(--text-primary);
-  border: 1px solid var(--primary);
+  border: 2px solid var(--primary);
 }
 
 .btn-login:hover {
@@ -203,7 +206,7 @@
 .btn-register {
   background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   color: var(--text-primary);
-  border: none;
+  border: 2px solid transparent;
 }
 
 .btn-register:hover {
