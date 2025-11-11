@@ -151,9 +151,14 @@
 }
 
 .dropdown-item i {
-  width: 18px;
+  width: 24px;
+  height: 24px;
   text-align: center;
-  font-size: 0.95rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .logout-btn {

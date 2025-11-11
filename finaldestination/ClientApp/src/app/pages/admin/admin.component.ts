@@ -121,16 +121,23 @@ export class AdminComponent implements OnInit {
   }
 
   getPieChartStyle() {
+    const total = this.users().length;
+    if (total === 0) {
+      return { background: '#e0e0e0' };
+    }
+
     const guestPct = this.getGuestPercentage();
     const managerPct = this.getManagerPercentage();
+    const adminPct = 100 - guestPct - managerPct;
+    
     const guestEnd = guestPct;
     const managerEnd = guestEnd + managerPct;
     
     return {
       background: `conic-gradient(
-        #667eea 0% ${guestEnd}%,
-        #f5576c ${guestEnd}% ${managerEnd}%,
-        #4facfe ${managerEnd}% 100%
+        #667eea 0deg ${guestEnd * 3.6}deg,
+        #f5576c ${guestEnd * 3.6}deg ${managerEnd * 3.6}deg,
+        #4facfe ${managerEnd * 3.6}deg 360deg
       )`
     };
   }
