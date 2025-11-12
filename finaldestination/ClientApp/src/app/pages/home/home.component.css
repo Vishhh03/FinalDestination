@@ -154,7 +154,6 @@
 
 .search-field {
   display: flex;
-  min-width: 200px;
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1.25rem;
