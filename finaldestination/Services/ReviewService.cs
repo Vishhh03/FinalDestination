@@ -3,19 +3,18 @@ using FinalDestinationAPI.Data;
 using FinalDestinationAPI.DTOs;
 using FinalDestinationAPI.Interfaces;
 using FinalDestinationAPI.Models;
-using FinalDestinationAPI.Repositories;
 
 namespace FinalDestinationAPI.Services;
 
 public class ReviewService : IReviewService
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly HotelContext _context;
     private readonly ICacheService _cache;
     private readonly ILogger<ReviewService> _logger;
 
-    public ReviewService(IUnitOfWork unitOfWork, ICacheService cache, ILogger<ReviewService> logger)
+    public ReviewService(HotelContext context, ICacheService cache, ILogger<ReviewService> logger)
     {
-        _unitOfWork = unitOfWork;
+        _context = context;
         _cache = cache;
         _logger = logger;
     }
@@ -23,25 +22,18 @@ public class ReviewService : IReviewService
     public async Task<ReviewResponse> CreateReviewAsync(int userId, ReviewRequest request)
     {
         // Check if hotel exists
-        var hotel = await _unitOfWork.Hotels.GetByIdAsync(request.HotelId);
+        var hotel = await _context.Hotels.FindAsync(request.HotelId);
         if (hotel == null)
         {
             throw new ArgumentException("Hotel not found");
         }
 
         // Check if user has a paid booking for this hotel
-        var bookings = await _unitOfWork.Bookings.FindAsync(b => b.UserId == userId 
+        var hasPaidBooking = await _context.Bookings
+            .AnyAsync(b => b.UserId == userId 
                         && b.HotelId == request.HotelId 
-                        && b.Status == BookingStatus.Confirmed);
-        var hasPaidBooking = false;
-        foreach (var booking in bookings)
-        {
-            if (await _unitOfWork.Payments.AnyAsync(p => p.BookingId == booking.Id && p.Status == PaymentStatus.Completed))
-            {
-                hasPaidBooking = true;
-                break;
-            }
-        }
+                        && b.Status == BookingStatus.Confirmed
+                        && _context.Payments.Any(p => p.BookingId == b.Id && p.Status == PaymentStatus.Completed));
 
         if (!hasPaidBooking)
         {
@@ -49,7 +41,8 @@ public class ReviewService : IReviewService
         }
 
         // Check if user already reviewed this hotel
-        var existingReview = await _unitOfWork.Reviews.FirstOrDefaultAsync(r => r.UserId == userId && r.HotelId == request.HotelId);
+        var existingReview = await _context.Reviews
+            .FirstOrDefaultAsync(r => r.UserId == userId && r.HotelId == request.HotelId);
         
         if (existingReview != null)
         {
@@ -65,8 +58,8 @@ public class ReviewService : IReviewService
             CreatedAt = DateTime.UtcNow
         };
 
-        await _unitOfWork.Reviews.AddAsync(review);
-        await _unitOfWork.SaveChangesAsync();
+        _context.Reviews.Add(review);
+        await _context.SaveChangesAsync();
 
         // Update hotel rating
         await UpdateHotelRatingAsync(request.HotelId);
@@ -98,7 +91,11 @@ public class ReviewService : IReviewService
             return cachedReviews;
         }
 
-        var reviews = (await _unitOfWork.Reviews.GetReviewsByHotelAsync(hotelId))
+        var reviews = await _context.Reviews
+            .Include(r => r.User)
+            .Include(r => r.Hotel)
+            .Where(r => r.HotelId == hotelId)
+            .OrderByDescending(r => r.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(r => new ReviewResponse
@@ -112,7 +109,7 @@ public class ReviewService : IReviewService
                 Comment = r.Comment,
                 CreatedAt = r.CreatedAt
             })
-            .ToList();
+            .ToListAsync();
 
         await _cache.SetAsync(cacheKey, reviews, TimeSpan.FromMinutes(10));
         return reviews;
@@ -120,7 +117,11 @@ public class ReviewService : IReviewService
 
     public async Task<IEnumerable<ReviewResponse>> GetReviewsByUserAsync(int userId)
     {
-        var reviews = (await _unitOfWork.Reviews.GetReviewsByUserAsync(userId))
+        var reviews = await _context.Reviews
+            .Include(r => r.User)
+            .Include(r => r.Hotel)
+            .Where(r => r.UserId == userId)
+            .OrderByDescending(r => r.CreatedAt)
             .Select(r => new ReviewResponse
             {
                 Id = r.Id,
@@ -132,14 +133,14 @@ public class ReviewService : IReviewService
                 Comment = r.Comment,
                 CreatedAt = r.CreatedAt
             })
-            .ToList();
+            .ToListAsync();
 
         return reviews;
     }
 
     public async Task<ReviewResponse?> UpdateReviewAsync(int id, int userId, UpdateReviewRequest request)
     {
-        var review = await _unitOfWork.Reviews.GetByIdAsync(id);
+        var review = await _context.Reviews.FindAsync(id);
         if (review == null)
         {
             return null;
@@ -154,8 +155,7 @@ public class ReviewService : IReviewService
         review.Rating = request.Rating;
         review.Comment = request.Comment;
 
-        _unitOfWork.Reviews.Update(review);
-        await _unitOfWork.SaveChangesAsync();
+        await _context.SaveChangesAsync();
 
         // Update hotel rating
         await UpdateHotelRatingAsync(review.HotelId);
@@ -174,7 +174,7 @@ public class ReviewService : IReviewService
 
     public async Task<bool> DeleteReviewAsync(int id, int userId, bool isAdmin = false)
     {
-        var review = await _unitOfWork.Reviews.GetByIdAsync(id);
+        var review = await _context.Reviews.FindAsync(id);
         if (review == null)
         {
             return false;
@@ -187,8 +187,8 @@ public class ReviewService : IReviewService
         }
 
         var hotelId = review.HotelId;
-        _unitOfWork.Reviews.Remove(review);
-        await _unitOfWork.SaveChangesAsync();
+        _context.Reviews.Remove(review);
+        await _context.SaveChangesAsync();
 
         // Update hotel rating
         await UpdateHotelRatingAsync(hotelId);
@@ -215,7 +215,9 @@ public class ReviewService : IReviewService
             return rating;
         }
 
-        var reviews = await _unitOfWork.Reviews.FindAsync(r => r.HotelId == hotelId);
+        var reviews = await _context.Reviews
+            .Where(r => r.HotelId == hotelId)
+            .ToListAsync();
 
         if (!reviews.Any())
         {
@@ -230,13 +232,15 @@ public class ReviewService : IReviewService
 
     public async Task<int> GetReviewCountByHotelAsync(int hotelId)
     {
-        var reviews = await _unitOfWork.Reviews.FindAsync(r => r.HotelId == hotelId);
-        return reviews.Count();
+        return await _context.Reviews.CountAsync(r => r.HotelId == hotelId);
     }
 
     private async Task<ReviewResponse> GetReviewResponseAsync(int reviewId)
     {
-        var review = await _unitOfWork.Reviews.GetReviewWithDetailsAsync(reviewId);
+        var review = await _context.Reviews
+            .Include(r => r.User)
+            .Include(r => r.Hotel)
+            .FirstOrDefaultAsync(r => r.Id == reviewId);
 
         if (review == null)
         {
@@ -260,14 +264,13 @@ public class ReviewService : IReviewService
     {
         var newRating = await CalculateHotelRatingAsync(hotelId);
         var reviewCount = await GetReviewCountByHotelAsync(hotelId);
-        var hotel = await _unitOfWork.Hotels.GetByIdAsync(hotelId);
+        var hotel = await _context.Hotels.FindAsync(hotelId);
         
         if (hotel != null)
         {
             hotel.Rating = newRating;
             hotel.ReviewCount = reviewCount;
-            _unitOfWork.Hotels.Update(hotel);
-            await _unitOfWork.SaveChangesAsync();
+            await _context.SaveChangesAsync();
             
             _logger.LogInformation("Updated hotel {HotelId} rating to {Rating} with {ReviewCount} reviews", 
                 hotelId, newRating, reviewCount);

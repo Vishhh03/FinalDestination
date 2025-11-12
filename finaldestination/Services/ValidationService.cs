@@ -1,7 +1,6 @@
 using FinalDestinationAPI.Data;
 using FinalDestinationAPI.DTOs;
 using FinalDestinationAPI.Models;
-using FinalDestinationAPI.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinalDestinationAPI.Services;
@@ -19,12 +18,12 @@ public interface IValidationService
 
 public class ValidationService : IValidationService
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly HotelContext _context;
     private readonly ILogger<ValidationService> _logger;
 
-    public ValidationService(IUnitOfWork unitOfWork, ILogger<ValidationService> logger)
+    public ValidationService(HotelContext context, ILogger<ValidationService> logger)
     {
-        _unitOfWork = unitOfWork;
+        _context = context;
         _logger = logger;
     }
 
@@ -33,7 +32,7 @@ public class ValidationService : IValidationService
         var errors = new List<string>();
 
         // Check if hotel exists and is available
-        var hotel = await _unitOfWork.Hotels.GetByIdAsync(request.HotelId);
+        var hotel = await _context.Hotels.FindAsync(request.HotelId);
         if (hotel == null)
         {
             errors.Add($"Hotel with ID {request.HotelId} does not exist.");
@@ -47,19 +46,21 @@ public class ValidationService : IValidationService
         }
 
         // Get user role to determine if they're booking for themselves or others
-        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+        var user = await _context.Users.FindAsync(userId);
         var isAdminOrManager = user?.Role == UserRole.Admin || user?.Role == UserRole.HotelManager;
 
         // Check for overlapping bookings by the same user (only for guests booking themselves)
         // Admin and Managers can book for different guests without this restriction
         if (!isAdminOrManager)
         {
-            var existingBooking = await _unitOfWork.Bookings.FirstOrDefaultAsync(b => b.UserId == userId && 
+            var existingBooking = await _context.Bookings
+                .Where(b => b.UserId == userId && 
                            b.HotelId == request.HotelId &&
                            b.Status != BookingStatus.Cancelled &&
                            ((b.CheckInDate <= request.CheckInDate && b.CheckOutDate > request.CheckInDate) ||
                             (b.CheckInDate < request.CheckOutDate && b.CheckOutDate >= request.CheckOutDate) ||
-                            (b.CheckInDate >= request.CheckInDate && b.CheckOutDate <= request.CheckOutDate)));
+                            (b.CheckInDate >= request.CheckInDate && b.CheckOutDate <= request.CheckOutDate)))
+                .FirstOrDefaultAsync();
 
             if (existingBooking != null)
             {
@@ -92,7 +93,9 @@ public class ValidationService : IValidationService
         var errors = new List<string>();
 
         // Check if booking exists and belongs to user
-        var booking = await _unitOfWork.Bookings.GetBookingWithDetailsAsync(request.BookingId);
+        var booking = await _context.Bookings
+            .Include(b => b.Hotel)
+            .FirstOrDefaultAsync(b => b.Id == request.BookingId);
 
         if (booking == null)
         {
@@ -112,7 +115,8 @@ public class ValidationService : IValidationService
         }
 
         // Check if payment already exists
-        var existingPayment = await _unitOfWork.Payments.GetCompletedPaymentByBookingAsync(request.BookingId);
+        var existingPayment = await _context.Payments
+            .FirstOrDefaultAsync(p => p.BookingId == request.BookingId && p.Status == PaymentStatus.Completed);
 
         if (existingPayment != null)
         {
@@ -149,7 +153,7 @@ public class ValidationService : IValidationService
         var errors = new List<string>();
 
         // Check if hotel exists
-        var hotel = await _unitOfWork.Hotels.GetByIdAsync(request.HotelId);
+        var hotel = await _context.Hotels.FindAsync(request.HotelId);
         if (hotel == null)
         {
             errors.Add($"Hotel with ID {request.HotelId} does not exist.");
@@ -157,7 +161,8 @@ public class ValidationService : IValidationService
         }
 
         // Check if user has a completed booking at this hotel
-        var hasCompletedBooking = await _unitOfWork.Bookings.AnyAsync(b => b.UserId == userId && 
+        var hasCompletedBooking = await _context.Bookings
+            .AnyAsync(b => b.UserId == userId && 
                           b.HotelId == request.HotelId && 
                           b.Status == BookingStatus.Completed &&
                           b.CheckOutDate < DateTime.UtcNow);
@@ -168,7 +173,8 @@ public class ValidationService : IValidationService
         }
 
         // Check if user already reviewed this hotel
-        var existingReview = await _unitOfWork.Reviews.FirstOrDefaultAsync(r => r.UserId == userId && r.HotelId == request.HotelId);
+        var existingReview = await _context.Reviews
+            .FirstOrDefaultAsync(r => r.UserId == userId && r.HotelId == request.HotelId);
 
         if (existingReview != null)
         {
@@ -183,7 +189,7 @@ public class ValidationService : IValidationService
         var errors = new List<string>();
 
         // Check if hotel exists
-        var hotel = await _unitOfWork.Hotels.GetByIdAsync(hotelId);
+        var hotel = await _context.Hotels.FindAsync(hotelId);
         if (hotel == null)
         {
             errors.Add($"Hotel with ID {hotelId} does not exist.");
@@ -199,10 +205,10 @@ public class ValidationService : IValidationService
         // Check if there are active bookings when reducing room count
         if (request.AvailableRooms < hotel.AvailableRooms)
         {
-            var activeBookings = await _unitOfWork.Bookings.FindAsync(b => b.HotelId == hotelId && 
+            var activeBookingsCount = await _context.Bookings
+                .CountAsync(b => b.HotelId == hotelId && 
                                b.Status == BookingStatus.Confirmed &&
                                b.CheckOutDate > DateTime.UtcNow);
-            var activeBookingsCount = activeBookings.Count();
 
             var roomReduction = hotel.AvailableRooms - request.AvailableRooms;
             if (activeBookingsCount > request.AvailableRooms)

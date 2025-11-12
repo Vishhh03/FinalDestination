@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using FinalDestinationAPI.Data;
 using FinalDestinationAPI.DTOs;
 using FinalDestinationAPI.Interfaces;
 using FinalDestinationAPI.Models;
@@ -14,14 +16,16 @@ namespace FinalDestinationAPI.Controllers;
 [Produces("application/json")]
 public class AuthController : ControllerBase
 {
-    private readonly IAuthService _authService;
+    private readonly HotelContext _context;
     private readonly IJwtService _jwtService;
+    private readonly ILoyaltyService _loyaltyService;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IAuthService authService, IJwtService jwtService, ILogger<AuthController> logger)
+    public AuthController(HotelContext context, IJwtService jwtService, ILoyaltyService loyaltyService, ILogger<AuthController> logger)
     {
-        _authService = authService;
+        _context = context;
         _jwtService = jwtService;
+        _loyaltyService = loyaltyService;
         _logger = logger;
     }
 
@@ -41,19 +45,74 @@ public class AuthController : ControllerBase
     {
         try
         {
+            // Validate model state
             if (!ModelState.IsValid)
             {
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage);
                 return BadRequest($"Validation failed: {string.Join(", ", errors)}");
             }
 
-            var response = await _authService.RegisterAsync(request);
-            return CreatedAtAction(nameof(Register), new { id = response.User.Id }, response);
-        }
-        catch (InvalidOperationException ex)
-        {
-            _logger.LogWarning(ex, "Registration failed for email: {Email}", request.Email);
-            return BadRequest(ex.Message);
+            // Check if email already exists
+            var existingUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.ToLower());
+
+            if (existingUser != null)
+            {
+                _logger.LogWarning("Registration attempt with existing email: {Email}", request.Email);
+                return BadRequest("A user with this email already exists");
+            }
+
+            // Hash the password
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+
+            // Create new user - ALWAYS as Guest for security
+            var user = new User
+            {
+                Name = request.Name.Trim(),
+                Email = request.Email.ToLower().Trim(),
+                PasswordHash = passwordHash,
+                Role = UserRole.Guest, 
+                ContactNumber = request.ContactNumber?.Trim(),
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true
+            };
+
+            // Add user to database
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            // Create loyalty account for the new user
+            var loyaltyAccount = new LoyaltyAccount
+            {
+                UserId = user.Id,
+                PointsBalance = 0,
+                TotalPointsEarned = 0,
+                LastUpdated = DateTime.UtcNow
+            };
+
+            _context.LoyaltyAccounts.Add(loyaltyAccount);
+            await _context.SaveChangesAsync();
+
+            // Generate JWT token
+            var token = _jwtService.GenerateToken(user);
+            var expiresAt = DateTime.UtcNow.AddHours(24); // Default 24 hours
+
+            // Update last login
+            user.LastLoginAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            var userInfo = await CreateUserInfoAsync(user);
+            var response = new AuthResponse
+            {
+                Token = token,
+                ExpiresAt = expiresAt,
+                User = userInfo
+            };
+
+            _logger.LogInformation("User registered successfully: {Email}", user.Email);
+            return CreatedAtAction(nameof(Register), new { id = user.Id }, response);
         }
         catch (Exception ex)
         {
@@ -80,19 +139,59 @@ public class AuthController : ControllerBase
     {
         try
         {
+            // Validate model state
             if (!ModelState.IsValid)
             {
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage);
                 return BadRequest($"Validation failed: {string.Join(", ", errors)}");
             }
 
-            var response = await _authService.LoginAsync(request);
+            // Find user by email
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.ToLower());
+
+            if (user == null)
+            {
+                _logger.LogWarning("Login attempt with non-existent email: {Email}", request.Email);
+                return Unauthorized("Invalid email or password");
+            }
+
+            // Check if account is active
+            if (!user.IsActive)
+            {
+                _logger.LogWarning("Login attempt with inactive account: {Email}", request.Email);
+                return Unauthorized("Account is inactive. Please contact support.");
+            }
+
+            // Verify password
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+            {
+                _logger.LogWarning("Login attempt with invalid password for email: {Email}", request.Email);
+                return Unauthorized("Invalid email or password");
+            }
+
+            // Generate JWT token
+            var token = _jwtService.GenerateToken(user);
+            var expiresAt = DateTime.UtcNow.AddHours(24); // Default 24 hours
+
+            // Update last login
+            user.LastLoginAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            var userInfo = await CreateUserInfoAsync(user);
+            var response = new AuthResponse
+            {
+                Token = token,
+                ExpiresAt = expiresAt,
+                User = userInfo
+            };
+
+            _logger.LogInformation("User logged in successfully: {Email}", user.Email);
+            _logger.LogInformation("🎭 User role: {Role} (Type: {RoleType})", userInfo.Role, userInfo.Role.GetType().Name);
+            _logger.LogInformation("📤 Sending auth response with user: {@UserInfo}", userInfo);
             return Ok(response);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            _logger.LogWarning(ex, "Login failed for email: {Email}", request.Email);
-            return Unauthorized(ex.Message);
         }
         catch (Exception ex)
         {
@@ -118,6 +217,7 @@ public class AuthController : ControllerBase
     {
         try
         {
+            // Get token from Authorization header
             var authHeader = Request.Headers["Authorization"].FirstOrDefault();
             if (authHeader == null || !authHeader.StartsWith("Bearer "))
             {
@@ -132,16 +232,24 @@ public class AuthController : ControllerBase
                 return Unauthorized("Invalid or expired token");
             }
 
-            var userInfo = await _authService.GetCurrentUserAsync(userId.Value);
+            // Get user from database
+            var user = await _context.Users.FindAsync(userId.Value);
+            if (user == null)
+            {
+                _logger.LogWarning("Token contains non-existent user ID: {UserId}", userId);
+                return NotFound("User not found");
+            }
+
+            if (!user.IsActive)
+            {
+                return Unauthorized("Account is inactive");
+            }
+
+            var userInfo = await CreateUserInfoAsync(user);
+            _logger.LogInformation("🔄 Refreshing user data for: {Email}", user.Email);
+            _logger.LogInformation("🎭 User role: {Role} (Type: {RoleType})", userInfo.Role, userInfo.Role.GetType().Name);
+            _logger.LogInformation("📤 Sending user info: {@UserInfo}", userInfo);
             return Ok(userInfo);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(ex.Message);
         }
         catch (Exception ex)
         {
@@ -150,7 +258,45 @@ public class AuthController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Helper method to create UserInfo with loyalty account information
+    /// </summary>
+    private async Task<UserInfo> CreateUserInfoAsync(User user)
+    {
+        var userInfo = new UserInfo
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            Role = user.Role,
+            ContactNumber = user.ContactNumber,
+            CreatedAt = user.CreatedAt,
+            LastLoginAt = user.LastLoginAt,
+            IsActive = user.IsActive
+        };
 
+        // Get loyalty account information
+        try
+        {
+            var loyaltyAccount = await _loyaltyService.GetLoyaltyAccountAsync(user.Id);
+            if (loyaltyAccount != null)
+            {
+                userInfo.LoyaltyAccount = new LoyaltyInfo
+                {
+                    PointsBalance = loyaltyAccount.PointsBalance,
+                    TotalPointsEarned = loyaltyAccount.TotalPointsEarned,
+                    LastUpdated = loyaltyAccount.LastUpdated
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to retrieve loyalty account for user {UserId}", user.Id);
+            // Don't fail the entire operation if loyalty account retrieval fails
+        }
+
+        return userInfo;
+    }
 
     /// <summary>
     /// Apply to become a hotel manager (requires authentication as Guest)
@@ -170,12 +316,16 @@ public class AuthController : ControllerBase
     {
         try
         {
+            // Validate model state
             if (!ModelState.IsValid)
             {
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage);
                 return BadRequest($"Validation failed: {string.Join(", ", errors)}");
             }
 
+            // Get current user from token
             var authHeader = Request.Headers["Authorization"].FirstOrDefault();
             if (authHeader == null || !authHeader.StartsWith("Bearer "))
             {
@@ -190,16 +340,74 @@ public class AuthController : ControllerBase
                 return Unauthorized("Invalid or expired token");
             }
 
-            var response = await _authService.ApplyForHotelManagerAsync(userId.Value, request);
-            return CreatedAtAction(nameof(GetMyApplication), new { id = response.Id }, response);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(ex.Message);
+            // Get user from database
+            var user = await _context.Users.FindAsync(userId.Value);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            // Check if user is a Guest
+            if (user.Role != UserRole.Guest)
+            {
+                return BadRequest("Only Guest users can apply for Hotel Manager role. You are already a " + user.Role);
+            }
+
+            // Check if user already has a pending or approved application
+            var existingApplication = await _context.HotelManagerApplications
+                .Where(a => a.UserId == userId.Value && 
+                           (a.Status == ApplicationStatus.Pending || a.Status == ApplicationStatus.Approved))
+                .FirstOrDefaultAsync();
+
+            if (existingApplication != null)
+            {
+                if (existingApplication.Status == ApplicationStatus.Approved)
+                {
+                    return BadRequest("You already have an approved application. Your role will be updated shortly.");
+                }
+                return BadRequest("You already have a pending application. Please wait for it to be processed.");
+            }
+
+            // Create application
+            var application = new HotelManagerApplication
+            {
+                UserId = userId.Value,
+                BusinessName = request.BusinessName.Trim(),
+                BusinessAddress = request.BusinessAddress.Trim(),
+                BusinessLicense = request.BusinessLicense.Trim(),
+                ContactPerson = request.ContactPerson.Trim(),
+                BusinessPhone = request.BusinessPhone.Trim(),
+                BusinessEmail = request.BusinessEmail.ToLower().Trim(),
+                AdditionalInfo = request.AdditionalInfo?.Trim(),
+                ApplicationDate = DateTime.UtcNow,
+                Status = ApplicationStatus.Pending
+            };
+
+            _context.HotelManagerApplications.Add(application);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Hotel manager application submitted by user {UserId}", userId.Value);
+
+            // Create response
+            var response = new HotelManagerApplicationResponse
+            {
+                Id = application.Id,
+                UserId = application.UserId,
+                UserName = user.Name,
+                UserEmail = user.Email,
+                BusinessName = application.BusinessName,
+                BusinessAddress = application.BusinessAddress,
+                BusinessLicense = application.BusinessLicense,
+                ContactPerson = application.ContactPerson,
+                BusinessPhone = application.BusinessPhone,
+                BusinessEmail = application.BusinessEmail,
+                AdditionalInfo = application.AdditionalInfo,
+                ApplicationDate = application.ApplicationDate,
+                Status = application.Status,
+                StatusText = application.Status.ToString()
+            };
+
+            return CreatedAtAction(nameof(GetMyApplication), new { id = application.Id }, response);
         }
         catch (Exception ex)
         {
@@ -223,6 +431,7 @@ public class AuthController : ControllerBase
     {
         try
         {
+            // Get current user from token
             var authHeader = Request.Headers["Authorization"].FirstOrDefault();
             if (authHeader == null || !authHeader.StartsWith("Bearer "))
             {
@@ -237,12 +446,39 @@ public class AuthController : ControllerBase
                 return Unauthorized("Invalid or expired token");
             }
 
-            var response = await _authService.GetMyApplicationAsync(userId.Value);
-            
-            if (response == null)
+            // Get application
+            var application = await _context.HotelManagerApplications
+                .Include(a => a.User)
+                .Include(a => a.ProcessedByUser)
+                .Where(a => a.UserId == userId.Value)
+                .OrderByDescending(a => a.ApplicationDate)
+                .FirstOrDefaultAsync();
+
+            if (application == null)
             {
                 return NotFound("No application found");
             }
+
+            var response = new HotelManagerApplicationResponse
+            {
+                Id = application.Id,
+                UserId = application.UserId,
+                UserName = application.User.Name,
+                UserEmail = application.User.Email,
+                BusinessName = application.BusinessName,
+                BusinessAddress = application.BusinessAddress,
+                BusinessLicense = application.BusinessLicense,
+                ContactPerson = application.ContactPerson,
+                BusinessPhone = application.BusinessPhone,
+                BusinessEmail = application.BusinessEmail,
+                AdditionalInfo = application.AdditionalInfo,
+                ApplicationDate = application.ApplicationDate,
+                Status = application.Status,
+                StatusText = application.Status.ToString(),
+                ProcessedDate = application.ProcessedDate,
+                ProcessedByName = application.ProcessedByUser?.Name,
+                AdminNotes = application.AdminNotes
+            };
 
             return Ok(response);
         }
@@ -269,7 +505,63 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var response = await _authService.GetAllApplicationsAsync(status);
+            // Get current user from token
+            var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+            if (authHeader == null || !authHeader.StartsWith("Bearer "))
+            {
+                return Unauthorized("Authorization token is required");
+            }
+
+            var token = authHeader.Substring("Bearer ".Length).Trim();
+            var userId = _jwtService.GetUserIdFromToken(token);
+
+            if (userId == null)
+            {
+                return Unauthorized("Invalid or expired token");
+            }
+
+            var user = await _context.Users.FindAsync(userId.Value);
+            if (user == null || user.Role != UserRole.Admin)
+            {
+                return Forbid("Only administrators can view all applications");
+            }
+
+            // Get applications
+            var query = _context.HotelManagerApplications
+                .Include(a => a.User)
+                .Include(a => a.ProcessedByUser)
+                .AsQueryable();
+
+            if (status.HasValue)
+            {
+                query = query.Where(a => a.Status == status.Value);
+            }
+
+            var applications = await query
+                .OrderByDescending(a => a.ApplicationDate)
+                .ToListAsync();
+
+            var response = applications.Select(a => new HotelManagerApplicationResponse
+            {
+                Id = a.Id,
+                UserId = a.UserId,
+                UserName = a.User.Name,
+                UserEmail = a.User.Email,
+                BusinessName = a.BusinessName,
+                BusinessAddress = a.BusinessAddress,
+                BusinessLicense = a.BusinessLicense,
+                ContactPerson = a.ContactPerson,
+                BusinessPhone = a.BusinessPhone,
+                BusinessEmail = a.BusinessEmail,
+                AdditionalInfo = a.AdditionalInfo,
+                ApplicationDate = a.ApplicationDate,
+                Status = a.Status,
+                StatusText = a.Status.ToString(),
+                ProcessedDate = a.ProcessedDate,
+                ProcessedByName = a.ProcessedByUser?.Name,
+                AdminNotes = a.AdminNotes
+            });
+
             return Ok(response);
         }
         catch (Exception ex)
@@ -300,12 +592,16 @@ public class AuthController : ControllerBase
     {
         try
         {
+            // Validate model state
             if (!ModelState.IsValid)
             {
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage);
                 return BadRequest($"Validation failed: {string.Join(", ", errors)}");
             }
 
+            // Get current user from token
             var authHeader = Request.Headers["Authorization"].FirstOrDefault();
             if (authHeader == null || !authHeader.StartsWith("Bearer "))
             {
@@ -320,16 +616,77 @@ public class AuthController : ControllerBase
                 return Unauthorized("Invalid or expired token");
             }
 
-            var response = await _authService.ProcessApplicationAsync(id, adminUserId.Value, request);
+            var adminUser = await _context.Users.FindAsync(adminUserId.Value);
+            if (adminUser == null || adminUser.Role != UserRole.Admin)
+            {
+                return Forbid("Only administrators can process applications");
+            }
+
+            // Get application
+            var application = await _context.HotelManagerApplications
+                .Include(a => a.User)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (application == null)
+            {
+                return NotFound($"Application with ID {id} not found");
+            }
+
+            // Check if already processed
+            if (application.Status != ApplicationStatus.Pending && application.Status != ApplicationStatus.RequiresMoreInfo)
+            {
+                return BadRequest($"Application has already been {application.Status}");
+            }
+
+            // Validate status
+            if (request.Status != ApplicationStatus.Approved && 
+                request.Status != ApplicationStatus.Rejected && 
+                request.Status != ApplicationStatus.RequiresMoreInfo)
+            {
+                return BadRequest("Status must be Approved, Rejected, or RequiresMoreInfo");
+            }
+
+            // Update application
+            application.Status = request.Status;
+            application.ProcessedDate = DateTime.UtcNow;
+            application.ProcessedBy = adminUserId.Value;
+            application.AdminNotes = request.AdminNotes?.Trim();
+
+            // If approved, upgrade user role
+            if (request.Status == ApplicationStatus.Approved)
+            {
+                application.User.Role = UserRole.HotelManager;
+                _logger.LogInformation("User {UserId} upgraded to Hotel Manager by admin {AdminId}", 
+                    application.UserId, adminUserId.Value);
+            }
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Application {ApplicationId} processed as {Status} by admin {AdminId}", 
+                id, request.Status, adminUserId.Value);
+
+            var response = new HotelManagerApplicationResponse
+            {
+                Id = application.Id,
+                UserId = application.UserId,
+                UserName = application.User.Name,
+                UserEmail = application.User.Email,
+                BusinessName = application.BusinessName,
+                BusinessAddress = application.BusinessAddress,
+                BusinessLicense = application.BusinessLicense,
+                ContactPerson = application.ContactPerson,
+                BusinessPhone = application.BusinessPhone,
+                BusinessEmail = application.BusinessEmail,
+                AdditionalInfo = application.AdditionalInfo,
+                ApplicationDate = application.ApplicationDate,
+                Status = application.Status,
+                StatusText = application.Status.ToString(),
+                ProcessedDate = application.ProcessedDate,
+                ProcessedByName = adminUser.Name,
+                AdminNotes = application.AdminNotes
+            };
+
             return Ok(response);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ex.Message);
         }
         catch (Exception ex)
         {
