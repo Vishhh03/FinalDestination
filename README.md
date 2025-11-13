@@ -84,51 +84,49 @@ After running `dotnet run`, open your browser to:
 ## 📁 Project Structure
 
 ```
-Smart-Hotel-Booking-System/
-├── README.md                    # Project overview
-├── ARCHITECTURE.md              # System design & patterns
-├── API_REFERENCE.md             # Complete API documentation
-├── SETUP_GUIDE.md               # Detailed setup instructions
-├── TROUBLESHOOTING.md           # Common issues & solutions
-├── CONTRIBUTING.md              # Contribution guidelines
-├── CHANGELOG.md                 # Version history
+FinalDestination/
+├── finaldestination/            # Main API project
+│   ├── Controllers/             # API endpoints
+│   ├── Services/                # Business logic
+│   ├── Models/                  # Domain entities
+│   ├── DTOs/                    # Data transfer objects
+│   ├── Data/                    # EF Core context
+│   ├── Middleware/              # Custom middleware
+│   ├── Dockerfile               # Container build
+│   └── wwwroot/                 # Frontend SPA
 │
-├── docs/                        # Module documentation
-│   ├── MODULE_INDEX.md          # Module overview
-│   ├── AUTHENTICATION_MODULE.md
-│   ├── HOTEL_MODULE.md
-│   ├── BOOKING_MODULE.md
-│   ├── PAYMENT_MODULE.md
-│   ├── REVIEW_MODULE.md
-│   ├── LOYALTY_MODULE.md
-│   ├── DATA_MODULE.md
-│   ├── FRONTEND_MODULE.md
-│   └── INFRASTRUCTURE_MODULE.md
+├── finaldestination.tests/      # Test project
 │
-└── finaldestination/            # Main API project
-    ├── Controllers/             # API endpoints
-    ├── Services/                # Business logic
-    ├── Models/                  # Domain entities
-    ├── DTOs/                    # Data transfer objects
-    ├── Data/                    # EF Core context
-    ├── Middleware/              # Custom middleware
-    ├── Configuration/           # Settings classes
-    └── wwwroot/                 # Frontend SPA
+├── deployment/                  # Docker & monitoring
+│   ├── docker/
+│   │   └── docker-compose.yml   # All services
+│   ├── monitoring/
+│   │   ├── prometheus.yml       # Metrics config
+│   │   └── grafana/             # Dashboards
+│   └── README.md                # Deployment guide
+│
+├── docs/                        # Feature documentation
+├── ARCHITECTURE.md              # System design
+├── MONITORING.md                # Observability stack
+├── TRANSITION_GUIDE.md          # Machine transition
+└── README.md                    # This file
 ```
 
 ## 📚 Documentation
 
-| Document                                                                 | Description                               |
-| ------------------------------------------------------------------------ | ----------------------------------------- |
-| **[ARCHITECTURE.md](ARCHITECTURE.md)**                                   | System design, patterns, and diagrams     |
-| **[API_REFERENCE.md](API_REFERENCE.md)**                                 | Complete API endpoint documentation       |
-| **[SETUP_GUIDE.md](SETUP_GUIDE.md)**                                     | Detailed setup for all environments       |
-| **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)**                             | Common issues and solutions               |
-| **[docs/MODULE_INDEX.md](docs/MODULE_INDEX.md)**                         | Module-specific documentation             |
-| **[REDEMPTION_SUMMARY.md](REDEMPTION_SUMMARY.md)**                       | Loyalty redemption quick summary          |
-| **[docs/LOYALTY_REDEMPTION_GUIDE.md](docs/LOYALTY_REDEMPTION_GUIDE.md)** | Detailed redemption guide & API reference |
-| **[CONTRIBUTING.md](CONTRIBUTING.md)**                                   | Contribution guidelines                   |
-| **[CHANGELOG.md](CHANGELOG.md)**                                         | Version history                           |
+### Core Documentation
+| Document | Description |
+|----------|-------------|
+| **[ARCHITECTURE.md](ARCHITECTURE.md)** | System design, patterns, and diagrams |
+| **[docs/](docs/)** | Module-specific documentation |
+| **[MONITORING.md](MONITORING.md)** | Prometheus, Grafana, Elasticsearch, Kibana setup |
+| **[CONTRIBUTING.md](CONTRIBUTING.md)** | Contribution guidelines |
+
+### Deployment
+| Document | Description |
+|----------|-------------|
+| **[deployment/README.md](deployment/README.md)** | Docker deployment guide |
+| **[TRANSITION_GUIDE.md](TRANSITION_GUIDE.md)** | Moving between development and Docker machines |
 
 ## 🔑 Sample Credentials
 

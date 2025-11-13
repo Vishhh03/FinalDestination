@@ -8,8 +8,31 @@ using FinalDestinationAPI.Data;
 using FinalDestinationAPI.Services;
 using FinalDestinationAPI.Middleware;
 using FinalDestinationAPI.Filters;
+using FinalDestinationAPI.Models;
+using Serilog;
+using Serilog.Sinks.Elasticsearch;
+
+// Configure Serilog
+var elasticsearchUrl = Environment.GetEnvironmentVariable("ElasticsearchUrl") ?? "http://localhost:9200";
+
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .Enrich.WithMachineName()
+    .Enrich.WithEnvironmentName()
+    .WriteTo.Console()
+    .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticsearchUrl))
+    {
+        AutoRegisterTemplate = true,
+        IndexFormat = "hotel-logs-{0:yyyy.MM.dd}",
+        NumberOfReplicas = 0,
+        NumberOfShards = 1
+    })
+    .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Use Serilog
+builder.Host.UseSerilog();
 
 // Add services to the container
 builder.Services.AddControllers(options =>
@@ -150,6 +173,21 @@ app.MapControllers();
 // Health check endpoint
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
+// Metrics endpoint for Prometheus
+app.MapGet("/metrics", async (HotelContext context) =>
+{
+    var metrics = new
+    {
+        total_hotels = await context.Hotels.CountAsync(),
+        total_bookings = await context.Bookings.CountAsync(),
+        total_users = await context.Users.CountAsync(),
+        total_reviews = await context.Reviews.CountAsync(),
+        active_bookings = await context.Bookings.CountAsync(b => b.Status == BookingStatus.Confirmed),
+        timestamp = DateTime.UtcNow
+    };
+    return Results.Ok(metrics);
+});
+
 // Database initialization and seeding
 using (var scope = app.Services.CreateScope())
 {
@@ -173,7 +211,19 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.Run();
+try
+{
+    Log.Information("Starting Hotel Booking System");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 
 // Make Program class accessible for integration tests
 public partial class Program { }
