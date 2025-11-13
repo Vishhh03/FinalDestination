@@ -13,7 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System;
 
-namespace FinalDestinationAPI.Tests.Controllers
+namespace finaldestination.tests.Controllers
 {
 
     [TestFixture]

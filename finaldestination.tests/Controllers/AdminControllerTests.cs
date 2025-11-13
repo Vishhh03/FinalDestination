@@ -11,7 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System;
 
-namespace FinalDestinationAPI.Tests
+namespace finaldestination.tests.Controllers
 {
     [TestFixture]
     public class AdminControllerTests
