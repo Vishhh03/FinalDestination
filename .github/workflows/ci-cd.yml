@@ -1,0 +1,93 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    
+    - name: Restore dependencies
+      run: dotnet restore finaldestination.sln
+    
+    - name: Build
+      run: dotnet build finaldestination.sln --configuration Release --no-restore
+    
+    - name: Run Unit Tests
+      run: dotnet test finaldestination.tests/finaldestination.tests.csproj --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx"
+    
+    - name: Test Summary
+      run: |
+        echo "✅ Test execution completed"
+        echo "📊 Check artifacts for detailed results"
+    
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: '**/TestResults/**/*.trx'
+        retention-days: 30
+    
+    - name: Upload Coverage Reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: coverage-reports
+        path: '**/TestResults/**/coverage.cobertura.xml'
+        retention-days: 30
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build Docker Image
+      run: |
+        cd finaldestination
+        docker build -t hotel-booking-api:${{ github.sha }} .
+        docker tag hotel-booking-api:${{ github.sha }} hotel-booking-api:latest
+    
+    - name: Save Docker Image
+      run: docker save hotel-booking-api:latest -o hotel-booking-api.tar
+    
+    - name: Upload Docker Image Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-image
+        path: hotel-booking-api.tar
+        retention-days: 7
+
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    
+    - name: Restore dependencies
+      run: dotnet restore finaldestination.sln
+    
+    - name: Run Code Analysis
+      run: dotnet build finaldestination.sln --configuration Release /p:TreatWarningsAsErrors=false

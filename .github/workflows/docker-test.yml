@@ -1,0 +1,44 @@
+name: Docker Test
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  docker-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build Docker Image
+      run: |
+        cd finaldestination
+        docker build -t hotel-booking-api:test .
+    
+    - name: Run Container
+      run: |
+        docker run -d --name test-container -p 5000:80 \
+          -e ASPNETCORE_ENVIRONMENT=Development \
+          -e ConnectionStrings__DefaultConnection="Data Source=hotel.db" \
+          hotel-booking-api:test
+        sleep 10
+    
+    - name: Test Health Endpoint
+      run: |
+        curl -f http://localhost:5000/health || exit 1
+        echo "✅ Health check passed"
+    
+    - name: Test Swagger Endpoint
+      run: |
+        curl -f http://localhost:5000/swagger/index.html || exit 1
+        echo "✅ Swagger UI accessible"
+    
+    - name: Container Logs
+      if: always()
+      run: docker logs test-container
+    
+    - name: Stop Container
+      if: always()
+      run: docker stop test-container && docker rm test-container

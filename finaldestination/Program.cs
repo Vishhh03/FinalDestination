@@ -147,6 +147,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Health check endpoint
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+
 // Database initialization and seeding
 using (var scope = app.Services.CreateScope())
 {
@@ -172,5 +175,6 @@ using (var scope = app.Services.CreateScope())
 
 app.Run();
 
-
+// Make Program class accessible for integration tests
+public partial class Program { }
 
