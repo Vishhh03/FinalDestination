@@ -11,6 +11,7 @@ using FinalDestinationAPI.Filters;
 using FinalDestinationAPI.Models;
 using Serilog;
 using Serilog.Sinks.Elasticsearch;
+using Prometheus;
 
 // Configure Serilog
 var elasticsearchUrl = Environment.GetEnvironmentVariable("ElasticsearchUrl") ?? "http://localhost:9200";
@@ -43,11 +44,11 @@ builder.Services.AddControllers(options =>
 // Note: Removed JsonStringEnumConverter to serialize enums as numbers for frontend compatibility
 
 // Database Configuration - SQL Server LocalDB
-
-// Use SQL Server LocalDB for production-like development
 builder.Services.AddDbContext<HotelContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Register the background metrics updater
+builder.Services.AddHostedService<MetricsUpdater>();
 
 // Authentication Configuration - JWT Bearer
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -82,6 +83,9 @@ builder.Services.AddScoped<FinalDestinationAPI.Interfaces.IPaymentService, Final
 builder.Services.AddScoped<FinalDestinationAPI.Interfaces.IReviewService, FinalDestinationAPI.Services.ReviewService>();
 builder.Services.AddScoped<FinalDestinationAPI.Interfaces.ILoyaltyService, FinalDestinationAPI.Services.LoyaltyService>();
 builder.Services.AddScoped<FinalDestinationAPI.Services.IValidationService, FinalDestinationAPI.Services.ValidationService>();
+
+// Register application metrics wrapper (singleton so counters persist per process)
+builder.Services.AddSingleton<FinalDestinationAPI.Services.IAppMetrics, FinalDestinationAPI.Services.AppMetrics>();
 
 // Swagger Configuration with JWT Authentication
 builder.Services.AddEndpointsApiExplorer();
@@ -168,25 +172,16 @@ app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Collect HTTP metrics (request durations, status codes, etc.)
+app.UseHttpMetrics();
+
 app.MapControllers();
 
 // Health check endpoint
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
-// Metrics endpoint for Prometheus
-app.MapGet("/metrics", async (HotelContext context) =>
-{
-    var metrics = new
-    {
-        total_hotels = await context.Hotels.CountAsync(),
-        total_bookings = await context.Bookings.CountAsync(),
-        total_users = await context.Users.CountAsync(),
-        total_reviews = await context.Reviews.CountAsync(),
-        active_bookings = await context.Bookings.CountAsync(b => b.Status == BookingStatus.Confirmed),
-        timestamp = DateTime.UtcNow
-    };
-    return Results.Ok(metrics);
-});
+// Expose Prometheus metrics endpoint (prometheus-net) at /metrics
+app.MapMetrics(); // Prometheus will scrape this endpoint in the correct text format    
 
 // Database initialization and seeding
 using (var scope = app.Services.CreateScope())

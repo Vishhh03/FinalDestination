@@ -1,0 +1,128 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: hotel-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - hotel-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./finaldestination
+      dockerfile: Dockerfile
+    container_name: hotel-backend
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=HotelBooking;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True
+      - JwtSettings__Secret=YourSuperSecretKeyForJWTTokenGenerationMustBeAtLeast32Characters
+      - JwtSettings__Issuer=FinalDestinationAPI
+      - JwtSettings__Audience=FinalDestinationClient
+      - JwtSettings__ExpiryMinutes=60
+      - ElasticsearchUrl=http://hotel-elasticsearch:9200
+    depends_on:
+      - sqlserver
+      - hotel-elasticsearch
+    networks:
+      - hotel-network
+    restart: unless-stopped
+
+  frontend:
+    image: nginx:alpine
+    container_name: hotel-frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./finaldestination/wwwroot:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - hotel-network
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:2.49.0
+    container_name: hotel-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus-data:/prometheus
+      - ./deployment/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    depends_on:
+      - backend
+    networks:
+      - hotel-network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:9.5.0
+    container_name: hotel-grafana
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./deployment/monitoring/grafana/provisioning/:/etc/grafana/provisioning/:ro
+      - ./deployment/monitoring/grafana/dashboards/:/var/lib/grafana/dashboards/:ro
+      - grafana-storage:/var/lib/grafana
+    networks:
+      - hotel-network
+    restart: unless-stopped
+
+  hotel-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.3
+    container_name: hotel-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    networks:
+      - hotel-network
+    restart: unless-stopped
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.6.3
+    container_name: hotel-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://hotel-elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - hotel-elasticsearch
+    networks:
+      - hotel-network
+    restart: unless-stopped
+
+volumes:
+  sqlserver-data:
+  prometheus-data:
+  grafana-storage:
+  es-data:
+
+networks:
+  hotel-network:
+    driver: bridge
