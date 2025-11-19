@@ -8,8 +8,32 @@ using FinalDestinationAPI.Data;
 using FinalDestinationAPI.Services;
 using FinalDestinationAPI.Middleware;
 using FinalDestinationAPI.Filters;
+using FinalDestinationAPI.Models;
+using Serilog;
+using Serilog.Sinks.Elasticsearch;
+using Prometheus;
+
+// Configure Serilog
+var elasticsearchUrl = Environment.GetEnvironmentVariable("ElasticsearchUrl") ?? "http://localhost:9200";
+
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .Enrich.WithMachineName()
+    .Enrich.WithEnvironmentName()
+    .WriteTo.Console()
+    .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticsearchUrl))
+    {
+        AutoRegisterTemplate = true,
+        IndexFormat = "hotel-logs-{0:yyyy.MM.dd}",
+        NumberOfReplicas = 0,
+        NumberOfShards = 1
+    })
+    .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Use Serilog
+builder.Host.UseSerilog();
 
 // Add services to the container
 builder.Services.AddControllers(options =>
@@ -20,11 +44,11 @@ builder.Services.AddControllers(options =>
 // Note: Removed JsonStringEnumConverter to serialize enums as numbers for frontend compatibility
 
 // Database Configuration - SQL Server LocalDB
-
-// Use SQL Server LocalDB for production-like development
 builder.Services.AddDbContext<HotelContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Register the background metrics updater
+builder.Services.AddHostedService<MetricsUpdater>();
 
 // Authentication Configuration - JWT Bearer
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -59,6 +83,9 @@ builder.Services.AddScoped<FinalDestinationAPI.Interfaces.IPaymentService, Final
 builder.Services.AddScoped<FinalDestinationAPI.Interfaces.IReviewService, FinalDestinationAPI.Services.ReviewService>();
 builder.Services.AddScoped<FinalDestinationAPI.Interfaces.ILoyaltyService, FinalDestinationAPI.Services.LoyaltyService>();
 builder.Services.AddScoped<FinalDestinationAPI.Services.IValidationService, FinalDestinationAPI.Services.ValidationService>();
+
+// Register application metrics wrapper (singleton so counters persist per process)
+builder.Services.AddSingleton<FinalDestinationAPI.Services.IAppMetrics, FinalDestinationAPI.Services.AppMetrics>();
 
 // Swagger Configuration with JWT Authentication
 builder.Services.AddEndpointsApiExplorer();
@@ -145,10 +172,16 @@ app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Collect HTTP metrics (request durations, status codes, etc.)
+app.UseHttpMetrics();
+
 app.MapControllers();
 
 // Health check endpoint
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+
+// Expose Prometheus metrics endpoint (prometheus-net) at /metrics
+app.MapMetrics(); // Prometheus will scrape this endpoint in the correct text format    
 
 // Database initialization and seeding
 using (var scope = app.Services.CreateScope())
@@ -173,7 +206,19 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.Run();
+try
+{
+    Log.Information("Starting Hotel Booking System");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 
 // Make Program class accessible for integration tests
 public partial class Program { }

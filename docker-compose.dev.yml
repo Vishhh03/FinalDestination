@@ -1,0 +1,18 @@
+version: '3.8'
+
+# Development override - uses SQLite instead of SQL Server
+services:
+  backend:
+    environment:
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/hotel.db
+    volumes:
+      - ./finaldestination/hotel.db:/app/data/hotel.db
+    depends_on:
+      - sqlserver
+    # Remove sqlserver dependency for dev
+    profiles:
+      - dev
+
+  sqlserver:
+    profiles:
+      - prod

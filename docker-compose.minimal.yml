@@ -1,0 +1,57 @@
+version: '3.8'
+
+# Minimal setup - Only essential containers
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: hotel-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - hotel-network
+
+  backend:
+    build:
+      context: ./finaldestination
+      dockerfile: Dockerfile
+    container_name: hotel-backend
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=HotelBooking;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True
+      - JwtSettings__Secret=YourSuperSecretKeyForJWTTokenGenerationMustBeAtLeast32Characters
+      - JwtSettings__Issuer=FinalDestinationAPI
+      - JwtSettings__Audience=FinalDestinationClient
+      - JwtSettings__ExpiryMinutes=60
+    depends_on:
+      - sqlserver
+    networks:
+      - hotel-network
+
+  frontend:
+    image: nginx:alpine
+    container_name: hotel-frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./finaldestination/wwwroot:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - hotel-network
+
+volumes:
+  sqlserver-data:
+
+networks:
+  hotel-network:
+    driver: bridge

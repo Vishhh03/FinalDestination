@@ -9,6 +9,7 @@ using FinalDestinationAPI.Services;
 using FinalDestinationAPI.Extensions;
 using FinalDestinationAPI.Helpers;
 using System.Security.Claims;
+using System.Diagnostics;
 
 namespace FinalDestinationAPI.Controllers;
 
@@ -22,19 +23,22 @@ public class BookingsController : ControllerBase
     private readonly ILoyaltyService _loyaltyService;
     private readonly IValidationService _validationService;
     private readonly ILogger<BookingsController> _logger;
+    private readonly IAppMetrics _metrics;
 
     public BookingsController(
         HotelContext context, 
         IPaymentService paymentService, 
         ILoyaltyService loyaltyService,
         IValidationService validationService,
-        ILogger<BookingsController> logger)
+        ILogger<BookingsController> logger,
+        IAppMetrics metrics)
     {
         _context = context;
         _paymentService = paymentService;
         _loyaltyService = loyaltyService;
         _validationService = validationService;
         _logger = logger;
+        _metrics = metrics;
     }
 
     // GET: api/bookings (Admin only - get all bookings)
@@ -102,7 +106,7 @@ public class BookingsController : ControllerBase
         return response;
     }
 
-    // GET: api/bookings/guest/john@email.com (Admin only)
+    // GET: api/bookings/guest/{email} (Admin only)
     [HttpGet("guest/{email}")]
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<IEnumerable<BookingResponse>>> GetBookingsByGuest(string email)
@@ -133,6 +137,9 @@ public class BookingsController : ControllerBase
         {
             return this.ValidationError(validationResult);
         }
+
+        // Start timer for booking processing
+        var sw = Stopwatch.StartNew();
 
         // Get hotel (validation already confirmed it exists)
         var hotel = await _context.Hotels.FindAsync(request.HotelId);
@@ -173,7 +180,7 @@ public class BookingsController : ControllerBase
             }
         }
 
-        // Create booking with pending status (requires payment)
+        // Create booking with confirmed status (payment handled separately)
         var booking = new Booking
         {
             GuestName = request.GuestName,
@@ -197,6 +204,11 @@ public class BookingsController : ControllerBase
         
         await _context.SaveChangesAsync();
 
+        // record metrics
+        sw.Stop();
+        _metrics.IncBookingCreated();
+        _metrics.ObserveBookingProcessing(sw.Elapsed.TotalSeconds);
+
         _logger.LogInformation("Booking {BookingId} created for user {UserId}, payment required", booking.Id, currentUserId);
 
         // Include hotel information in response
@@ -207,7 +219,7 @@ public class BookingsController : ControllerBase
         return CreatedAtAction(nameof(GetBooking), new { id = booking.Id }, response);
     }
 
-    // POST: api/bookings/5/payment
+    // POST: api/bookings/{id}/payment
     [HttpPost("{id}/payment")]
     public async Task<ActionResult<PaymentResult>> ProcessPayment(int id, PaymentRequest request)
     {
@@ -246,6 +258,9 @@ public class BookingsController : ControllerBase
                 booking.Status = BookingStatus.Confirmed;
                 await _context.SaveChangesAsync();
 
+                // increment success counter via wrapper
+                _metrics.IncPaymentSuccess();
+
                 // Award loyalty points for the booking
                 if (booking.UserId.HasValue)
                 {
@@ -275,6 +290,9 @@ public class BookingsController : ControllerBase
                 booking.Status = BookingStatus.Cancelled;
                 await _context.SaveChangesAsync();
 
+                // increment failed counter via wrapper
+                _metrics.IncPaymentFailed();
+
                 _logger.LogWarning("Payment failed for booking {BookingId}: {ErrorMessage}", 
                     id, paymentResult.ErrorMessage);
             }
@@ -293,11 +311,14 @@ public class BookingsController : ControllerBase
             booking.Status = BookingStatus.Cancelled;
             await _context.SaveChangesAsync();
 
+            // increment failed counter for exception
+            _metrics.IncPaymentFailed();
+
             return StatusCode(500, "An error occurred while processing the payment.");
         }
     }
 
-    // PUT: api/bookings/5/cancel
+    // PUT: api/bookings/{id}/cancel
     [HttpPut("{id}/cancel")]
     public async Task<ActionResult<PaymentResult?>> CancelBooking(int id)
     {
@@ -372,7 +393,7 @@ public class BookingsController : ControllerBase
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Failed to refund redeemed loyalty points for booking {BookingId}", id);
+                    _logger.LogWarning(ex, "Failed to refund redeemed loyalty points for booking {BookingId}", booking.Id);
                 }
             }
 
@@ -401,6 +422,9 @@ public class BookingsController : ControllerBase
         }
 
         await _context.SaveChangesAsync();
+
+        // metrics: booking cancelled
+        _metrics.IncBookingCancelled();
 
         _logger.LogInformation("Booking {BookingId} cancelled by user {UserId}", id, currentUserId);
 
