@@ -72,29 +72,68 @@ This project demonstrates a complete production-ready deployment with:
 
 ### Prometheus Metrics
 
-**Infrastructure Metrics**:
-- HTTP request rates and latencies
-- CPU and memory usage
-- Garbage collection statistics
+**Infrastructure Metrics** (automatic via UseHttpMetrics):
+- `http_requests_received_total` - HTTP request count by method, code, controller
+- `http_request_duration_seconds` - Request latency histogram with percentiles
+- `process_cpu_seconds_total` - CPU usage
+- `dotnet_total_memory_bytes` - Memory usage
+- `dotnet_collection_count_total` - Garbage collection statistics
 - Thread pool utilization
 
-**Business Metrics**:
-- Booking creation/cancellation rates
-- Payment success/failure rates
-- Active user count
-- Revenue tracking
-- Search activity
+**Business Metrics** (via IAppMetrics service):
+- `hotel_bookings_created_total` - Booking creation counter
+- `hotel_bookings_cancelled_total` - Booking cancellation counter
+- `hotel_payments_success_total` - Payment success counter
+- `hotel_payments_failed_total` - Payment failure counter
+- `hotel_payment_amount_total` - Revenue tracking counter (INR)
+- `hotel_active_users` - Active user gauge (updated every 30s)
+- `hotel_searches_total` - Search activity counter
+- `hotel_booking_processing_seconds` - Booking processing histogram
 
 **Implementation**:
 ```csharp
-// Custom metrics in .NET
-private readonly Counter _bookingsCounter = Metrics.CreateCounter(
-    "hotel_bookings_created_total",
-    "Total number of hotel bookings created");
+// Metrics service interface
+public interface IAppMetrics
+{
+    void IncBookingCreated();
+    void IncBookingCancelled();
+    void IncPaymentSuccess();
+    void IncPaymentFailed();
+    void RecordPaymentAmount(decimal amount);
+    void SetActiveUsers(int count);
+    void IncHotelSearch();
+    void ObserveBookingProcessing(double seconds);
+}
 
-private readonly Histogram _bookingProcessing = Metrics.CreateHistogram(
-    "hotel_booking_processing_seconds",
-    "Duration of booking processing");
+// Static metrics registration (singleton)
+private static readonly Counter _bookingsCounter = 
+    Prometheus.Metrics.CreateCounter(
+        "hotel_bookings_created_total",
+        "Total number of hotel bookings created");
+
+private static readonly Histogram _bookingProcessing = 
+    Prometheus.Metrics.CreateHistogram(
+        "hotel_booking_processing_seconds",
+        "Duration of booking processing",
+        new HistogramConfiguration
+        {
+            Buckets = Histogram.ExponentialBuckets(0.01, 2, 10)
+        });
+
+// Background service updates gauge metrics
+public class MetricsUpdater : BackgroundService
+{
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            var activeUsers = await context.Users
+                .CountAsync(u => u.LastLoginAt > DateTime.UtcNow.AddHours(-24));
+            metrics.SetActiveUsers(activeUsers);
+            await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+        }
+    }
+}
 ```
 
 ### Grafana Dashboards
@@ -114,17 +153,26 @@ Pre-configured production dashboard with:
 
 ### ELK Stack (Elasticsearch + Kibana)
 
-**Structured Logging**:
+**Structured Logging** (Serilog):
 ```csharp
+var elasticsearchUrl = Environment.GetEnvironmentVariable("ElasticsearchUrl") 
+    ?? "http://localhost:9200";
+
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .Enrich.WithMachineName()
     .Enrich.WithEnvironmentName()
-    .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(...)
+    .WriteTo.Console()
+    .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticsearchUrl))
     {
-        IndexFormat = "hotel-logs-{0:yyyy.MM.dd}"
+        AutoRegisterTemplate = true,
+        IndexFormat = "hotel-logs-{0:yyyy.MM.dd}",
+        NumberOfReplicas = 0,
+        NumberOfShards = 1
     })
     .CreateLogger();
+
+builder.Host.UseSerilog();
 ```
 
 **Log Enrichment**:
@@ -295,11 +343,12 @@ curl http://localhost:9200/_cluster/health
 ## 📊 Performance Monitoring
 
 ### Key Metrics Tracked
-1. **Availability**: Uptime percentage
-2. **Latency**: Response time percentiles
-3. **Throughput**: Requests per second
-4. **Errors**: Error rate and types
-5. **Saturation**: Resource utilization
+1. **Availability**: Uptime percentage via /health endpoint
+2. **Latency**: Response time percentiles (p50, p95, p99) via histogram
+3. **Throughput**: Requests per second via http_requests_received_total
+4. **Errors**: Error rate via http_requests_received_total{code=~"5.."}
+5. **Saturation**: CPU, memory, GC via dotnet runtime metrics
+6. **Business KPIs**: Bookings, payments, revenue, active users
 
 ### SLI/SLO Examples
 ```

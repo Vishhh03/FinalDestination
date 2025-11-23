@@ -6,6 +6,7 @@ Smart Hotel Booking System - A production-ready hotel booking API with JWT authe
 
 ## Technology Stack
 
+### Application
 - **Backend**: ASP.NET Core 8.0
 - **Database**: SQL Server 2022 / SQLite
 - **Frontend**: Angular SPA
@@ -14,7 +15,15 @@ Smart Hotel Booking System - A production-ready hotel booking API with JWT authe
 - **API Documentation**: Swagger/OpenAPI
 - **Caching**: IMemoryCache
 - **Testing**: NUnit (50 tests)
-- **Containerization**: Docker (3-container setup)
+
+### DevOps & Monitoring
+- **Containerization**: Docker (multi-container setup)
+- **Orchestration**: Docker Compose
+- **Metrics**: Prometheus + prometheus-net
+- **Visualization**: Grafana with pre-built dashboards
+- **Logging**: Serilog + Elasticsearch
+- **Log Analysis**: Kibana
+- **Reverse Proxy**: Nginx
 - **CI/CD**: GitHub Actions
 
 ## System Architecture
@@ -301,10 +310,25 @@ CDN for Static Files
 
 ## Monitoring & Logging
 
-- **Logging**: ILogger (console, file)
-- **Health Checks**: `/health` endpoint
-- **Metrics**: Request/response times
-- **Errors**: Global exception handling
+### Metrics (Prometheus)
+- **HTTP Metrics**: Request rates, durations, status codes
+- **Business Metrics**: Bookings, payments, revenue, active users
+- **System Metrics**: CPU, memory, GC, thread pool
+- **Custom Metrics**: Via IAppMetrics service
+- **Endpoint**: `/metrics` (Prometheus format)
+
+### Logging (Serilog + ELK)
+- **Structured Logging**: JSON format with context enrichment
+- **Sinks**: Console + Elasticsearch
+- **Index Pattern**: `hotel-logs-{yyyy.MM.dd}`
+- **Enrichers**: Machine name, environment, log context
+- **Visualization**: Kibana dashboards
+
+### Observability
+- **Health Checks**: `/health` endpoint with timestamp
+- **Metrics Updater**: Background service (30s interval)
+- **Error Tracking**: Global exception middleware
+- **Performance**: Histogram metrics for booking processing
 
 ## Database Schema
 
@@ -335,8 +359,15 @@ CDN for Static Files
 | Payments | 2 | User/Admin |
 | Reviews | 4 | User |
 | Loyalty | 2 | User |
+| Admin | 3 | Admin |
+| Users | 2 | User/Admin |
+| Upload | 1 | Manager/Admin |
 
-**Total**: 28 endpoints
+**Total**: 34+ endpoints
+
+### Monitoring Endpoints
+- `/health` - Health check with status and timestamp
+- `/metrics` - Prometheus metrics in text format
 
 ## Testing Architecture
 

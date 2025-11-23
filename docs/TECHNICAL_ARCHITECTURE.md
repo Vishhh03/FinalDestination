@@ -420,7 +420,74 @@ eyJhbGc...  .eyJ1c2Vy...  .SflKxwRJ...
 - Role
 - Expiration time
 
-### 6. AutoMapper
+### 6. Serilog
+**What**: Structured logging library for .NET.
+
+**Why Used**:
+- Structured logging (JSON format)
+- Multiple sinks (Console, Elasticsearch)
+- Log enrichment (machine name, environment)
+- Better than default ILogger for production
+- Elasticsearch integration for centralized logs
+
+**Implementation**:
+```csharp
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .Enrich.WithMachineName()
+    .Enrich.WithEnvironmentName()
+    .WriteTo.Console()
+    .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticsearchUrl))
+    {
+        IndexFormat = "hotel-logs-{0:yyyy.MM.dd}"
+    })
+    .CreateLogger();
+```
+
+### 7. Prometheus-net
+**What**: .NET client library for Prometheus metrics.
+
+**Why Used**:
+- Industry-standard metrics format
+- Custom business metrics
+- HTTP metrics middleware
+- Counter, Gauge, Histogram support
+- Grafana integration
+
+**Metrics Tracked**:
+- Bookings created/cancelled
+- Payment success/failure rates
+- Active users (gauge updated every 30s)
+- Payment amounts (counter)
+- Booking processing time (histogram)
+- HTTP request metrics (automatic)
+
+**Implementation**:
+```csharp
+// Custom metrics service
+public interface IAppMetrics
+{
+    void IncBookingCreated();
+    void IncPaymentSuccess();
+    void SetActiveUsers(int count);
+    void ObserveBookingProcessing(double seconds);
+}
+
+// Static metrics registration
+private static readonly Counter _bookingsCounter = 
+    Prometheus.Metrics.CreateCounter(
+        "hotel_bookings_created_total",
+        "Total number of hotel bookings created");
+
+// Usage in controllers
+_metrics.IncBookingCreated();
+
+// HTTP metrics middleware
+app.UseHttpMetrics();
+app.MapMetrics(); // Exposes /metrics endpoint
+```
+
+### 8. AutoMapper
 **What**: Object-to-object mapping library.
 
 **Why Used**:
@@ -429,7 +496,7 @@ eyJhbGc...  .eyJ1c2Vy...  .SflKxwRJ...
 - Testable
 - Maintainable
 
-### 7. Swagger/OpenAPI
+### 9. Swagger/OpenAPI
 **What**: API documentation and testing tool.
 
 **Why Used**:
@@ -742,7 +809,41 @@ public async Task<ActionResult<Hotel>> GetHotel(int id)
 }
 ```
 
-### 6. Signal-Based Reactivity
+### 6. Background Services
+**Implementation**: IHostedService (MetricsUpdater)
+
+**What**: Long-running background tasks.
+
+**Why Used**:
+- Periodic metrics updates (active users every 30s)
+- Runs independently of HTTP requests
+- Scoped service access via IServiceProvider
+- Graceful shutdown support
+
+**Example**:
+```csharp
+public class MetricsUpdater : BackgroundService
+{
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<HotelContext>();
+            var metrics = scope.ServiceProvider.GetRequiredService<IAppMetrics>();
+            
+            // Update active users metric
+            var activeUsers = await context.Users
+                .CountAsync(u => u.LastLoginAt > DateTime.UtcNow.AddHours(-24));
+            metrics.SetActiveUsers(activeUsers);
+            
+            await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+        }
+    }
+}
+```
+
+### 7. Signal-Based Reactivity
 **Implementation**: Angular Signals
 
 **Why**:
