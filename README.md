@@ -16,70 +16,137 @@
 
 ## 🎯 Overview
 
-A comprehensive hotel booking API demonstrating modern ASP.NET Core development practices. Built for the **Genc Training Project**, this system showcases enterprise-grade architecture, security, and best practices suitable for production use.
+A comprehensive hotel booking system demonstrating modern full-stack development and **production-grade DevOps practices**. Built for the **Genc Training Project**, this system showcases enterprise-grade architecture, security, monitoring, and observability suitable for production use.
+
+**🎉 NEW: Complete monitoring stack with Prometheus, Grafana, and ELK!**
 
 ## ✨ Key Features
 
+### Application Features
 - **🔐 Authentication**: JWT-based auth with role-based authorization (Admin, Hotel Manager, Guest)
 - **🏨 Hotel Management**: CRUD operations, search/filtering, caching, rating system
 - **📅 Booking System**: Room availability, booking lifecycle, date validation
 - **💳 Payment Processing**: Mock payment service, multiple methods, refunds
 - **⭐ Reviews & Ratings**: 1-5 star system with automatic hotel rating calculation
 - **🎁 Loyalty Program**: Points-based rewards (10% of booking amount) with redemption for booking discounts
-- **🛡️ Infrastructure**: Global error handling, validation, logging, Swagger UI
+
+### DevOps & Monitoring Features
+- **📊 Prometheus Metrics**: Custom business metrics (bookings, payments, revenue) + system metrics
+- **📈 Grafana Dashboards**: Real-time visualization of KPIs and performance
+- **🔍 ELK Stack**: Centralized logging with Elasticsearch and Kibana
+- **🐳 Docker**: Multi-container orchestration with production-ready configs
+- **🏥 Health Checks**: Service health monitoring and readiness probes
+- **🛡️ Infrastructure**: Global error handling, validation, structured logging
 
 ## 🛠️ Technology Stack
 
+### Application
 - **ASP.NET Core 8.0** - Web API framework
-- **Entity Framework Core 8.0** - ORM with SQL Server LocalDB
+- **Angular** - Modern SPA framework
+- **Entity Framework Core 8.0** - ORM with SQL Server
 - **JWT Bearer Authentication** - Stateless auth with BCrypt password hashing
 - **Swagger/OpenAPI** - Interactive API documentation
 - **AutoMapper** - DTO mapping
-- **IMemoryCache** - Performance caching
+- **Serilog** - Structured logging
+
+### DevOps & Monitoring
+- **Docker & Docker Compose** - Containerization and orchestration
+- **Prometheus** - Metrics collection and time-series database
+- **Grafana** - Metrics visualization and dashboards
+- **Elasticsearch** - Log storage and search
+- **Kibana** - Log visualization and analysis
+- **Nginx** - Reverse proxy and load balancing
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### Option 1: Production Stack with Monitoring (Recommended)
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [SQL Server LocalDB](https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/sql-server-express-localdb) (optional - can use in-memory DB)
-
-### Installation
+**Prerequisites**: [Docker Desktop](https://www.docker.com/products/docker-desktop)
 
 ```bash
-# Clone repository
+# Start everything with one command
+start-monitoring.bat
+
+# Or manually:
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+**Access All Services**:
+- 🌐 **Frontend**: http://localhost:8080
+- 🔌 **Backend API**: http://localhost:5000
+- 📚 **API Docs**: http://localhost:5000/swagger
+- 📊 **Grafana**: http://localhost:3000 (admin/admin)
+- 🔍 **Prometheus**: http://localhost:9090
+- 📝 **Kibana**: http://localhost:5601
+- 💓 **Health Check**: http://localhost:5000/health
+- 📈 **Metrics**: http://localhost:5000/metrics
+
+**See the monitoring in action**:
+1. Open Grafana at http://localhost:3000 (login: admin/admin)
+2. Go to Dashboards → "Hotel Booking System - Production Metrics"
+3. Create some bookings in the app
+4. Watch real-time metrics update!
+
+📖 **Full Guide**: [deployment/MONITORING_SETUP.md](deployment/MONITORING_SETUP.md)
+
+### Option 2: Local Development
+
+**Prerequisites**: [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+
+```bash
+# Clone and run
 git clone <repository-url>
 cd Smart-Hotel-Booking-System/finaldestination
-
-# Restore and run
 dotnet restore
 dotnet run
 ```
 
-### Access the Application
-
-After running `dotnet run`, open your browser to:
-
-- **Frontend**: https://localhost:5001 (default page)
+**Access**:
+- **Frontend**: https://localhost:5001
 - **Swagger UI**: https://localhost:5001/swagger
 - **API Base**: https://localhost:5001/api
 
 ### First Steps
 
-1. **Open** https://localhost:5001 in your browser
-2. **Login** with: `admin@hotel.com` / `Admin123!`
-3. **Explore** hotels, make bookings, submit reviews!
+1. **Login** with: `admin@hotel.com` / `Admin123!`
+2. **Explore** hotels, make bookings, submit reviews
+3. **Check metrics** at http://localhost:5000/metrics (if using Docker)
+4. **View logs** in Kibana at http://localhost:5601 (if using Docker)
 
-**Or use Swagger UI** for API testing at https://localhost:5001/swagger:
-
+**Or use Swagger UI** for API testing:
 1. Expand **POST /api/auth/login**
 2. Click **Try it out**, use credentials above
 3. Copy token, click **Authorize**, enter: `Bearer <token>`
 4. Test any endpoint!
 
-**⚠️ Important**: Don't open `index.html` directly - always run `dotnet run` first!
-
 **Tip**: Set `"UseLocalDb": false` in `appsettings.Development.json` to use in-memory database (no SQL Server needed)
+
+## 📊 Monitoring & Observability
+
+This project includes a **production-grade monitoring stack** demonstrating DevOps best practices:
+
+### Metrics (Prometheus + Grafana)
+- **Business Metrics**: Bookings, payments, revenue, active users
+- **Technical Metrics**: Request rates, latencies, error rates
+- **System Metrics**: CPU, memory, GC statistics
+- **Custom Dashboard**: Pre-configured Grafana dashboard with real-time KPIs
+
+### Logging (ELK Stack)
+- **Structured Logs**: JSON-formatted logs with context enrichment
+- **Centralized Storage**: Elasticsearch with time-series indexing
+- **Log Analysis**: Kibana for searching, filtering, and visualization
+- **Index Pattern**: `hotel-logs-YYYY.MM.DD`
+
+### Health & Diagnostics
+- **Health Endpoint**: `/health` for service status
+- **Metrics Endpoint**: `/metrics` in Prometheus format
+- **Distributed Tracing**: Ready for OpenTelemetry integration
+
+📖 **Complete Guides**:
+- [Monitoring Setup Guide](deployment/MONITORING_SETUP.md) - How to use Prometheus, Grafana, ELK
+- [DevOps Showcase](deployment/DEVOPS_SHOWCASE.md) - Production practices demonstrated
+- [Metrics Integration](deployment/METRICS_INTEGRATION_GUIDE.md) - How to add custom metrics
+- [Skills Demonstration](SKILLS_DEMONSTRATION.md) - Full-stack + DevOps skills mapping
 
 ## 📁 Project Structure
 
@@ -87,27 +154,29 @@ After running `dotnet run`, open your browser to:
 FinalDestination/
 ├── finaldestination/            # Main API project
 │   ├── Controllers/             # API endpoints
-│   ├── Services/                # Business logic
+│   ├── Services/                # Business logic + metrics
 │   ├── Models/                  # Domain entities
 │   ├── DTOs/                    # Data transfer objects
 │   ├── Data/                    # EF Core context
 │   ├── Middleware/              # Custom middleware
-│   ├── Dockerfile               # Container build
-│   └── wwwroot/                 # Frontend SPA
+│   ├── Dockerfile               # Multi-stage build
+│   └── ClientApp/               # Angular SPA
 │
-├── finaldestination.tests/      # Test project
-│
-├── deployment/                  # Docker & monitoring
-│   ├── docker/
-│   │   └── docker-compose.yml   # All services
+├── deployment/                  # DevOps & Infrastructure
 │   ├── monitoring/
-│   │   ├── prometheus.yml       # Metrics config
-│   │   └── grafana/             # Dashboards
-│   └── README.md                # Deployment guide
+│   │   ├── prometheus.yml       # Metrics scraping config
+│   │   └── grafana/             # Dashboards & datasources
+│   ├── MONITORING_SETUP.md      # Complete monitoring guide
+│   ├── DEVOPS_SHOWCASE.md       # DevOps practices
+│   └── METRICS_INTEGRATION_GUIDE.md
+│
+├── docker-compose.prod.yml      # Production stack
+├── docker-compose.dev.yml       # Development stack
+├── start-monitoring.bat         # One-command startup
 │
 ├── docs/                        # Feature documentation
 ├── ARCHITECTURE.md              # System design
-├── MONITORING.md                # Observability stack
+├── SKILLS_DEMONSTRATION.md      # Skills showcase
 ├── TRANSITION_GUIDE.md          # Machine transition
 └── README.md                    # This file
 ```

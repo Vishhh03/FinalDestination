@@ -143,6 +143,10 @@ public class BookingsController : ControllerBase
 
         // Get hotel (validation already confirmed it exists)
         var hotel = await _context.Hotels.FindAsync(request.HotelId);
+        if (hotel == null)
+        {
+            return BadRequest("Hotel not found.");
+        }
 
         // Calculate total price (prices stored in INR)
         var nights = (request.CheckOutDate - request.CheckInDate).Days;
@@ -243,6 +247,10 @@ public class BookingsController : ControllerBase
         var booking = await _context.Bookings
             .Include(b => b.Hotel)
             .FirstOrDefaultAsync(b => b.Id == id);
+        if (booking == null)
+        {
+            return NotFound("Booking not found.");
+        }
 
         // Set booking ID in payment request
         request.BookingId = id;
@@ -255,7 +263,7 @@ public class BookingsController : ControllerBase
             if (paymentResult.Status == PaymentStatus.Completed)
             {
                 // Payment successful - confirm booking
-                booking.Status = BookingStatus.Confirmed;
+                booking!.Status = BookingStatus.Confirmed;
                 await _context.SaveChangesAsync();
 
                 // increment success counter via wrapper
@@ -283,9 +291,9 @@ public class BookingsController : ControllerBase
             else
             {
                 // Payment failed - restore room availability
-                if (booking.Hotel != null)
+                if (booking!.Hotel != null)
                 {
-                    booking.Hotel.AvailableRooms++;
+                    booking!.Hotel.AvailableRooms++;
                 }
                 booking.Status = BookingStatus.Cancelled;
                 await _context.SaveChangesAsync();
@@ -304,9 +312,9 @@ public class BookingsController : ControllerBase
             _logger.LogError(ex, "Error processing payment for booking {BookingId}", id);
             
             // Restore room availability on error
-            if (booking.Hotel != null)
+            if (booking!.Hotel != null)
             {
-                booking.Hotel.AvailableRooms++;
+                booking!.Hotel.AvailableRooms++;
             }
             booking.Status = BookingStatus.Cancelled;
             await _context.SaveChangesAsync();

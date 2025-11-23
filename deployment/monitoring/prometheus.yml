@@ -1,10 +1,34 @@
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
+  external_labels:
+    monitor: 'hotel-booking-monitor'
+    environment: 'production'
 
 scrape_configs:
-  - job_name: 'hotel-api'
+  # Scrape .NET backend metrics (Docker)
+  - job_name: 'hotel-backend'
     static_configs:
       - targets: ['backend:80']
     metrics_path: '/metrics'
     scrape_interval: 10s
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'go_.*'
+        action: drop
+
+  # Scrape .NET backend metrics (Local development)
+  - job_name: 'hotel-backend-local'
+    static_configs:
+      - targets: ['host.docker.internal:5000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'go_.*'
+        action: drop
+
+  # Scrape Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

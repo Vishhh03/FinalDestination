@@ -1,64 +1,53 @@
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
-using System.Threading;
-using System.Threading.Tasks;
-using System;
 using FinalDestinationAPI.Data;
-using FinalDestinationAPI.Models;
-using Prometheus;
+using Microsoft.EntityFrameworkCore;
 
-namespace FinalDestinationAPI.Services
+namespace FinalDestinationAPI.Services;
+
+/// <summary>
+/// Background service that periodically updates metrics from database
+/// </summary>
+public class MetricsUpdater : BackgroundService
 {
-    public class MetricsUpdater : BackgroundService
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<MetricsUpdater> _logger;
+
+    public MetricsUpdater(IServiceProvider serviceProvider, ILogger<MetricsUpdater> logger)
     {
-        private readonly IServiceScopeFactory _scopeFactory;
-        private readonly TimeSpan _interval = TimeSpan.FromSeconds(15);
+        _serviceProvider = serviceProvider;
+        _logger = logger;
+    }
 
-        // metric names aligned with Grafana dashboard (hotel_api_ prefix)
-        private static readonly Gauge TotalHotels = Metrics.CreateGauge("hotel_api_total_hotels", "Total hotels");
-        private static readonly Gauge TotalBookings = Metrics.CreateGauge("hotel_api_total_bookings", "Total bookings");
-        private static readonly Gauge TotalUsers = Metrics.CreateGauge("hotel_api_total_users", "Total users");
-        private static readonly Gauge TotalReviews = Metrics.CreateGauge("hotel_api_total_reviews", "Total reviews");
-        private static readonly Gauge ActiveBookings = Metrics.CreateGauge("hotel_api_active_bookings", "Active bookings");
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _logger.LogInformation("Metrics Updater Service started");
 
-        public MetricsUpdater(IServiceScopeFactory scopeFactory)
+        while (!stoppingToken.IsCancellationRequested)
         {
-            _scopeFactory = scopeFactory;
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                try
-                {
-                    using var scope = _scopeFactory.CreateScope();
-                    var context = scope.ServiceProvider.GetRequiredService<HotelContext>();
+                using var scope = _serviceProvider.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<HotelContext>();
+                var metrics = scope.ServiceProvider.GetRequiredService<IAppMetrics>();
 
-                    var hotels = await context.Hotels.CountAsync(stoppingToken);
-                    var bookings = await context.Bookings.CountAsync(stoppingToken);
-                    var users = await context.Users.CountAsync(stoppingToken);
-                    var reviews = await context.Reviews.CountAsync(stoppingToken);
-                    var activeBookings = await context.Bookings.CountAsync(b => b.Status == BookingStatus.Confirmed, stoppingToken);
+                // Count active users (users who logged in within last 24 hours)
+                var activeUserCount = await context.Users
+                    .CountAsync(u => u.LastLoginDate.HasValue && 
+                                   u.LastLoginDate.Value > DateTime.UtcNow.AddHours(-24), 
+                                   stoppingToken);
 
-                    TotalHotels.Set(hotels);
-                    TotalBookings.Set(bookings);
-                    TotalUsers.Set(users);
-                    TotalReviews.Set(reviews);
-                    ActiveBookings.Set(activeBookings);
-                }
-                catch
-                {
-                    // Swallow errors to avoid crashing the background service; add logging if needed.
-                }
+                metrics.SetActiveUsers(activeUserCount);
 
-                try
-                {
-                    await Task.Delay(_interval, stoppingToken);
-                }
-                catch (TaskCanceledException) { /* shutting down */ }
+                _logger.LogDebug("Updated metrics: Active Users = {ActiveUsers}", activeUserCount);
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating metrics");
+            }
+
+            // Update every 30 seconds
+            await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
         }
+
+        _logger.LogInformation("Metrics Updater Service stopped");
     }
 }

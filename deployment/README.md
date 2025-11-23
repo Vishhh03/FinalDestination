@@ -1,29 +1,55 @@
-# Deployment Guide
+# Deployment & Monitoring Guide
 
-## Directory Structure
+## 🎯 Overview
+
+Complete production-ready deployment with **full observability stack** including metrics, logging, and visualization.
+
+## 📁 Directory Structure
 
 ```
 deployment/
-├── docker/              # Docker orchestration
-│   └── docker-compose.yml
-└── monitoring/          # Monitoring configurations
-    ├── prometheus.yml
-    └── grafana/
-        └── provisioning/
+├── monitoring/                          # Monitoring configurations
+│   ├── prometheus.yml                   # Metrics scraping config
+│   └── grafana/
+│       ├── provisioning/                # Auto-provisioning
+│       │   ├── datasources/             # Prometheus datasource
+│       │   └── dashboards/              # Dashboard config
+│       └── dashboards/                  # Pre-built dashboards
+│           └── hotel-booking-dashboard.json
+│
+├── MONITORING_SETUP.md                  # Complete monitoring guide
+├── DEVOPS_SHOWCASE.md                   # DevOps practices explained
+├── METRICS_INTEGRATION_GUIDE.md         # How to add metrics
+├── ARCHITECTURE_DIAGRAM.md              # Visual system design
+├── QUICK_REFERENCE.md                   # Commands cheat sheet
+└── README.md                            # This file
 ```
+
+## 📚 Documentation Quick Links
+
+| Document | Purpose | Audience |
+|----------|---------|----------|
+| **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** | Commands, URLs, troubleshooting | Everyone |
+| **[MONITORING_SETUP.md](MONITORING_SETUP.md)** | Complete monitoring walkthrough | Ops/DevOps |
+| **[DEVOPS_SHOWCASE.md](DEVOPS_SHOWCASE.md)** | Production practices | Interviews |
+| **[METRICS_INTEGRATION_GUIDE.md](METRICS_INTEGRATION_GUIDE.md)** | Add custom metrics | Developers |
+| **[ARCHITECTURE_DIAGRAM.md](ARCHITECTURE_DIAGRAM.md)** | System architecture | Technical |
 
 ## Prerequisites
 
 - Docker Desktop installed
 - Docker Compose v2.0+
 - 8GB RAM minimum
-- Ports available: 5000, 1433, 9200, 5601, 9090, 3000
+- Ports available: 8080, 5000, 1433, 9200, 5601, 9090, 3000
 
 ## Quick Start
 
 ```bash
-cd deployment/docker
-docker-compose up -d
+# From project root
+start-monitoring.bat
+
+# Or manually
+docker-compose -f docker-compose.prod.yml up -d
 ```
 
 ## Services
@@ -70,37 +96,42 @@ http://localhost:5000/health
 ## Management Commands
 
 ```bash
-# View logs
-docker-compose logs -f hotel-api
+# View logs (all services)
+docker-compose -f docker-compose.prod.yml logs -f
+
+# View logs (specific service)
+docker-compose -f docker-compose.prod.yml logs -f backend
 
 # Restart service
-docker-compose restart hotel-api
+docker-compose -f docker-compose.prod.yml restart backend
 
 # Stop all
-docker-compose down
+docker-compose -f docker-compose.prod.yml down
 
 # Clean slate (removes data)
-docker-compose down -v
+docker-compose -f docker-compose.prod.yml down -v
 
 # Rebuild after code changes
-docker-compose up -d --build hotel-api
+docker-compose -f docker-compose.prod.yml up -d --build backend
 ```
 
 ## Troubleshooting
 
 ### Service won't start
 ```bash
-docker-compose logs <service-name>
+docker-compose -f docker-compose.prod.yml logs <service-name>
 ```
 
 ### Port conflicts
-Edit `docker-compose.yml` to change port mappings
+Edit `docker-compose.prod.yml` to change port mappings
 
 ### Database connection issues
 Check SQL Server is healthy:
 ```bash
-docker-compose ps sqlserver
+docker-compose -f docker-compose.prod.yml ps sqlserver
 ```
+
+**See [QUICK_REFERENCE.md](QUICK_REFERENCE.md) for more troubleshooting tips**
 
 ## Production Considerations
 
