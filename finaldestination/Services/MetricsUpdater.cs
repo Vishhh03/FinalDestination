@@ -31,8 +31,8 @@ public class MetricsUpdater : BackgroundService
 
                 // Count active users (users who logged in within last 24 hours)
                 var activeUserCount = await context.Users
-                    .CountAsync(u => u.LastLoginDate.HasValue && 
-                                   u.LastLoginDate.Value > DateTime.UtcNow.AddHours(-24), 
+                    .CountAsync(u => u.LastLoginAt.HasValue && 
+                                   u.LastLoginAt.Value > DateTime.UtcNow.AddHours(-24), 
                                    stoppingToken);
 
                 metrics.SetActiveUsers(activeUserCount);
